@@ -1,4 +1,3 @@
-# import pdb
 import os
 import json
 import numpy as np
@@ -44,7 +43,7 @@ def generate_gt_stm(info, save_path):
     """
     Generates ground truth STM file for evaluation.
     """
-    with open(save_path, "w") as f:
+    with open(save_path, "w", encoding="utf-8") as f:
         for item in info:
             f.write(
                 f"{item['video_id']} 1 {item['signer']} 0.0 1.79769e+308 {item['gloss_sequence']}\n"
@@ -60,7 +59,7 @@ def info2dict(anno_filename):
     if not os.path.exists(anno_path):
         raise FileNotFoundError(f"Annotation file not found: {anno_path}")
 
-    with open(anno_path, 'r') as f:
+    with open(anno_path, 'r', encoding='utf-8') as f:
         inputs_list = f.readlines()[1:]
 
     info_list = []
