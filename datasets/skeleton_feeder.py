@@ -56,7 +56,7 @@ class SkeletonFeeder(data.Dataset):
                 with open(f"./datasets/mslr2025/{self.setting}_{mode}_info.json", 'r') as f:
                     # dataset info
                     inputs_list = json.load(f)
-            with open("./datasets/pose_data_isharah2000_hands_lips_body_May12.pkl", "rb") as f:
+            with open("./datasets/pose_data_isharah2000_hands_lips_body_phase2_SI.pkl", "rb") as f:
                 # all data
                 self.kps_global = pickle.load(f)
 
