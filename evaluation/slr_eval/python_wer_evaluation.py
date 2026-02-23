@@ -1,5 +1,5 @@
 import glob
-import pdb
+# import pdb
 import copy
 import numpy as np
 from itertools import groupby
@@ -195,7 +195,7 @@ def wer_calculation(gt_path, primary_pred, auxiliary_pred=None):
     pred1 = load_prediction(primary_pred)
     results_list = []
     print('here')
-    pdb.set_trace()
+    # pdb.set_trace()
     if auxiliary_pred is not None:
         pred2 = load_prediction(auxiliary_pred)
         for fileid, sent in gt.items():
@@ -208,7 +208,7 @@ def wer_calculation(gt_path, primary_pred, auxiliary_pred=None):
             )
             results_list.append(sent_stat)
     else:
-        pdb.set_trace()
+        # pdb.set_trace()
         for fileid, sent in gt.items():
             sent_stat = sent_evaluation(
                 info=fileid, gt=sent,

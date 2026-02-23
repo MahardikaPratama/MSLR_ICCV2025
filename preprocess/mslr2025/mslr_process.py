@@ -1,4 +1,4 @@
-import pdb
+# import pdb
 import json
 import pickle 
 import numpy as np
@@ -50,7 +50,7 @@ if __name__ == '__main__':
             signer_set = set()
             sentence_set = set()
             split_info = info2dict(f'{setting}_{md}_list.txt', md)
-            pdb.set_trace()
+            # pdb.set_trace()
 
             for item in split_info:
                 signer_set.add(item['signer'])

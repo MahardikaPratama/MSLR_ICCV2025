@@ -1,4 +1,4 @@
-import pdb
+# import pdb
 import math
 import torch
 import numpy as np
@@ -45,7 +45,7 @@ class CTCHelper(object):
             try:
                 decoded_path[:, t - 1] = start - paths[np.arange(batch), t, start]
             except IndexError:
-                pdb.set_trace()
+                # pdb.set_trace()
             finally:
                 pass
             start = decoded_path[:, t - 1]
