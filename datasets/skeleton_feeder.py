@@ -40,7 +40,7 @@ class SkeletonFeeder(data.Dataset):
         self.dataset = dataset
         self.used_part = used_part
         if mode == 'test':
-            with open(f"./datasets/pose_data_isharah1000_{self.setting.upper()}_test.pkl", "rb") as f:
+            with open(f"./datasets/pose_data_isharah2000_{self.setting.upper()}_test.pkl", "rb") as f:
                 # test data
                 self.kps_global = pickle.load(f)
                 self.inputs_list = list(range(1, len(self.kps_global)+2))
@@ -56,7 +56,7 @@ class SkeletonFeeder(data.Dataset):
                 with open(f"./datasets/mslr2025/{self.setting}_{mode}_info.json", 'r') as f:
                     # dataset info
                     inputs_list = json.load(f)
-            with open("./datasets/pose_data_isharah1000_hands_lips_body_May12.pkl", "rb") as f:
+            with open("./datasets/pose_data_isharah2000_hands_lips_body_May12.pkl", "rb") as f:
                 # all data
                 self.kps_global = pickle.load(f)
 
