@@ -20,15 +20,46 @@ Menyiapkan data mentah dan anotasi menjadi format yang siap digunakan untuk trai
 - File info dataset (JSON):
    - `si_train_info.json`, `si_dev_info.json`, `us_train_info.json`, `us_dev_info.json`
    - Berisi list dictionary: signer, video_id, gloss_sequence, sentence_id, original_info
+
 - File ground truth STM:
    - `mslr-si-groundtruth-train.stm`, `mslr-si-groundtruth-dev.stm`, dst
    - Format per baris:
       ```
       [video_id] 1 [signer] 0.0 1.79769e+308 [gloss_sequence]
       ```
+   - Contoh:
+      ```
+      00_0001 1 00 0.0 1.79769e+308 سوال هو
+      00_0002 1 00 0.0 1.79769e+308 هو معلم لغه اشاره
+      ```
+   - Penjelasan detail proses dan alasan format:
+      - Data mentah diambil dari file seperti `si_train_list.txt` yang berisi baris: `id|gloss|text`.
+      - Script membaca setiap baris, memisahkan kolom berdasarkan tanda `|`.
+      - Kolom `id` (misal: 00_0001) dipecah menjadi `signer` (00) dan `sentence_id` (0001).
+      - Kolom `gloss` (misal: سوال هو) adalah urutan label/gloss untuk video tersebut.
+      - Untuk setiap data, script menulis satu baris ke file STM dengan format:
+         - `[video_id]` = id video, misal 00_0001
+         - `1` = channel (standar STM, biasanya 1)
+         - `[signer]` = id signer, misal 00
+         - `0.0` = start time (dummy, tidak dipakai di SLR)
+         - `1.79769e+308` = end time (dummy, nilai float terbesar, artinya tidak terbatas)
+         - `[gloss_sequence]` = urutan gloss/label, misal سوال هو
+      - Format STM ini dipilih karena kompatibel dengan tool evaluasi WER (Word Error Rate) yang umum digunakan di bidang pengenalan bahasa isyarat dan pengenalan ujaran.
+      - Dengan format ini, setiap baris merepresentasikan satu kalimat/video, siapa penandanya, dan urutan gloss yang menjadi ground truth untuk evaluasi.
+
 - Kamus gloss (JSON):
    - `si_gloss_dict.json`, `us_gloss_dict.json`
    - Berisi mapping gloss ke index dan frekuensi
+   - Contoh struktur:
+      ```json
+      {
+         "gloss2id": {"سوال": {"index": 1, "frequency": 10}, ...},
+         "id2gloss": {"1": {"gloss": "سوال", "frequency": 10}, ...}
+      }
+      ```
+   - **Catatan:**
+     Jika gloss berupa karakter non-ASCII (misal: Arab), pada file JSON bisa muncul dalam format Unicode escape (misal: "\u0627"). Ini hanya tampilan di file, saat dibaca Python nilainya tetap karakter asli.
+     Untuk menampilkan karakter asli di file JSON, script harus menggunakan `json.dump(..., ensure_ascii=False)`.
 
 ---
 
