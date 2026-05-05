@@ -91,7 +91,7 @@ def info2dict(anno_filename):
 
 if __name__ == '__main__':
 
-    for setting in ['si', 'us']:
+    for setting in ['sd', 'si']:
 
         sign_dict = dict()
 

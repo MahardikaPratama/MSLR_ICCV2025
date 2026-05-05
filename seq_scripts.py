@@ -1,3 +1,5 @@
+
+# Import berbagai library yang dibutuhkan untuk training, evaluasi, dan utilitas
 import os
 import csv
 import sys
@@ -11,25 +13,29 @@ import matplotlib.pyplot as plt
 import cv2
 from evaluation.slr_eval.wer_calculation import evaluate
 
+
+# Fungsi untuk melatih model satu epoch
 def seq_train(loader, model, optimizer, device, epoch_idx, recoder):
-    model.train()
-    loss_value = []
-    clr = [group['lr'] for group in optimizer.optimizer.param_groups]
+    model.train()  # Set model ke mode training
+    loss_value = []  # List untuk menyimpan nilai loss tiap batch
+    clr = [group['lr'] for group in optimizer.optimizer.param_groups]  # Ambil learning rate saat ini
 
+    # Iterasi setiap batch data
     for batch_idx, data in enumerate(tqdm(loader)):
-        data = device.dict_data_to_device(data)
-        ret_dict = model(data)
+        data = device.dict_data_to_device(data)  # Pindahkan data ke device (CPU/GPU)
+        ret_dict = model(data)  # Forward pass, dapatkan output model
 
-        loss, loss_details = model.get_loss(ret_dict, data)
+        loss, loss_details = model.get_loss(ret_dict, data)  # Hitung loss dan detail loss
+        # Skip batch jika loss tidak valid
         if np.isinf(loss.item()) or np.isnan(loss.item()):
             print(data['origin_info'])
             continue
-        optimizer.zero_grad()
-        loss.backward()
-        
-        optimizer.step()
+        optimizer.zero_grad()  # Reset gradien
+        loss.backward()  # Backpropagation
+        optimizer.step()  # Update parameter model
 
-        loss_value.append(loss.item())
+        loss_value.append(loss.item())  # Simpan nilai loss
+        # Logging setiap beberapa batch
         if batch_idx % recoder.log_interval == 0:
             recoder.print_log(
                 f'\tEpoch: {epoch_idx}, Batch({batch_idx}/{len(loader)}) done. Loss: {loss.item():.2f}  lr:{clr[0]:.6f}'
@@ -38,42 +44,52 @@ def seq_train(loader, model, optimizer, device, epoch_idx, recoder):
                 "\t"
                 + ", ".join([f"{k}: {v.item():.2f}" for k, v in loss_details.items()])
             )
-    optimizer.scheduler.step()
-    recoder.print_log('\tMean training loss: {:.10f}.'.format(np.mean(loss_value)))
-    return loss_value
+    optimizer.scheduler.step()  # Update learning rate scheduler
+    recoder.print_log('\tMean training loss: {:.10f}.'.format(np.mean(loss_value)))  # Log rata-rata loss
+    return loss_value  # Kembalikan list loss
 
+
+# Fungsi untuk evaluasi model pada data validasi/test
 def seq_eval(
     cfg, loader, model, device, mode, epoch, work_dir, recoder, task, evaluate_tool="python"
 ):
-    model.eval()
-    total_info = []
-    total_sent_fusion = []
-    total_sent_conv_fusion = []
+    model.eval()  # Set model ke mode evaluasi
+    total_info = []  # List untuk menyimpan info file
+    total_sent_fusion = []  # List hasil prediksi BiLSTM
+    total_sent_conv_fusion = []  # List hasil prediksi Conv1D
+    # Iterasi setiap batch data
     for batch_idx, data in enumerate(tqdm(loader)):
-        recoder.record_timer("device")
-        data = device.dict_data_to_device(data)
+        recoder.record_timer("device")  # Catat waktu pemindahan ke device
+        data = device.dict_data_to_device(data)  # Pindahkan data ke device
         with torch.no_grad():
-            ret_dict = model(data)
+            ret_dict = model(data)  # Forward pass tanpa gradien
 
+        # Simpan info file dan hasil prediksi
         total_info += [file_name.split("|")[0] for file_name in data['origin_info']]
         total_sent_fusion += ret_dict['recognized_sents_fusion']
         total_sent_conv_fusion += ret_dict['conv_sents_fusion']
+
+    # Pilih mode evaluasi (python atau eksternal)
     python_eval = True if evaluate_tool == "python" else False
+    # Tulis hasil prediksi ke file CTM
     write2file(
         work_dir + "output-hypothesis-fusion-{}.ctm".format(mode), total_info, total_sent_fusion
     )
     write2file(
         work_dir + "output-hypothesis-conv-fusion-{}.ctm".format(mode), total_info, total_sent_conv_fusion
     )
+    # Jika mode test, hasil akhir ditulis ke CSV
     if mode == 'test':
         csv_file = f'{work_dir}test.csv'
         if task == 'us':
             ctm_file = f'{work_dir}output-hypothesis-conv-fusion-test.ctm'
         elif task == 'si':
             ctm_file = f'{work_dir}output-hypothesis-fusion-test.ctm'
+        # Baca file CTM hasil prediksi
         with open(ctm_file, "r", encoding="utf-8") as file:
             lines = file.readlines()
         data = {}
+        # Proses setiap baris CTM menjadi dictionary id -> list kata
         for line_idx, line in enumerate(lines):
             parts = line.strip().split()
             if len(parts) >= 5:  
@@ -83,8 +99,9 @@ def seq_eval(
                     data[id] = []
                 data[id].append(word)
 
-        data = dict(sorted(data.items(), key=lambda item: int(item[0])))
+        data = dict(sorted(data.items(), key=lambda item: int(item[0])))  # Urutkan berdasarkan id
 
+        # Tulis hasil ke file CSV
         with open(csv_file, "w", newline='', encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["id", "gloss"])
@@ -94,6 +111,7 @@ def seq_eval(
         return csv_file
     else:
         try:
+            # Evaluasi hasil BiLSTM
             lstm_ret_fusion = evaluate(
                 prefix=work_dir,
                 mode=mode,
@@ -104,6 +122,7 @@ def seq_eval(
                 python_evaluate=python_eval,
                 triplet=True,
             )
+            # Evaluasi hasil Conv1D
             conv_ret_fusion = evaluate(
                 prefix=work_dir,
                 mode=mode,
@@ -119,20 +138,25 @@ def seq_eval(
             lstm_ret = 100.0
         finally:
             pass
+        # Log hasil evaluasi WER
         recoder.print_log(
             f"Epoch {epoch}, {mode} Conv1D WER: {conv_ret_fusion: 2.2f}%, BiLSTM WER: {lstm_ret_fusion: 2.2f}%", f"{work_dir}/{mode}.txt"
         )
         return min([conv_ret_fusion, lstm_ret_fusion])       
 
+
+# Fungsi untuk menulis hasil prediksi ke file CTM
 def write2file(path, info, output):
-    filereader = open(path, "w")
+    filereader = open(path, "w")  # Buka file untuk ditulis
+    # Iterasi setiap sample (per video/sequence)
     for sample_idx, sample in enumerate(output):
+        # Iterasi setiap kata hasil prediksi
         for word_idx, word in enumerate(sample):
             filereader.writelines(
                 "{} 1 {:.2f} {:.2f} {}\n".format(
-                    info[sample_idx],
-                    word_idx * 1.0 / 100,
-                    (word_idx + 1) * 1.0 / 100,
-                    word[0],
+                    info[sample_idx],  # ID sample
+                    word_idx * 1.0 / 100,  # Start time (dummy)
+                    (word_idx + 1) * 1.0 / 100,  # End time (dummy)
+                    word[0],  # Kata hasil prediksi
                 )
             )
