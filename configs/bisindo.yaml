@@ -1,0 +1,4 @@
+dataset_root: ./datasets/
+dict_path: ./datasets/mslr2025/sd_gloss_dict.json
+evaluation_dir: ./evaluation/slr_eval
+evaluation_prefix: mslr-sd-groundtruth
