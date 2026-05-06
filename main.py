@@ -190,7 +190,7 @@ class SLRProcessor(object):
 
     # Memuat info dataset dari file yaml
     def load_dataset_info(self):
-        with open(f"./configs/dataset_configs/{self.arg.dataset}.yaml", 'r') as f:
+        with open(f"./configs/{self.arg.dataset}.yaml", 'r') as f:
             # Buka file YAML yang berisi informasi tentang dataset yang akan digunakan,
             # dengan nama file yang diambil dari argumen dataset yang diberikan.
             # File YAML ini biasanya berisi informasi seperti path ke data, parameter pemrosesan data,

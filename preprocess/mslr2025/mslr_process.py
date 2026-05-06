@@ -72,7 +72,9 @@ def info2dict(anno_filename):
         else:
             video_id, gloss_seq = parts
 
-        signer, sentence_id = video_id.split('_')
+        split_vid = video_id.split('_')
+        signer = split_vid[0]
+        sentence_id = "_".join(split_vid[1:])
 
         info_list.append({
             'signer': signer,
