@@ -44,35 +44,31 @@ class SkeletonFeeder(data.Dataset):
         self.used_part = used_part  # Bagian skeleton yang digunakan
 
         # Memuat data pose dan info video
-        if mode == 'test':
-            # Untuk mode test, load file pickle pose test
-            with open(f"./datasets/pose_bisindo_test.pkl", "rb") as f:
-                self.kps_global = pickle.load(f)  # Semua pose test
-                self.inputs_list = list(range(1, len(self.kps_global)+2))  # Daftar index video
+        # Untuk mode train/dev/test
+        if len(self.mode_list) == 2:
+            # Jika mode gabungan (misal: train_dev), gabungkan dua file info
+            inputs_list = []
+            for mode_type in self.mode_list:
+                with open(f"./datasets/mslr2025/{self.setting}_{mode_type}_info.json", 'r') as f:
+                    inputs_list_temp = json.load(f)
+                    inputs_list.extend(inputs_list_temp)
         else:
-            # Untuk mode train/dev
-            if len(self.mode_list) == 2:
-                # Jika mode gabungan (misal: train_dev), gabungkan dua file info
-                inputs_list = []
-                for mode_type in self.mode_list:
-                    with open(f"./datasets/mslr2025/{self.setting}_{mode_type}_info.json", 'r') as f:
-                        inputs_list_temp = json.load(f)
-                        inputs_list.extend(inputs_list_temp)
-            else:
-                # Jika mode tunggal, load satu file info
-                with open(f"./datasets/mslr2025/{self.setting}_{mode}_info.json", 'r') as f:
-                    inputs_list = json.load(f)
-            # Load file pickle pose utama
-            with open("./datasets/pose_bisindo_train_dev.pkl", "rb") as f:
-                self.kps_global = pickle.load(f)
+            # Jika mode tunggal, load satu file info
+            with open(f"./datasets/mslr2025/{self.setting}_{mode}_info.json", 'r') as f:
+                inputs_list = json.load(f)
+                
+        # Load file pickle pose sesuai mode
+        pkl_file = "./datasets/pose_bisindo_test.pkl" if mode == 'test' else "./datasets/pose_bisindo_train_dev.pkl"
+        with open(pkl_file, "rb") as f:
+            self.kps_global = pickle.load(f)
 
-            # Filter hanya video yang ada di pose
-            self.inputs_list = list()
-            for item in inputs_list:
-                if item['video_id'] in self.kps_global.keys():
-                    self.inputs_list.append(item)
-                else:
-                    print(item)  # Print jika ada video yang tidak ditemukan
+        # Filter hanya video yang ada di pose
+        self.inputs_list = list()
+        for item in inputs_list:
+            if item['video_id'] in self.kps_global.keys():
+                self.inputs_list.append(item)
+            else:
+                pass  # Abaikan video yang tidak ditemukan
 
         self.norm_div = (10240 - 1) / 2  # Nilai normalisasi skeleton
         print(mode, len(self))  # Print info jumlah data
@@ -113,20 +109,11 @@ class SkeletonFeeder(data.Dataset):
             final = np.concatenate([input_data, total_motion, conf[:,:,None]], axis=-1)
 
             input_data = self.normalize(final)  # Normalisasi dan augmentasi
-            if self.mode == 'test':
-                # Untuk test, info berupa string
-                return (
-                    input_data,
-                    torch.LongTensor(label),
-                    str(self.inputs_list[idx]),
-                )
-            else:
-                # Untuk train/dev, info lengkap
-                return (
-                    input_data,
-                    torch.LongTensor(label),
-                    self.inputs_list[idx]['original_info'],
-                )
+            return (
+                input_data,
+                torch.LongTensor(label),
+                self.inputs_list[idx]['original_info'],
+            )
 
 
     # Fungsi opsional untuk menghapus data tidak valid (tidak dipakai utama)
@@ -143,21 +130,15 @@ class SkeletonFeeder(data.Dataset):
 
     # Membaca pose dan label untuk satu video
     def read_pose(self, index, num_glosses=-1):
-        if self.mode == 'test':
-            # Untuk test, ambil pose dari index
-            pose_data = self.kps_global[self.inputs_list[index]]['keypoints']
-            label_list = 1  # Dummy label
-            fi = '[EMPTY]'
-        else:
-            fi = self.inputs_list[index]  # Info video
-            pose_data = self.kps_global[fi['video_id']]['keypoints']  # Pose
-            label = fi['gloss_sequence']  # Label gloss
-            label_list = []
-            for phase in label.split(" "):
-                if phase == '':
-                    continue
-                if phase in self.dict.keys():
-                    label_list.append(self.dict[phase])  # Konversi gloss ke index
+        fi = self.inputs_list[index]  # Info video
+        pose_data = self.kps_global[fi['video_id']]['keypoints']  # Pose
+        label = fi['gloss_sequence']  # Label gloss
+        label_list = []
+        for phase in label.split(" "):
+            if phase == '':
+                continue
+            if phase in self.dict.keys():
+                label_list.append(self.dict[phase])  # Konversi gloss ke index
         return (
             pose_data,
             label_list,

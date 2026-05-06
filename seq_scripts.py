@@ -110,7 +110,7 @@ def seq_eval(
         csv_file = f'{work_dir}test.csv'
         if task == 'us':
             ctm_file = f'{work_dir}output-hypothesis-conv-fusion-test.ctm'
-        elif task == 'si':
+        else:
             ctm_file = f'{work_dir}output-hypothesis-fusion-test.ctm'
         # Baca file CTM hasil prediksi
         with open(ctm_file, "r", encoding="utf-8") as file:
@@ -126,7 +126,7 @@ def seq_eval(
                     data[id] = []
                 data[id].append(word)
 
-        data = dict(sorted(data.items(), key=lambda item: int(item[0])))  # Urutkan berdasarkan id
+        data = dict(sorted(data.items(), key=lambda item: item[0]))  # Urutkan berdasarkan id (string)
 
         # Tulis hasil ke file CSV
         with open(csv_file, "w", newline='', encoding="utf-8") as csvfile:

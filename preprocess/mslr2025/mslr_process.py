@@ -93,11 +93,11 @@ def info2dict(anno_filename):
 
 if __name__ == '__main__':
 
-    for setting in ['sd', 'si']:
+    for setting in ['sd']:
 
         sign_dict = dict()
 
-        for md in ['train', 'dev']:
+        for md in ['train', 'dev', 'test']:
 
             split_info = info2dict(f'{setting}_{md}_list.txt')
 

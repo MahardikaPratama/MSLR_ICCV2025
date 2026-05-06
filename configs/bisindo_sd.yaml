@@ -27,7 +27,7 @@ model_args:
     in_channels: 2 # 2 channel (x, y) karena sudah kita set menjadi 2D
     split: *split
     temporal_kernel: 5
-    hidden_size: 1024
+    hidden_size: 128
     modes: *used_part
     level: '1'
     adaptive: True
