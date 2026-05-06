@@ -98,20 +98,29 @@ def seq_eval(
 
     # Pilih mode evaluasi (python atau eksternal)
     python_eval = True if evaluate_tool == "python" else False
+
+    # Buat subfolder khusus untuk hasil test jika mode test
+    test_results_dir = work_dir
+    if mode == 'test':
+        test_results_dir = os.path.join(work_dir, 'test_results' + os.sep)
+        if not os.path.exists(test_results_dir):
+            os.makedirs(test_results_dir)
+    
     # Tulis hasil prediksi ke file CTM
     write2file(
-        work_dir + "output-hypothesis-fusion-{}.ctm".format(mode), total_info, total_sent_fusion
+        test_results_dir + "output-hypothesis-fusion-{}.ctm".format(mode), total_info, total_sent_fusion
     )
     write2file(
-        work_dir + "output-hypothesis-conv-fusion-{}.ctm".format(mode), total_info, total_sent_conv_fusion
+        test_results_dir + "output-hypothesis-conv-fusion-{}.ctm".format(mode), total_info, total_sent_conv_fusion
     )
-    # Jika mode test, hasil akhir ditulis ke CSV
+
+    # Jika mode test, hasil akhir ditulis ke CSV di subfolder
     if mode == 'test':
-        csv_file = f'{work_dir}test.csv'
+        csv_file = f'{test_results_dir}test.csv'
         if task == 'us':
-            ctm_file = f'{work_dir}output-hypothesis-conv-fusion-test.ctm'
+            ctm_file = f'{test_results_dir}output-hypothesis-conv-fusion-test.ctm'
         else:
-            ctm_file = f'{work_dir}output-hypothesis-fusion-test.ctm'
+            ctm_file = f'{test_results_dir}output-hypothesis-fusion-test.ctm'
         # Baca file CTM hasil prediksi
         with open(ctm_file, "r", encoding="utf-8") as file:
             lines = file.readlines()
