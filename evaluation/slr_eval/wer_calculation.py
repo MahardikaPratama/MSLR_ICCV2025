@@ -11,7 +11,8 @@ def evaluate(prefix="./", mode="dev", evaluate_dir=None, evaluate_prefix=None,
     '''
     sclite_path = "./software/sclite"
     print(os.getcwd())
-    os.system(f"bash {evaluate_dir}/preprocess.sh {prefix + output_file} {prefix}tmp.ctm {prefix}tmp2.ctm")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    os.system(f"bash {script_dir}/preprocess.sh {prefix + output_file} {prefix}tmp.ctm {prefix}tmp2.ctm")
     # if not csl_daily:
     #     os.system(f"bash {evaluate_dir}/preprocess.sh {prefix + output_file} {prefix}tmp.ctm {prefix}tmp2.ctm")
     # else:
@@ -20,7 +21,7 @@ def evaluate(prefix="./", mode="dev", evaluate_dir=None, evaluate_prefix=None,
     os.system(f"cat {evaluate_dir}/{evaluate_prefix}-{mode}.stm | sort  -k1,1 > {prefix}tmp.stm")
     # pdb.set_trace()
     # tmp2.ctm: prediction result; tmp.stm: ground-truth result
-    os.system(f"python {evaluate_dir}/mergectmstm.py {prefix}tmp2.ctm {prefix}tmp.stm")
+    os.system(f"python {script_dir}/mergectmstm.py {prefix}tmp2.ctm {prefix}tmp.stm")
     os.system(f"cp {prefix}tmp2.ctm {prefix}out.{output_file}")
     if python_evaluate:
         ret = wer_calculation(f"{evaluate_dir}/{evaluate_prefix}-{mode}.stm", f"{prefix}out.{output_file}")

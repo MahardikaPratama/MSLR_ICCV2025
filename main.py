@@ -87,7 +87,7 @@ class SLRProcessor(object):
 
     # Memuat bobot model dari file
     def load_model_weights(self, model, weight_path):
-        state_dict = torch.load(weight_path)['model_state_dict']
+        state_dict = torch.load(weight_path, weights_only=False)['model_state_dict']
         # Muat state_dict model dari file yaitu weight_path
         if len(self.arg.ignore_weights):
             # Jika ada bobot yang ingin diabaikan, hapus bobot tersebut dari state_dict sebelum memuat ke model

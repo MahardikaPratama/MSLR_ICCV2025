@@ -11,6 +11,7 @@ from tqdm import tqdm
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import cv2
+import time
 from evaluation.slr_eval.wer_calculation import evaluate
 
 
@@ -57,17 +58,43 @@ def seq_eval(
     total_info = []  # List untuk menyimpan info file
     total_sent_fusion = []  # List hasil prediksi BiLSTM
     total_sent_conv_fusion = []  # List hasil prediksi Conv1D
+    
+    total_inference_time = 0.0
+    total_frames = 0
+    total_sequences = 0
+    
     # Iterasi setiap batch data
     for batch_idx, data in enumerate(tqdm(loader)):
         recoder.record_timer("device")  # Catat waktu pemindahan ke device
         data = device.dict_data_to_device(data)  # Pindahkan data ke device
+        
+        # Hitung ukuran batch untuk kecepatan
+        if torch.is_tensor(data['len_x']):
+            batch_frames = data['len_x'].sum().item()
+        else:
+            batch_frames = sum(data['len_x'])
+        batch_sequences = len(data['origin_info'])
+        
         with torch.no_grad():
+            start_time = time.time()
             ret_dict = model(data)  # Forward pass tanpa gradien
+            end_time = time.time()
+            
+        total_inference_time += (end_time - start_time)
+        total_frames += batch_frames
+        total_sequences += batch_sequences
 
-        # Simpan info file dan hasil prediksi
+    # Simpan info file dan hasil prediksi
         total_info += [file_name.split("|")[0] for file_name in data['origin_info']]
         total_sent_fusion += ret_dict['recognized_sents_fusion']
         total_sent_conv_fusion += ret_dict['conv_sents_fusion']
+
+    # Hitung kecepatan inferensi
+    fps = total_frames / total_inference_time if total_inference_time > 0 else 0
+    sps = total_sequences / total_inference_time if total_inference_time > 0 else 0
+    
+    recoder.print_log(f"[{mode.upper()} EVAL] Total Inference Time: {total_inference_time:.2f}s")
+    recoder.print_log(f"[{mode.upper()} EVAL] Inference Speed: {fps:.2f} Frames/s, {sps:.2f} Sequences/s")
 
     # Pilih mode evaluasi (python atau eksternal)
     python_eval = True if evaluate_tool == "python" else False
