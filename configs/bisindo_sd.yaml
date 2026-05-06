@@ -28,7 +28,6 @@ model_args:
     temporal_kernel: 5
     hidden_size: 1024
     modes: *used_part
-  motion_args:
     level: '1'
     adaptive: True
     CR_args:
