@@ -207,7 +207,7 @@ class SkeletonFeeder(data.Dataset):
             if "SpatialScale" in self.augmentation_types:
                 transforms.append(skeleton_augmentation.Scale((0.8, 1.2)))
             if "SpatialJitter" in self.augmentation_types:
-                transforms.append(skeleton_augmentation.Jitter())
+                transforms.append(skeleton_augmentation.Jitter(0.003))
                 
             transforms.append(skeleton_augmentation.ToTensor())
             return skeleton_augmentation.Compose(transforms)
