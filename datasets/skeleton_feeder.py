@@ -32,6 +32,7 @@ class SkeletonFeeder(data.Dataset):
         split=None,
         norm_point=None,
         used_part=None,
+        augmentation_types=None,
     ):
         self.mode = mode  # Mode data (train/dev/test)
         self.mode_list = mode.split("_")  # Untuk mode gabungan (misal: train_dev)
@@ -92,7 +93,9 @@ class SkeletonFeeder(data.Dataset):
         self.norm_point = norm_point  # Titik pusat normalisasi
         if norm_point is None:
             print('no centeralization')
-        # self.data_aug = self.pose_transform()  # Pipeline augmentasi
+        
+        self.augmentation_types = augmentation_types if augmentation_types else []
+        self.data_aug = self.pose_transform()  # Pipeline augmentasi diaktifkan lewat config
 
     # Mengambil satu sample data (dipanggil oleh DataLoader)
     def __getitem__(self, idx):
@@ -165,7 +168,7 @@ class SkeletonFeeder(data.Dataset):
     # Normalisasi dan augmentasi data skeleton
     def normalize(self, video, label=None, file_id=None):
         if self.data_type == 'skeleton':
-            input_data = self.data_aug(video)  # Augmentasi (jika training)
+            input_data = self.data_aug(video)  # Selalu panggil data_aug (minimal ToTensor)
             input_data = self.simple_normalize(input_data)  # Normalisasi range
             return input_data
 
@@ -214,24 +217,22 @@ class SkeletonFeeder(data.Dataset):
     # Membuat pipeline augmentasi (training/test)
     def pose_transform(self):
         if self.transform_mode == "train":
-            print("Apply training transform.")
-            # Pipeline augmentasi training: dropout frame, jitter, to tensor
-            return skeleton_augmentation.Compose(
-                    [
-                        skeleton_augmentation.TemporalDropout(0.25),  # Dropout frame
-                        skeleton_augmentation.Jitter(),                # Jitter koordinat
-                        skeleton_augmentation.ToTensor(),              # Konversi ke tensor
-                    ]
-                )                
+            print(f"Apply training transform: {self.augmentation_types}")
+            transforms = []
+            if "TemporalDrop" in self.augmentation_types:
+                transforms.append(skeleton_augmentation.TemporalDropout(0.25))
+            if "TemporalRescale" in self.augmentation_types:
+                transforms.append(skeleton_augmentation.TemporalRescale(0.2))
+            if "SpatialScale" in self.augmentation_types:
+                transforms.append(skeleton_augmentation.Scale((0.8, 1.2)))
+            if "SpatialJitter" in self.augmentation_types:
+                transforms.append(skeleton_augmentation.Jitter())
+                
+            transforms.append(skeleton_augmentation.ToTensor())
+            return skeleton_augmentation.Compose(transforms)
         else:
-            print("Apply testing transform.")
-            # Pipeline testing: hanya rescale dan to tensor
-            return skeleton_augmentation.Compose(
-                [
-                    skeleton_augmentation.TemporalRescale_test(),
-                    skeleton_augmentation.ToTensor(),
-                ]
-            )
+            print("Apply test transform.")
+            return skeleton_augmentation.Compose([skeleton_augmentation.ToTensor()])
 
 
     # Mengembalikan jumlah data
