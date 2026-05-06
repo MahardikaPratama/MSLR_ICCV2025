@@ -19,7 +19,7 @@ Selanjutnya, *clone* repositori project ini ke Google Drive Anda:
 %cd /content/drive/MyDrive/
 
 # Clone repositorinya (ganti link berikut jika Anda punya repositori Github sendiri)
-!git clone https://github.com/MinYuecong/MSLR_ICCV2025.git
+!git clone https://github.com/MahardikaPratama/MSLR_ICCV2025.git
 
 # Masuk ke folder project
 %cd MSLR_ICCV2025
@@ -31,7 +31,7 @@ Google Colab sudah ter-install PyTorch (biasanya versi terbaru), yang secara umu
 
 Jalankan *cell* berikut untuk menginstal **ctcdecode**:
 ```bash
-!git clone --recursive https://github.com/parlance/ctcdecode.git
+!git clone --recursive https://github.com/WayenVan/ctcdecode.git
 %cd ctcdecode
 !pip install .
 %cd /content/drive/MyDrive/MSLR_ICCV2025
@@ -55,20 +55,21 @@ Jalankan *cell* berikut untuk menginstal dan setup **sclite (SCTK)**:
 
 Ikuti langkah-langkah di bawah untuk menyiapkan dataset.
 
-1. **Unduh Dataset MSLR**:
-   Unduh data dari [Kaggle](https://www.kaggle.com/competitions/continuous-sign-language-recognition-iccv-2025/data) dan letakkan di folder `./datasets`. 
+1. **Unduh Dataset BISINDO**:
+   Unduh file *pickle* dataset (`pose_bisindo_test.pkl` dan `pose_bisindo_train_dev.pkl`) menggunakan `gdown` dan simpan di folder `./datasets`:
    
-   Jika Anda sudah mengonfigurasi Kaggle API di Colab (`kaggle.json` di `/root/.kaggle/`), Anda bisa langsung mengunduh lewat command:
    ```bash
-   !pip install kaggle
-   !kaggle competitions download -c continuous-sign-language-recognition-iccv-2025 -p ./datasets
-   !unzip ./datasets/continuous-sign-language-recognition-iccv-2025.zip -d ./datasets
+   !pip install gdown
+   !mkdir -p ./datasets
+   
+   # Unduh pose_bisindo_test.pkl
+   !gdown "183QsX05JjyJ8IrgSQIPjHdLnPL9fvdK2" -O ./datasets/pose_bisindo_test.pkl
+   
+   # Unduh pose_bisindo_train_dev.pkl
+   !gdown "1wXL2AwZGTFiOpvvcSSAG-xlwGaFotMoU" -O ./datasets/pose_bisindo_train_dev.pkl
    ```
 
-2. **Unduh Anotasi**:
-   Unduh dari [Pose86K-CSLR-Isharah](https://github.com/gufranSabri/Pose86K-CSLR-Isharah/tree/main/annotations_v2) dan letakkan file-file tersebut di dalam folder `./preprocess/mslr2025`.
-
-3. **Preprocess Dataset**:
+2. **Preprocess Dataset**:
    Buat *gloss dict*, *dataset info*, dan *groundtruth* untuk evaluasi dengan command ini:
    ```bash
    %cd preprocess/mslr2025
@@ -78,44 +79,25 @@ Ikuti langkah-langkah di bawah untuk menyiapkan dataset.
 
 ## 4. Proses Training
 
-Proses *training* dibagi berdasarkan *task*. Pastikan Anda telah mengatur strategi *data augmentation* di file `./datasets/skeleton_feeder.py` pada baris ke-194 sesuai dengan *task* yang dijalankan.
+Pastikan Anda telah mengatur strategi *data augmentation* di file `./datasets/skeleton_feeder.py` pada baris ke-194 sesuai dengan kebutuhan Anda.
 
-### A. Task Signer Independent
-Jalankan *cell* ini untuk memulai *training*:
+Jalankan *cell* ini untuk memulai *training* pada *task* Signer Dependent:
 ```bash
-!python main.py --config ./configs/Double_Cosign_si.yaml
+!python main.py --config ./configs/bisindo_sd.yaml
 ```
-
-### B. Task Unseen Sentences
-1. Unduh *pretrained weights* awal (link tersedia di `README.md` repositori) dan letakkan di dalam folder *root* project.
-2. Jalankan perintah *training* dengan menambahkan *flag* `--load-weights` dan `--ignore-weights`:
-```bash
-!python main.py \
-    --config ./configs/Double_Cosign_us.yaml \
-    --load-weights PATH_TO_PRETRAINED_MODEL \
-    --ignore-weights classifier_static.weight classifier_motion.weight classifier_fusion.weight
-```
-*(Catatan: Ganti `PATH_TO_PRETRAINED_MODEL` dengan nama/path file model yang Anda unduh)*
 
 ## 5. Proses Testing
 
 Untuk melakukan testing, Anda membutuhkan file model hasil *training* atau *pretrained model* (.pth / .pt).
 
-### A. Task Signer Independent
+Jalankan *cell* ini untuk melakukan evaluasi model pada *task* Signer Dependent:
 ```bash
 !python main.py \
-    --config ./configs/Double_Cosign_si.yaml \
+    --config ./configs/bisindo_sd.yaml \
     --phase test \
     --load-weights PATH_TO_PRETRAINED_MODEL
 ```
-
-### B. Task Unseen Sentences
-```bash
-!python main.py \
-    --config ./configs/Double_Cosign_us.yaml \
-    --phase test \
-    --load-weights PATH_TO_PRETRAINED_MODEL
-```
+*(Catatan: Ganti `PATH_TO_PRETRAINED_MODEL` dengan nama/path file model yang ingin Anda uji)*
 
 ---
 ## 💡 Tips Penting di Google Colab:

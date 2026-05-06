@@ -1,0 +1,151 @@
+id|gloss|text
+P01_S002_R01|DIA ANAK BAIK SAMPAI BANYAK ORANG SUKA|Dia anak baik sehingga banyak orang menyukainya
+P01_S002_R02|DIA ANAK BAIK SAMPAI BANYAK ORANG SUKA|Dia anak baik sehingga banyak orang menyukainya
+P01_S002_R03|DIA ANAK BAIK SAMPAI BANYAK ORANG SUKA|Dia anak baik sehingga banyak orang menyukainya
+P01_S002_R04|DIA ANAK BAIK SAMPAI BANYAK ORANG SUKA|Dia anak baik sehingga banyak orang menyukainya
+P01_S002_R05|DIA ANAK BAIK SAMPAI BANYAK ORANG SUKA|Dia anak baik sehingga banyak orang menyukainya
+P01_S005_R01|AKU PUSING SERING, AKU HARUS PERIKSA MANA|Saya sering pusing, saya harus periksa ke mana?
+P01_S005_R02|AKU PUSING SERING, AKU HARUS PERIKSA MANA|Saya sering pusing, saya harus periksa ke mana?
+P01_S005_R03|AKU PUSING SERING, AKU HARUS PERIKSA MANA|Saya sering pusing, saya harus periksa ke mana?
+P01_S005_R04|AKU PUSING SERING, AKU HARUS PERIKSA MANA|Saya sering pusing, saya harus periksa ke mana?
+P01_S005_R05|AKU PUSING SERING, AKU HARUS PERIKSA MANA|Saya sering pusing, saya harus periksa ke mana?
+P01_S012_R01|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P01_S012_R02|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P01_S012_R03|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P01_S012_R04|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P01_S012_R05|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P01_S015_R01|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P01_S015_R02|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P01_S015_R03|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P01_S015_R04|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P01_S015_R05|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P01_S022_R01|GIMANA IBU KAMU BAIK BAIK ATAU TIDAK|Bagaimana keadaan ibumu?
+P01_S022_R02|GIMANA IBU KAMU BAIK BAIK ATAU TIDAK|Bagaimana keadaan ibumu?
+P01_S022_R03|GIMANA IBU KAMU BAIK BAIK ATAU TIDAK|Bagaimana keadaan ibumu?
+P01_S022_R04|GIMANA IBU KAMU BAIK BAIK ATAU TIDAK|Bagaimana keadaan ibumu?
+P01_S022_R05|GIMANA IBU KAMU BAIK BAIK ATAU TIDAK|Bagaimana keadaan ibumu?
+P01_S025_R01|ULANG TAHUN SELAMAT|Selamat ulang tahun
+P01_S025_R02|ULANG TAHUN SELAMAT|Selamat ulang tahun
+P01_S025_R03|ULANG TAHUN SELAMAT|Selamat ulang tahun
+P01_S025_R04|ULANG TAHUN SELAMAT|Selamat ulang tahun
+P01_S025_R05|ULANG TAHUN SELAMAT|Selamat ulang tahun
+P02_S001_R01|AYAH SAMA IBU MANA|Di mana ayah sama Ibu?
+P02_S001_R02|AYAH SAMA IBU MANA|Di mana ayah sama Ibu?
+P02_S001_R03|AYAH SAMA IBU MANA|Di mana ayah sama Ibu?
+P02_S001_R04|AYAH SAMA IBU MANA|Di mana ayah sama Ibu?
+P02_S001_R05|AYAH SAMA IBU MANA|Di mana ayah sama Ibu?
+P02_S008_R01|AKU CIUM BAU BADAN DIA|Saya mencium bau badan dia
+P02_S008_R02|AKU CIUM BAU BADAN DIA|Saya mencium bau badan dia
+P02_S008_R03|AKU CIUM BAU BADAN DIA|Saya mencium bau badan dia
+P02_S008_R04|AKU CIUM BAU BADAN DIA|Saya mencium bau badan dia
+P02_S008_R05|AKU CIUM BAU BADAN DIA|Saya mencium bau badan dia
+P02_S011_R01|GAK BOLEH PULANG SEKARANG KAMU|Kamu tidak boleh pulang sekarang.
+P02_S011_R02|GAK BOLEH PULANG SEKARANG KAMU|Kamu tidak boleh pulang sekarang.
+P02_S011_R03|GAK BOLEH PULANG SEKARANG KAMU|Kamu tidak boleh pulang sekarang.
+P02_S011_R04|GAK BOLEH PULANG SEKARANG KAMU|Kamu tidak boleh pulang sekarang.
+P02_S011_R05|GAK BOLEH PULANG SEKARANG KAMU|Kamu tidak boleh pulang sekarang.
+P02_S018_R01|ULAR SANA MAKAN KAMBING|Kambing di sana dimakan ular
+P02_S018_R02|ULAR SANA MAKAN KAMBING|Kambing di sana dimakan ular
+P02_S018_R03|ULAR SANA MAKAN KAMBING|Kambing di sana dimakan ular
+P02_S018_R04|ULAR SANA MAKAN KAMBING|Kambing di sana dimakan ular
+P02_S018_R05|ULAR SANA MAKAN KAMBING|Kambing di sana dimakan ular
+P02_S021_R01|KAMU PUNYA ANGGOTA KELUARGA BERAPA|Berapa jumlah anggota keluarga kamu?
+P02_S021_R02|KAMU PUNYA ANGGOTA KELUARGA BERAPA|Berapa jumlah anggota keluarga kamu?
+P02_S021_R03|KAMU PUNYA ANGGOTA KELUARGA BERAPA|Berapa jumlah anggota keluarga kamu?
+P02_S021_R04|KAMU PUNYA ANGGOTA KELUARGA BERAPA|Berapa jumlah anggota keluarga kamu?
+P02_S021_R05|KAMU PUNYA ANGGOTA KELUARGA BERAPA|Berapa jumlah anggota keluarga kamu?
+P02_S028_R01|SEPATU DIA KOTOR|Sepatu dia kotor
+P02_S028_R02|SEPATU DIA KOTOR|Sepatu dia kotor
+P02_S028_R03|SEPATU DIA KOTOR|Sepatu dia kotor
+P02_S028_R04|SEPATU DIA KOTOR|Sepatu dia kotor
+P02_S028_R05|SEPATU DIA KOTOR|Sepatu dia kotor
+P03_S004_R01|BADAN AKU GEMUK TAPI BADAN ADIK KURUS|Badan ku gemuk, tapi badan adik kurus
+P03_S004_R02|BADAN AKU GEMUK TAPI BADAN ADIK KURUS|Badan ku gemuk, tapi badan adik kurus
+P03_S004_R03|BADAN AKU GEMUK TAPI BADAN ADIK KURUS|Badan ku gemuk, tapi badan adik kurus
+P03_S004_R04|BADAN AKU GEMUK TAPI BADAN ADIK KURUS|Badan ku gemuk, tapi badan adik kurus
+P03_S004_R05|BADAN AKU GEMUK TAPI BADAN ADIK KURUS|Badan ku gemuk, tapi badan adik kurus
+P03_S007_R01|IBU AKU PUNYA KUCING SAMA IKAN|Ibu aku punya kucing sama ikan.
+P03_S007_R02|IBU AKU PUNYA KUCING SAMA IKAN|Ibu aku punya kucing sama ikan.
+P03_S007_R03|IBU AKU PUNYA KUCING SAMA IKAN|Ibu aku punya kucing sama ikan.
+P03_S007_R04|IBU AKU PUNYA KUCING SAMA IKAN|Ibu aku punya kucing sama ikan.
+P03_S007_R05|IBU AKU PUNYA KUCING SAMA IKAN|Ibu aku punya kucing sama ikan.
+P03_S014_R01|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P03_S014_R02|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P03_S014_R03|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P03_S014_R04|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P03_S014_R05|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P03_S017_R01|TONG SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
+P03_S017_R02|TONG SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
+P03_S017_R03|TONG SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
+P03_S017_R04|TONG SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
+P03_S017_R05|TONG SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
+P03_S024_R01|AKU NILAI JELEK|Nilai ku jelek
+P03_S024_R02|AKU NILAI JELEK|Nilai ku jelek
+P03_S024_R03|AKU NILAI JELEK|Nilai ku jelek
+P03_S024_R04|AKU NILAI JELEK|Nilai ku jelek
+P03_S024_R05|AKU NILAI JELEK|Nilai ku jelek
+P03_S027_R01|SANA TOILET KOTOR|Toilet di sana kotor
+P03_S027_R02|SANA TOILET KOTOR|Toilet di sana kotor
+P03_S027_R03|SANA TOILET KOTOR|Toilet di sana kotor
+P03_S027_R04|SANA TOILET KOTOR|Toilet di sana kotor
+P03_S027_R05|SANA TOILET KOTOR|Toilet di sana kotor
+P04_S003_R01|APA KAMU PERNAH BACA NOVEL B.INGGRIS|Apa kamu pernah membaca novel bahasa inggris?
+P04_S003_R02|APA KAMU PERNAH BACA NOVEL B.INGGRIS|Apa kamu pernah membaca novel bahasa inggris?
+P04_S003_R03|APA KAMU PERNAH BACA NOVEL B.INGGRIS|Apa kamu pernah membaca novel bahasa inggris?
+P04_S003_R04|APA KAMU PERNAH BACA NOVEL B.INGGRIS|Apa kamu pernah membaca novel bahasa inggris?
+P04_S003_R05|APA KAMU PERNAH BACA NOVEL B.INGGRIS|Apa kamu pernah membaca novel bahasa inggris?
+P04_S010_R01|OBAT BISA BELI TOKO OBAT MANA|Di apotek mana obat ini bisa dibeli?
+P04_S010_R02|OBAT BISA BELI TOKO OBAT MANA|Di apotek mana obat ini bisa dibeli?
+P04_S010_R03|OBAT BISA BELI TOKO OBAT MANA|Di apotek mana obat ini bisa dibeli?
+P04_S010_R04|OBAT BISA BELI TOKO OBAT MANA|Di apotek mana obat ini bisa dibeli?
+P04_S010_R05|OBAT BISA BELI TOKO OBAT MANA|Di apotek mana obat ini bisa dibeli?
+P04_S013_R01|KENAPA KAMU GAK MASUK KULIAH KEMARIN|Mengapa kemarin kamu tidak kuliah?
+P04_S013_R02|KENAPA KAMU GAK MASUK KULIAH KEMARIN|Mengapa kemarin kamu tidak kuliah?
+P04_S013_R03|KENAPA KAMU GAK MASUK KULIAH KEMARIN|Mengapa kemarin kamu tidak kuliah?
+P04_S013_R04|KENAPA KAMU GAK MASUK KULIAH KEMARIN|Mengapa kemarin kamu tidak kuliah?
+P04_S013_R05|KENAPA KAMU GAK MASUK KULIAH KEMARIN|Mengapa kemarin kamu tidak kuliah?
+P04_S020_R01|KITA ISTIRAHAT JAM BERAPA|Jam berapa kita istirahat?
+P04_S020_R02|KITA ISTIRAHAT JAM BERAPA|Jam berapa kita istirahat?
+P04_S020_R03|KITA ISTIRAHAT JAM BERAPA|Jam berapa kita istirahat?
+P04_S020_R04|KITA ISTIRAHAT JAM BERAPA|Jam berapa kita istirahat?
+P04_S020_R05|KITA ISTIRAHAT JAM BERAPA|Jam berapa kita istirahat?
+P04_S023_R01|KAMU BELAJAR BISINDO KAPAN|Kapan kamu belajar Bisindo?
+P04_S023_R02|KAMU BELAJAR BISINDO KAPAN|Kapan kamu belajar Bisindo?
+P04_S023_R03|KAMU BELAJAR BISINDO KAPAN|Kapan kamu belajar Bisindo?
+P04_S023_R04|KAMU BELAJAR BISINDO KAPAN|Kapan kamu belajar Bisindo?
+P04_S023_R05|KAMU BELAJAR BISINDO KAPAN|Kapan kamu belajar Bisindo?
+P04_S030_R01|DIA MENGEJEK AKU|Dia mengejek saya
+P04_S030_R02|DIA MENGEJEK AKU|Dia mengejek saya
+P04_S030_R03|DIA MENGEJEK AKU|Dia mengejek saya
+P04_S030_R04|DIA MENGEJEK AKU|Dia mengejek saya
+P04_S030_R05|DIA MENGEJEK AKU|Dia mengejek saya
+P05_S006_R01|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P05_S006_R02|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P05_S006_R03|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P05_S006_R04|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P05_S006_R05|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P05_S009_R01|AKU LIHAT ADA ULAR MASUK KELAS|Saya melihat ada ular masuk kelas
+P05_S009_R02|AKU LIHAT ADA ULAR MASUK KELAS|Saya melihat ada ular masuk kelas
+P05_S009_R03|AKU LIHAT ADA ULAR MASUK KELAS|Saya melihat ada ular masuk kelas
+P05_S009_R04|AKU LIHAT ADA ULAR MASUK KELAS|Saya melihat ada ular masuk kelas
+P05_S009_R05|AKU LIHAT ADA ULAR MASUK KELAS|Saya melihat ada ular masuk kelas
+P05_S016_R01|BUKU AKU SOBEK GEGARA DIA|Dia menyobek buku saya
+P05_S016_R02|BUKU AKU SOBEK GEGARA DIA|Dia menyobek buku saya
+P05_S016_R03|BUKU AKU SOBEK GEGARA DIA|Dia menyobek buku saya
+P05_S016_R04|BUKU AKU SOBEK GEGARA DIA|Dia menyobek buku saya
+P05_S016_R05|BUKU AKU SOBEK GEGARA DIA|Dia menyobek buku saya
+P05_S019_R01|KAMU PERGI KEMANA|Kemana kamu mau pergi?
+P05_S019_R02|KAMU PERGI KEMANA|Kemana kamu mau pergi?
+P05_S019_R03|KAMU PERGI KEMANA|Kemana kamu mau pergi?
+P05_S019_R04|KAMU PERGI KEMANA|Kemana kamu mau pergi?
+P05_S019_R05|KAMU PERGI KEMANA|Kemana kamu mau pergi?
+P05_S026_R01|KAKAK AKU KASIH HADIAH BUAT AKU|Kakak saya memberi saya hadiah.
+P05_S026_R02|KAKAK AKU KASIH HADIAH BUAT AKU|Kakak saya memberi saya hadiah.
+P05_S026_R03|KAKAK AKU KASIH HADIAH BUAT AKU|Kakak saya memberi saya hadiah.
+P05_S026_R04|KAKAK AKU KASIH HADIAH BUAT AKU|Kakak saya memberi saya hadiah.
+P05_S026_R05|KAKAK AKU KASIH HADIAH BUAT AKU|Kakak saya memberi saya hadiah.
+P05_S029_R01|RUMAH DIMANA KAMU|Rumah kamu di mana?
+P05_S029_R02|RUMAH DIMANA KAMU|Rumah kamu di mana?
+P05_S029_R03|RUMAH DIMANA KAMU|Rumah kamu di mana?
+P05_S029_R04|RUMAH DIMANA KAMU|Rumah kamu di mana?
+P05_S029_R05|RUMAH DIMANA KAMU|Rumah kamu di mana?
