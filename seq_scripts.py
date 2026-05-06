@@ -33,6 +33,7 @@ def seq_train(loader, model, optimizer, device, epoch_idx, recoder):
             continue
         optimizer.zero_grad()  # Reset gradien
         loss.backward()  # Backpropagation
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0) # Clip gradients to prevent exploding gradients
         optimizer.step()  # Update parameter model
 
         loss_value.append(loss.item())  # Simpan nilai loss

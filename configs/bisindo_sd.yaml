@@ -27,7 +27,7 @@ model_args:
     in_channels: 2 # 2 channel (x, y) karena sudah kita set menjadi 2D
     split: *split
     temporal_kernel: 5
-    hidden_size: 256
+    hidden_size: 1024
     modes: *used_part
     level: '1'
     adaptive: True
@@ -51,10 +51,10 @@ model_args:
   norm_scale: 32
 
 # optim args
-batch_size: 2
-test_batch_size: 2
+batch_size: 8
+test_batch_size: 8
 optimizer_args:
-  base_lr: 0.0001
+  base_lr: 0.0004
   learning_ratio: 1
   nesterov: false
   optimizer: AdamW
