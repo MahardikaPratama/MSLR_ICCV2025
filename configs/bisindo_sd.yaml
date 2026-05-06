@@ -18,7 +18,7 @@ feeder_args:
   split: &split [25, 46, 67, 86]
   norm_point: [0, 25, 46, 67]
   used_part: &used_part ['body', 'hand21', 'mouth_8']
-  augmentation_types: ['SpatialJitter', 'SpatialScale', 'TemporalDrop', 'TemporalRescale'] # pilihan: ['SpatialJitter', 'SpatialScale', 'TemporalDrop', 'TemporalRescale']
+  augmentation_types: [] # pilihan: ['SpatialJitter', 'SpatialScale', 'TemporalDrop', 'TemporalRescale']
 
 # model args
 model: TwoStream_Cosign
