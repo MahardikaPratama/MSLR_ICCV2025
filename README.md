@@ -1,78 +1,64 @@
-# A Closer Look at Skeleton-based Continuous Sign Language Recognition
+# Skeleton-based Continuous Sign Language Recognition for BISINDO
 
-🏆 Official repository for A Closer Look at Skeleton-based Continuous Sign Language Recognition, the winner (1st place) in both the [Signer-Independent](https://codalab.lisn.upsaclay.fr/competitions/22899) and [Unseen Sentences](https://codalab.lisn.upsaclay.fr/competitions/22900) tasks of the ICCV 2025 [SignEval 2025: The First Multimodal Sign Language Recognition Challenge](https://multimodal-sign-language-recognition.github.io/ICCV-2025/). This implementation is largely built upon [VAC](https://github.com/VIPL-SLP/VAC_CSLR) and [CoSign](https://openaccess.thecvf.com/content/ICCV2023/html/Jiao_CoSign_Exploring_Co-occurrence_Signals_in_Skeleton-based_Continuous_Sign_Language_Recognition_ICCV_2023_paper.html) frameworks.
+🏆 This repository is an adaptation of the official repository for *A Closer Look at Skeleton-based Continuous Sign Language Recognition* (winner of ICCV 2025 SignEval 2025). This version has been specifically tailored to support **Signer-Dependent (SD)** tasks using the **BISINDO (Indonesian Sign Language)** dataset.
 
+The core implementation is built upon [VAC](https://github.com/VIPL-SLP/VAC_CSLR) and [CoSign](https://openaccess.thecvf.com/content/ICCV2023/html/Jiao_CoSign_Exploring_Co-occurrence_Signals_in_Skeleton-based_Continuous_Sign_Language_Recognition_ICCV_2023_paper.html) frameworks.
 
 ## Prerequisites
 
-- This project is implemented in Pytorch (better ==2.0.0 to be compatible with ctcdecode or these may exist errors). Thus, please install Pytorch first.
-- ctcdecode==0.4 [[parlance/ctcdecode]](https://github.com/parlance/ctcdecode), for beam search decode.
-- sclite [[kaldi-asr/kaldi]](https://github.com/kaldi-asr/kaldi), install the kaldi tool to get sclite for evaluation. After installation, create a soft link to the sclite:  
-```
+- This project is implemented in Pytorch (recommended `==2.0.0` to be compatible with `ctcdecode` and prevent errors). Thus, please install Pytorch first.
+- `ctcdecode==0.4` [[WayenVan/ctcdecode]](https://github.com/WayenVan/ctcdecode), for beam search decode.
+- `sclite` [[kaldi-asr/kaldi]](https://github.com/kaldi-asr/kaldi), install the kaldi tool to get sclite for evaluation. After installation, create a soft link to the sclite:  
+
+```bash
 mkdir ./software
 ln -s PATH_TO_KALDI/tools/sctk-2.4.10/bin/sclite ./software/sclite
 ```
 
 ## Setup Instructions
 
-1. **Download the dataset** [[download link]](https://www.kaggle.com/competitions/continuous-sign-language-recognition-iccv-2025/data) and place the dataset in the `./datasets` folder.
+1. **Download the BISINDO dataset**. Download the pre-extracted skeleton pickle files and place them in the `./datasets` folder.
+   - `pose_bisindo_test.pkl`
+   - `pose_bisindo_train_dev.pkl`
 
-2. **Download the annotation** [[download link]](https://github.com/gufranSabri/Pose86K-CSLR-Isharah/tree/main/annotations_v2) and place them in the `./preprocess/mslr2025` folder.
+2. **Preprocess the dataset**. Run the command to generate the gloss dict, dataset info, and groundtruth (`.stm` files) for evaluation.
 
-3. **Preprocess the dataset**. Run the command to generate gloss dict, dataset info and groundtruth for evaluation.
-
-```
+```bash
 cd ./preprocess/mslr2025
 python mslr_process.py
+cd ../../
+```
+
+## Configuration & Augmentation
+
+The model uses a configuration file located at `configs/bisindo_sd.yaml`.
+You can configure dynamic data augmentation during training directly from this YAML file by modifying `augmentation_types` under `feeder_args`:
+```yaml
+feeder_args:
+  augmentation_types: [] # Options: ['SpatialJitter', 'SpatialScale', 'TemporalDrop', 'TemporalRescale']
 ```
 
 ## Running the Model
 
-We provide the pretrained models for inference, you can download them from:
+### Signer Dependent (BISINDO)
 
-| Task                   | Baseline Test (WER) | Weight                                                                                               |
-| ---------------------- | ------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Signer Independent** | 7.44%               | [GoogleDrive](https://drive.google.com/file/d/1KMXkr3UG_1Cl2AtCSCUK4eopujPxzqxg/view?usp=drive_link) |
-| **Unseen Sentences**   | 28.20%              | [GoogleDrive](https://drive.google.com/file/d/1v9NYOH6ms0DyPcGw1cMjaDGmc_-tBaQ5/view?usp=drive_link) |
+- **Train:** Run the following command to start training the model:
 
-| Task                   | Baseline Dev (WER) | Weight                                                                                               |
-| ---------------------- | ------------------ | ---------------------------------------------------------------------------------------------------- |
-| **Signer Independent** | 2.2%               | [GoogleDrive](https://drive.google.com/file/d/1rGc6MqYeEm_JR6AZWweEWrX8e_X26v_p/view?usp=drive_link) |
-| **Unseen Sentences**   | 35.6%              | [GoogleDrive](https://drive.google.com/file/d/1ezEFG-xMOyzwpon_XAN_35lV3Tpl9DzW/view?usp=drive_link) |
-
-**Note:** Different tasks are suited for different data augmentation strategies during the training phase. Change the strategy in `./datasets/skeleton_feeder.py` on line 194.
-
-### Signer Independent
-
-- **Train:** running the command
-
-```
-python main.py --config ./configs/Double_Cosign_si.yaml
+```bash
+python main.py --config ./configs/bisindo_sd.yaml
 ```
 
-- **Test:** running the command
+- **Test:** Run the following command for evaluation (testing):
 
-```
-python main.py --config ./configs/Double_Cosign_si.yaml --phase test --load-weights PATH_TO_PRETRAINED_MODEL
-```
-
-### Unseen Sentences
-
-- **Train:** download the pretrained weight from [here](https://drive.google.com/file/d/1oTbcL3gev4DftIFdjahJeMBbLux9Q3Y7/view?usp=drive_link), place it in the `./` folder and running the command
-
-```
-python main.py --config ./configs/Double_Cosign_us.yaml --load-weights PATH_TO_PRETRAINED_MODEL --ignore-weights classifier_static.weight classifier_motion.weight classifier_fusion.weight
+```bash
+python main.py --config ./configs/bisindo_sd.yaml --phase test --load-weights PATH_TO_PRETRAINED_MODEL
 ```
 
-- **Test:** running the command
-
-```
-python main.py --config ./configs/Double_Cosign_us.yaml --phase test --load-weights PATH_TO_PRETRAINED_MODEL
-```
+*(Note: Replace `PATH_TO_PRETRAINED_MODEL` with your trained `.pt` model file path).*
 
 ## Citation
 
-If you find this repo useful in your research works, please consider citing:
+If you find the base architectures useful in your research works, please consider citing:
 
 ```latex
 @inproceedings{min2025closer,
