@@ -1,0 +1,773 @@
+Loading model
+Loading model finished.
+Loading data
+train 449
+Apply training transform: []
+dev 149
+Apply test transform.
+test 149
+Apply test transform.
+Loading data finished.
+[ Wed May  6 20:43:44 2026 ] Parameters:
+{'work_dir': './work_dir/sd/', 'config': './configs/bisindo_sd.yaml', 'random_fix': True, 'device': 0, 'processor': None, 'phase': 'train', 'train_args': {}, 'save_interval': 1, 'random_seed': 123, 'eval_interval': 1, 'print_log': True, 'log_interval': 100, 'evaluate_tool': 'sclite', 'feeder': 'SkeletonFeeder', 'dataset': 'bisindo', 'num_worker': 2, 'feeder_args': {'setting': 'sd', 'datatype': 'skeleton', 'split': [25, 46, 67, 86], 'norm_point': [0, 25, 46, 67], 'used_part': ['body', 'hand21', 'mouth_8'], 'augmentation_types': [], 'mode': 'test', 'transform_mode': False, 'dataset': 'bisindo'}, 'model': 'TwoStream_Cosign', 'model_args': {'visual_args': {'in_channels': 2, 'split': [25, 46, 67, 86], 'temporal_kernel': 5, 'hidden_size': 256, 'modes': ['body', 'hand21', 'mouth_8'], 'level': '1', 'adaptive': True, 'CR_args': {'clip_length': 25, 'ratio': 0.2}}, 'conv_type': 'K3-P2-K3-P2', 'loss_weights': {'CR_ConvCTC_static': 1.0, 'CR_SeqCTC_static': 1.0, 'CR_Conv_static': 2.0, 'CR_Seq_static': 2.0, 'CR_ConvCTC_motion': 1.0, 'CR_SeqCTC_motion': 1.0, 'CR_Conv_motion': 2.0, 'CR_Seq_motion': 2.0, 'CR_ConvCTC_fusion': 1.0, 'CR_SeqCTC_fusion': 1.0, 'CR_Conv_fusion': 2.0, 'CR_Seq_fusion': 2.0}, 'norm_scale': 32}, 'load_weights': None, 'load_checkpoints': None, 'ignore_weights': [], 'batch_size': 4, 'test_batch_size': 4, 'optimizer_args': {'base_lr': 0.0004, 'learning_ratio': 1, 'nesterov': False, 'optimizer': 'AdamW', 'start_epoch': 0, 'step': [20, 35], 'weight_decay': 0.0001}, 'num_epoch': 40, 'dataset_info': {'dataset_root': './datasets/', 'dict_path': './datasets/mslr2025/sd_gloss_dict.json', 'evaluation_dir': './datasets/mslr2025', 'evaluation_prefix': 'mslr-sd-groundtruth'}}
+
+[ Wed May  6 20:43:45 2026 ] 	Epoch: 0, Batch(0/112) done. Loss: 648.36  lr:0.000400
+[ Wed May  6 20:43:45 2026 ] 	CR_ConvCTC_static: 111.30, CR_SeqCTC_static: 98.73, CR_Conv_static: 2.95, CR_Seq_static: 1.74, CR_ConvCTC_motion: 102.75, CR_SeqCTC_motion: 97.73, CR_Conv_motion: 2.97, CR_Seq_motion: 1.63, CR_ConvCTC_fusion: 104.97, CR_SeqCTC_fusion: 118.73, CR_Conv_fusion: 2.97, CR_Seq_fusion: 1.90
+[ Wed May  6 20:45:02 2026 ] 	Epoch: 0, Batch(100/112) done. Loss: 231.67  lr:0.000400
+[ Wed May  6 20:45:02 2026 ] 	CR_ConvCTC_static: 56.37, CR_SeqCTC_static: 20.08, CR_Conv_static: 0.27, CR_Seq_static: 0.09, CR_ConvCTC_motion: 62.11, CR_SeqCTC_motion: 20.51, CR_Conv_motion: 0.08, CR_Seq_motion: 0.05, CR_ConvCTC_fusion: 51.47, CR_SeqCTC_fusion: 20.55, CR_Conv_fusion: 0.03, CR_Seq_fusion: 0.06
+100% 112/112 [01:26<00:00,  1.30it/s]
+[ Wed May  6 20:45:11 2026 ] 	Mean training loss: 333.6246826989.
+100% 38/38 [00:07<00:00,  4.90it/s]
+[ Wed May  6 20:45:18 2026 ] [DEV EVAL] Total Inference Time: 7.45s
+[ Wed May  6 20:45:18 2026 ] [DEV EVAL] Inference Speed: 2302.71 Frames/s, 20.01 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:45:18 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:45:19 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 20:45:19 2026 ] Epoch 0, dev Conv1D WER:  99.30%, BiLSTM WER:  96.00%
+[ Wed May  6 20:45:19 2026 ] Dev WER: 96.00%
+[ Wed May  6 20:45:19 2026 ] 	Epoch: 1, Batch(0/112) done. Loss: 255.37  lr:0.000400
+[ Wed May  6 20:45:19 2026 ] 	CR_ConvCTC_static: 61.87, CR_SeqCTC_static: 22.49, CR_Conv_static: 0.12, CR_Seq_static: 0.09, CR_ConvCTC_motion: 69.99, CR_SeqCTC_motion: 23.72, CR_Conv_motion: 0.08, CR_Seq_motion: 0.06, CR_ConvCTC_fusion: 54.00, CR_SeqCTC_fusion: 22.83, CR_Conv_fusion: 0.05, CR_Seq_fusion: 0.07
+[ Wed May  6 20:46:41 2026 ] 	Epoch: 1, Batch(100/112) done. Loss: 266.51  lr:0.000400
+[ Wed May  6 20:46:41 2026 ] 	CR_ConvCTC_static: 66.06, CR_SeqCTC_static: 22.09, CR_Conv_static: 0.12, CR_Seq_static: 0.05, CR_ConvCTC_motion: 74.85, CR_SeqCTC_motion: 21.84, CR_Conv_motion: 0.01, CR_Seq_motion: 0.04, CR_ConvCTC_fusion: 59.36, CR_SeqCTC_fusion: 22.02, CR_Conv_fusion: 0.04, CR_Seq_fusion: 0.04
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 20:46:51 2026 ] 	Mean training loss: 257.8114025933.
+100% 38/38 [00:07<00:00,  4.85it/s]
+[ Wed May  6 20:46:59 2026 ] [DEV EVAL] Total Inference Time: 7.57s
+[ Wed May  6 20:46:59 2026 ] [DEV EVAL] Inference Speed: 2265.54 Frames/s, 19.69 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:46:59 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:46:59 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 20:46:59 2026 ] Epoch 1, dev Conv1D WER:  100.10%, BiLSTM WER:  94.80%
+[ Wed May  6 20:46:59 2026 ] Dev WER: 94.80%
+[ Wed May  6 20:47:00 2026 ] 	Epoch: 2, Batch(0/112) done. Loss: 258.73  lr:0.000400
+[ Wed May  6 20:47:00 2026 ] 	CR_ConvCTC_static: 63.91, CR_SeqCTC_static: 22.93, CR_Conv_static: 0.08, CR_Seq_static: 0.04, CR_ConvCTC_motion: 72.13, CR_SeqCTC_motion: 22.71, CR_Conv_motion: 0.01, CR_Seq_motion: 0.04, CR_ConvCTC_fusion: 52.24, CR_SeqCTC_fusion: 24.55, CR_Conv_fusion: 0.05, CR_Seq_fusion: 0.04
+[ Wed May  6 20:48:22 2026 ] 	Epoch: 2, Batch(100/112) done. Loss: 206.79  lr:0.000400
+[ Wed May  6 20:48:22 2026 ] 	CR_ConvCTC_static: 47.14, CR_SeqCTC_static: 19.41, CR_Conv_static: 0.17, CR_Seq_static: 0.03, CR_ConvCTC_motion: 64.50, CR_SeqCTC_motion: 19.10, CR_Conv_motion: 0.01, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 36.21, CR_SeqCTC_fusion: 19.55, CR_Conv_fusion: 0.61, CR_Seq_fusion: 0.03
+100% 112/112 [01:32<00:00,  1.22it/s]
+[ Wed May  6 20:48:31 2026 ] 	Mean training loss: 239.4968842098.
+100% 38/38 [00:07<00:00,  4.86it/s]
+[ Wed May  6 20:48:39 2026 ] [DEV EVAL] Total Inference Time: 7.54s
+[ Wed May  6 20:48:39 2026 ] [DEV EVAL] Inference Speed: 2273.51 Frames/s, 19.76 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:48:39 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:48:39 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 20:48:39 2026 ] Epoch 2, dev Conv1D WER:  100.00%, BiLSTM WER:  173.20%
+[ Wed May  6 20:48:39 2026 ] Dev WER: 100.00%
+[ Wed May  6 20:48:40 2026 ] 	Epoch: 3, Batch(0/112) done. Loss: 237.83  lr:0.000400
+[ Wed May  6 20:48:40 2026 ] 	CR_ConvCTC_static: 54.16, CR_SeqCTC_static: 20.27, CR_Conv_static: 0.21, CR_Seq_static: 0.03, CR_ConvCTC_motion: 68.08, CR_SeqCTC_motion: 20.56, CR_Conv_motion: 0.00, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 52.21, CR_SeqCTC_fusion: 21.41, CR_Conv_fusion: 0.74, CR_Seq_fusion: 0.13
+[ Wed May  6 20:50:02 2026 ] 	Epoch: 3, Batch(100/112) done. Loss: 294.06  lr:0.000400
+[ Wed May  6 20:50:02 2026 ] 	CR_ConvCTC_static: 68.43, CR_SeqCTC_static: 23.66, CR_Conv_static: 0.53, CR_Seq_static: 0.03, CR_ConvCTC_motion: 85.47, CR_SeqCTC_motion: 23.59, CR_Conv_motion: 0.01, CR_Seq_motion: 0.03, CR_ConvCTC_fusion: 68.67, CR_SeqCTC_fusion: 23.29, CR_Conv_fusion: 0.32, CR_Seq_fusion: 0.03
+100% 112/112 [01:31<00:00,  1.23it/s]
+[ Wed May  6 20:50:11 2026 ] 	Mean training loss: 210.7178310667.
+100% 38/38 [00:07<00:00,  4.83it/s]
+[ Wed May  6 20:50:19 2026 ] [DEV EVAL] Total Inference Time: 7.57s
+[ Wed May  6 20:50:19 2026 ] [DEV EVAL] Inference Speed: 2264.57 Frames/s, 19.68 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:50:19 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:50:19 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 20:50:19 2026 ] Epoch 3, dev Conv1D WER:  100.00%, BiLSTM WER:  93.30%
+[ Wed May  6 20:50:19 2026 ] Dev WER: 93.30%
+[ Wed May  6 20:50:20 2026 ] 	Epoch: 4, Batch(0/112) done. Loss: 217.79  lr:0.000400
+[ Wed May  6 20:50:20 2026 ] 	CR_ConvCTC_static: 46.56, CR_SeqCTC_static: 17.06, CR_Conv_static: 0.59, CR_Seq_static: 0.03, CR_ConvCTC_motion: 76.11, CR_SeqCTC_motion: 16.91, CR_Conv_motion: 0.00, CR_Seq_motion: 0.03, CR_ConvCTC_fusion: 43.34, CR_SeqCTC_fusion: 16.94, CR_Conv_fusion: 0.21, CR_Seq_fusion: 0.02
+[ Wed May  6 20:51:42 2026 ] 	Epoch: 4, Batch(100/112) done. Loss: 272.66  lr:0.000400
+[ Wed May  6 20:51:42 2026 ] 	CR_ConvCTC_static: 58.98, CR_SeqCTC_static: 20.27, CR_Conv_static: 0.26, CR_Seq_static: 0.02, CR_ConvCTC_motion: 96.64, CR_SeqCTC_motion: 22.03, CR_Conv_motion: 0.24, CR_Seq_motion: 0.19, CR_ConvCTC_fusion: 53.29, CR_SeqCTC_fusion: 20.38, CR_Conv_fusion: 0.36, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.22it/s]
+[ Wed May  6 20:51:51 2026 ] 	Mean training loss: 206.3243169785.
+100% 38/38 [00:07<00:00,  4.82it/s]
+[ Wed May  6 20:51:59 2026 ] [DEV EVAL] Total Inference Time: 7.61s
+[ Wed May  6 20:51:59 2026 ] [DEV EVAL] Inference Speed: 2253.12 Frames/s, 19.58 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:51:59 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:51:59 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 20:51:59 2026 ] Epoch 4, dev Conv1D WER:  99.30%, BiLSTM WER:  285.40%
+[ Wed May  6 20:51:59 2026 ] Dev WER: 99.30%
+[ Wed May  6 20:52:00 2026 ] 	Epoch: 5, Batch(0/112) done. Loss: 204.29  lr:0.000400
+[ Wed May  6 20:52:00 2026 ] 	CR_ConvCTC_static: 43.79, CR_SeqCTC_static: 18.64, CR_Conv_static: 0.32, CR_Seq_static: 0.02, CR_ConvCTC_motion: 62.55, CR_SeqCTC_motion: 19.22, CR_Conv_motion: 0.00, CR_Seq_motion: 0.03, CR_ConvCTC_fusion: 40.49, CR_SeqCTC_fusion: 18.87, CR_Conv_fusion: 0.35, CR_Seq_fusion: 0.02
+[ Wed May  6 20:53:20 2026 ] 	Epoch: 5, Batch(100/112) done. Loss: 189.67  lr:0.000400
+[ Wed May  6 20:53:20 2026 ] 	CR_ConvCTC_static: 36.60, CR_SeqCTC_static: 23.19, CR_Conv_static: 1.30, CR_Seq_static: 0.30, CR_ConvCTC_motion: 50.27, CR_SeqCTC_motion: 21.22, CR_Conv_motion: 0.02, CR_Seq_motion: 0.03, CR_ConvCTC_fusion: 34.12, CR_SeqCTC_fusion: 21.75, CR_Conv_fusion: 0.85, CR_Seq_fusion: 0.03
+100% 112/112 [01:31<00:00,  1.23it/s]
+[ Wed May  6 20:53:30 2026 ] 	Mean training loss: 203.7790998731.
+100% 38/38 [00:07<00:00,  4.81it/s]
+[ Wed May  6 20:53:38 2026 ] [DEV EVAL] Total Inference Time: 7.61s
+[ Wed May  6 20:53:38 2026 ] [DEV EVAL] Inference Speed: 2252.32 Frames/s, 19.58 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:53:38 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:53:38 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 20:53:39 2026 ] Epoch 5, dev Conv1D WER:  99.30%, BiLSTM WER:  280.40%
+[ Wed May  6 20:53:39 2026 ] Dev WER: 99.30%
+[ Wed May  6 20:53:39 2026 ] 	Epoch: 6, Batch(0/112) done. Loss: 170.25  lr:0.000400
+[ Wed May  6 20:53:39 2026 ] 	CR_ConvCTC_static: 34.23, CR_SeqCTC_static: 18.25, CR_Conv_static: 0.78, CR_Seq_static: 0.08, CR_ConvCTC_motion: 49.77, CR_SeqCTC_motion: 17.79, CR_Conv_motion: 0.02, CR_Seq_motion: 0.03, CR_ConvCTC_fusion: 31.44, CR_SeqCTC_fusion: 17.56, CR_Conv_fusion: 0.27, CR_Seq_fusion: 0.03
+[ Wed May  6 20:55:02 2026 ] 	Epoch: 6, Batch(100/112) done. Loss: 208.25  lr:0.000400
+[ Wed May  6 20:55:02 2026 ] 	CR_ConvCTC_static: 44.89, CR_SeqCTC_static: 15.71, CR_Conv_static: 0.55, CR_Seq_static: 0.02, CR_ConvCTC_motion: 78.00, CR_SeqCTC_motion: 15.62, CR_Conv_motion: 0.00, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 36.67, CR_SeqCTC_fusion: 15.72, CR_Conv_fusion: 1.03, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.22it/s]
+[ Wed May  6 20:55:11 2026 ] 	Mean training loss: 210.2842272350.
+100% 38/38 [00:07<00:00,  4.82it/s]
+[ Wed May  6 20:55:19 2026 ] [DEV EVAL] Total Inference Time: 7.58s
+[ Wed May  6 20:55:19 2026 ] [DEV EVAL] Inference Speed: 2260.38 Frames/s, 19.65 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:55:19 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:55:19 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 20:55:19 2026 ] Epoch 6, dev Conv1D WER:  100.00%, BiLSTM WER:  251.40%
+[ Wed May  6 20:55:19 2026 ] Dev WER: 100.00%
+[ Wed May  6 20:55:20 2026 ] 	Epoch: 7, Batch(0/112) done. Loss: 174.50  lr:0.000400
+[ Wed May  6 20:55:20 2026 ] 	CR_ConvCTC_static: 32.65, CR_SeqCTC_static: 17.89, CR_Conv_static: 0.17, CR_Seq_static: 0.02, CR_ConvCTC_motion: 57.76, CR_SeqCTC_motion: 18.30, CR_Conv_motion: 0.00, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 29.47, CR_SeqCTC_fusion: 17.41, CR_Conv_fusion: 0.77, CR_Seq_fusion: 0.02
+[ Wed May  6 20:56:43 2026 ] 	Epoch: 7, Batch(100/112) done. Loss: 191.93  lr:0.000400
+[ Wed May  6 20:56:43 2026 ] 	CR_ConvCTC_static: 38.92, CR_SeqCTC_static: 18.91, CR_Conv_static: 0.54, CR_Seq_static: 0.04, CR_ConvCTC_motion: 61.94, CR_SeqCTC_motion: 18.78, CR_Conv_motion: 0.05, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 33.19, CR_SeqCTC_fusion: 19.06, CR_Conv_fusion: 0.44, CR_Seq_fusion: 0.05
+100% 112/112 [01:33<00:00,  1.20it/s]
+[ Wed May  6 20:56:52 2026 ] 	Mean training loss: 202.0156581061.
+100% 38/38 [00:07<00:00,  4.81it/s]
+[ Wed May  6 20:57:00 2026 ] [DEV EVAL] Total Inference Time: 7.61s
+[ Wed May  6 20:57:00 2026 ] [DEV EVAL] Inference Speed: 2254.17 Frames/s, 19.59 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:57:00 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:57:00 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 20:57:00 2026 ] Epoch 7, dev Conv1D WER:  100.00%, BiLSTM WER:  90.90%
+[ Wed May  6 20:57:00 2026 ] Dev WER: 90.90%
+[ Wed May  6 20:57:01 2026 ] 	Epoch: 8, Batch(0/112) done. Loss: 186.82  lr:0.000400
+[ Wed May  6 20:57:01 2026 ] 	CR_ConvCTC_static: 35.62, CR_SeqCTC_static: 17.98, CR_Conv_static: 0.64, CR_Seq_static: 0.02, CR_ConvCTC_motion: 59.73, CR_SeqCTC_motion: 18.73, CR_Conv_motion: 0.03, CR_Seq_motion: 0.03, CR_ConvCTC_fusion: 34.90, CR_SeqCTC_fusion: 18.41, CR_Conv_fusion: 0.70, CR_Seq_fusion: 0.02
+[ Wed May  6 20:58:23 2026 ] 	Epoch: 8, Batch(100/112) done. Loss: 242.89  lr:0.000400
+[ Wed May  6 20:58:23 2026 ] 	CR_ConvCTC_static: 54.69, CR_SeqCTC_static: 19.22, CR_Conv_static: 1.04, CR_Seq_static: 0.03, CR_ConvCTC_motion: 78.35, CR_SeqCTC_motion: 18.58, CR_Conv_motion: 0.08, CR_Seq_motion: 0.03, CR_ConvCTC_fusion: 52.10, CR_SeqCTC_fusion: 18.53, CR_Conv_fusion: 0.24, CR_Seq_fusion: 0.02
+100% 112/112 [01:31<00:00,  1.22it/s]
+[ Wed May  6 20:58:32 2026 ] 	Mean training loss: 205.1667500905.
+100% 38/38 [00:07<00:00,  4.85it/s]
+[ Wed May  6 20:58:40 2026 ] [DEV EVAL] Total Inference Time: 7.55s
+[ Wed May  6 20:58:40 2026 ] [DEV EVAL] Inference Speed: 2270.52 Frames/s, 19.73 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:58:40 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 08:58:40 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 20:58:40 2026 ] Epoch 8, dev Conv1D WER:  98.00%, BiLSTM WER:  92.80%
+[ Wed May  6 20:58:40 2026 ] Dev WER: 92.80%
+[ Wed May  6 20:58:42 2026 ] 	Epoch: 9, Batch(0/112) done. Loss: 292.18  lr:0.000400
+[ Wed May  6 20:58:42 2026 ] 	CR_ConvCTC_static: 63.66, CR_SeqCTC_static: 18.27, CR_Conv_static: 0.62, CR_Seq_static: 0.01, CR_ConvCTC_motion: 121.90, CR_SeqCTC_motion: 18.58, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 50.32, CR_SeqCTC_fusion: 18.01, CR_Conv_fusion: 0.79, CR_Seq_fusion: 0.01
+[ Wed May  6 21:00:03 2026 ] 	Epoch: 9, Batch(100/112) done. Loss: 200.32  lr:0.000400
+[ Wed May  6 21:00:03 2026 ] 	CR_ConvCTC_static: 39.72, CR_SeqCTC_static: 18.88, CR_Conv_static: 0.36, CR_Seq_static: 0.02, CR_ConvCTC_motion: 63.91, CR_SeqCTC_motion: 18.65, CR_Conv_motion: 0.01, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 39.13, CR_SeqCTC_fusion: 19.00, CR_Conv_fusion: 0.62, CR_Seq_fusion: 0.02
+100% 112/112 [01:30<00:00,  1.24it/s]
+[ Wed May  6 21:00:11 2026 ] 	Mean training loss: 198.9488714763.
+100% 38/38 [00:07<00:00,  4.78it/s]
+[ Wed May  6 21:00:19 2026 ] [DEV EVAL] Total Inference Time: 7.63s
+[ Wed May  6 21:00:19 2026 ] [DEV EVAL] Inference Speed: 2245.82 Frames/s, 19.52 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:00:19 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:00:19 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:00:19 2026 ] Epoch 9, dev Conv1D WER:  100.00%, BiLSTM WER:  273.20%
+[ Wed May  6 21:00:19 2026 ] Dev WER: 100.00%
+[ Wed May  6 21:00:20 2026 ] 	Epoch: 10, Batch(0/112) done. Loss: 160.65  lr:0.000400
+[ Wed May  6 21:00:20 2026 ] 	CR_ConvCTC_static: 32.15, CR_SeqCTC_static: 17.48, CR_Conv_static: 0.54, CR_Seq_static: 0.03, CR_ConvCTC_motion: 44.95, CR_SeqCTC_motion: 17.61, CR_Conv_motion: 0.01, CR_Seq_motion: 0.03, CR_ConvCTC_fusion: 29.38, CR_SeqCTC_fusion: 18.16, CR_Conv_fusion: 0.28, CR_Seq_fusion: 0.04
+[ Wed May  6 21:01:43 2026 ] 	Epoch: 10, Batch(100/112) done. Loss: 223.09  lr:0.000400
+[ Wed May  6 21:01:43 2026 ] 	CR_ConvCTC_static: 42.35, CR_SeqCTC_static: 20.40, CR_Conv_static: 0.63, CR_Seq_static: 0.01, CR_ConvCTC_motion: 75.84, CR_SeqCTC_motion: 21.28, CR_Conv_motion: 0.04, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 41.39, CR_SeqCTC_fusion: 20.24, CR_Conv_fusion: 0.88, CR_Seq_fusion: 0.01
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 21:01:52 2026 ] 	Mean training loss: 199.5650652477.
+100% 38/38 [00:07<00:00,  4.83it/s]
+[ Wed May  6 21:01:59 2026 ] [DEV EVAL] Total Inference Time: 7.53s
+[ Wed May  6 21:01:59 2026 ] [DEV EVAL] Inference Speed: 2277.18 Frames/s, 19.79 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:01:59 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:02:00 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:02:00 2026 ] Epoch 10, dev Conv1D WER:  97.60%, BiLSTM WER:  93.20%
+[ Wed May  6 21:02:00 2026 ] Dev WER: 93.20%
+[ Wed May  6 21:02:01 2026 ] 	Epoch: 11, Batch(0/112) done. Loss: 206.14  lr:0.000400
+[ Wed May  6 21:02:01 2026 ] 	CR_ConvCTC_static: 39.18, CR_SeqCTC_static: 22.44, CR_Conv_static: 0.23, CR_Seq_static: 0.01, CR_ConvCTC_motion: 63.07, CR_SeqCTC_motion: 22.70, CR_Conv_motion: 0.01, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 35.67, CR_SeqCTC_fusion: 22.52, CR_Conv_fusion: 0.28, CR_Seq_fusion: 0.01
+[ Wed May  6 21:03:22 2026 ] 	Epoch: 11, Batch(100/112) done. Loss: 173.68  lr:0.000400
+[ Wed May  6 21:03:22 2026 ] 	CR_ConvCTC_static: 35.77, CR_SeqCTC_static: 17.35, CR_Conv_static: 1.11, CR_Seq_static: 0.02, CR_ConvCTC_motion: 53.05, CR_SeqCTC_motion: 18.12, CR_Conv_motion: 0.00, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 30.41, CR_SeqCTC_fusion: 17.35, CR_Conv_fusion: 0.46, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 21:03:32 2026 ] 	Mean training loss: 203.3639940534.
+100% 38/38 [00:07<00:00,  4.83it/s]
+[ Wed May  6 21:03:40 2026 ] [DEV EVAL] Total Inference Time: 7.54s
+[ Wed May  6 21:03:40 2026 ] [DEV EVAL] Inference Speed: 2274.82 Frames/s, 19.77 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:03:40 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:03:40 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:03:40 2026 ] Epoch 11, dev Conv1D WER:  100.00%, BiLSTM WER:  229.90%
+[ Wed May  6 21:03:40 2026 ] Dev WER: 100.00%
+[ Wed May  6 21:03:41 2026 ] 	Epoch: 12, Batch(0/112) done. Loss: 190.55  lr:0.000400
+[ Wed May  6 21:03:41 2026 ] 	CR_ConvCTC_static: 36.65, CR_SeqCTC_static: 16.45, CR_Conv_static: 1.27, CR_Seq_static: 0.02, CR_ConvCTC_motion: 67.64, CR_SeqCTC_motion: 17.70, CR_Conv_motion: 0.38, CR_Seq_motion: 0.36, CR_ConvCTC_fusion: 33.41, CR_SeqCTC_fusion: 15.90, CR_Conv_fusion: 0.75, CR_Seq_fusion: 0.02
+[ Wed May  6 21:05:04 2026 ] 	Epoch: 12, Batch(100/112) done. Loss: 242.66  lr:0.000400
+[ Wed May  6 21:05:04 2026 ] 	CR_ConvCTC_static: 52.93, CR_SeqCTC_static: 19.02, CR_Conv_static: 0.89, CR_Seq_static: 0.01, CR_ConvCTC_motion: 90.60, CR_SeqCTC_motion: 19.46, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 40.37, CR_SeqCTC_fusion: 18.69, CR_Conv_fusion: 0.66, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 21:05:13 2026 ] 	Mean training loss: 201.6345169204.
+100% 38/38 [00:07<00:00,  4.90it/s]
+[ Wed May  6 21:05:20 2026 ] [DEV EVAL] Total Inference Time: 7.48s
+[ Wed May  6 21:05:20 2026 ] [DEV EVAL] Inference Speed: 2293.16 Frames/s, 19.93 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:05:21 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:05:21 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:05:21 2026 ] Epoch 12, dev Conv1D WER:  100.00%, BiLSTM WER:  283.80%
+[ Wed May  6 21:05:21 2026 ] Dev WER: 100.00%
+[ Wed May  6 21:05:22 2026 ] 	Epoch: 13, Batch(0/112) done. Loss: 295.87  lr:0.000400
+[ Wed May  6 21:05:22 2026 ] 	CR_ConvCTC_static: 65.72, CR_SeqCTC_static: 18.75, CR_Conv_static: 1.39, CR_Seq_static: 0.02, CR_ConvCTC_motion: 107.96, CR_SeqCTC_motion: 18.53, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 63.12, CR_SeqCTC_fusion: 19.02, CR_Conv_fusion: 1.14, CR_Seq_fusion: 0.22
+[ Wed May  6 21:06:44 2026 ] 	Epoch: 13, Batch(100/112) done. Loss: 219.02  lr:0.000400
+[ Wed May  6 21:06:44 2026 ] 	CR_ConvCTC_static: 43.50, CR_SeqCTC_static: 21.72, CR_Conv_static: 0.66, CR_Seq_static: 0.01, CR_ConvCTC_motion: 71.48, CR_SeqCTC_motion: 22.74, CR_Conv_motion: 0.06, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 36.24, CR_SeqCTC_fusion: 22.37, CR_Conv_fusion: 0.21, CR_Seq_fusion: 0.02
+100% 112/112 [01:31<00:00,  1.22it/s]
+[ Wed May  6 21:06:53 2026 ] 	Mean training loss: 201.7626479013.
+100% 38/38 [00:07<00:00,  4.92it/s]
+[ Wed May  6 21:07:01 2026 ] [DEV EVAL] Total Inference Time: 7.46s
+[ Wed May  6 21:07:01 2026 ] [DEV EVAL] Inference Speed: 2297.79 Frames/s, 19.97 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:07:01 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:07:01 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:07:01 2026 ] Epoch 13, dev Conv1D WER:  252.50%, BiLSTM WER:  90.90%
+[ Wed May  6 21:07:01 2026 ] Dev WER: 90.90%
+[ Wed May  6 21:07:02 2026 ] 	Epoch: 14, Batch(0/112) done. Loss: 155.18  lr:0.000400
+[ Wed May  6 21:07:02 2026 ] 	CR_ConvCTC_static: 27.03, CR_SeqCTC_static: 12.53, CR_Conv_static: 0.42, CR_Seq_static: 0.01, CR_ConvCTC_motion: 62.83, CR_SeqCTC_motion: 12.34, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 26.46, CR_SeqCTC_fusion: 12.42, CR_Conv_fusion: 1.11, CR_Seq_fusion: 0.01
+[ Wed May  6 21:08:25 2026 ] 	Epoch: 14, Batch(100/112) done. Loss: 156.09  lr:0.000400
+[ Wed May  6 21:08:25 2026 ] 	CR_ConvCTC_static: 28.58, CR_SeqCTC_static: 17.87, CR_Conv_static: 1.12, CR_Seq_static: 0.37, CR_ConvCTC_motion: 47.61, CR_SeqCTC_motion: 17.16, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 25.99, CR_SeqCTC_fusion: 16.31, CR_Conv_fusion: 1.05, CR_Seq_fusion: 0.02
+100% 112/112 [01:31<00:00,  1.22it/s]
+[ Wed May  6 21:08:33 2026 ] 	Mean training loss: 196.1938620295.
+100% 38/38 [00:07<00:00,  4.93it/s]
+[ Wed May  6 21:08:40 2026 ] [DEV EVAL] Total Inference Time: 7.43s
+[ Wed May  6 21:08:40 2026 ] [DEV EVAL] Inference Speed: 2306.65 Frames/s, 20.05 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:08:40 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:08:41 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:08:41 2026 ] Epoch 14, dev Conv1D WER:  100.00%, BiLSTM WER:  91.30%
+[ Wed May  6 21:08:41 2026 ] Dev WER: 91.30%
+[ Wed May  6 21:08:42 2026 ] 	Epoch: 15, Batch(0/112) done. Loss: 151.33  lr:0.000400
+[ Wed May  6 21:08:42 2026 ] 	CR_ConvCTC_static: 28.27, CR_SeqCTC_static: 14.76, CR_Conv_static: 0.13, CR_Seq_static: 0.01, CR_ConvCTC_motion: 50.65, CR_SeqCTC_motion: 14.96, CR_Conv_motion: 0.07, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 27.01, CR_SeqCTC_fusion: 14.45, CR_Conv_fusion: 0.98, CR_Seq_fusion: 0.02
+[ Wed May  6 21:10:05 2026 ] 	Epoch: 15, Batch(100/112) done. Loss: 202.67  lr:0.000400
+[ Wed May  6 21:10:05 2026 ] 	CR_ConvCTC_static: 36.09, CR_SeqCTC_static: 20.42, CR_Conv_static: 0.51, CR_Seq_static: 0.01, CR_ConvCTC_motion: 70.50, CR_SeqCTC_motion: 20.81, CR_Conv_motion: 0.05, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 33.73, CR_SeqCTC_fusion: 20.02, CR_Conv_fusion: 0.51, CR_Seq_fusion: 0.01
+100% 112/112 [01:33<00:00,  1.20it/s]
+[ Wed May  6 21:10:14 2026 ] 	Mean training loss: 203.0321514947.
+100% 38/38 [00:07<00:00,  4.82it/s]
+[ Wed May  6 21:10:22 2026 ] [DEV EVAL] Total Inference Time: 7.56s
+[ Wed May  6 21:10:22 2026 ] [DEV EVAL] Inference Speed: 2268.15 Frames/s, 19.71 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:10:22 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:10:22 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:10:22 2026 ] Epoch 15, dev Conv1D WER:  100.00%, BiLSTM WER:  253.00%
+[ Wed May  6 21:10:22 2026 ] Dev WER: 100.00%
+[ Wed May  6 21:10:23 2026 ] 	Epoch: 16, Batch(0/112) done. Loss: 170.12  lr:0.000400
+[ Wed May  6 21:10:23 2026 ] 	CR_ConvCTC_static: 31.23, CR_SeqCTC_static: 19.07, CR_Conv_static: 0.36, CR_Seq_static: 0.01, CR_ConvCTC_motion: 52.42, CR_SeqCTC_motion: 18.62, CR_Conv_motion: 0.01, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 29.48, CR_SeqCTC_fusion: 18.07, CR_Conv_fusion: 0.81, CR_Seq_fusion: 0.02
+[ Wed May  6 21:11:44 2026 ] 	Epoch: 16, Batch(100/112) done. Loss: 210.47  lr:0.000400
+[ Wed May  6 21:11:44 2026 ] 	CR_ConvCTC_static: 39.86, CR_SeqCTC_static: 19.03, CR_Conv_static: 0.63, CR_Seq_static: 0.01, CR_ConvCTC_motion: 77.19, CR_SeqCTC_motion: 18.72, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 36.17, CR_SeqCTC_fusion: 17.84, CR_Conv_fusion: 0.99, CR_Seq_fusion: 0.01
+100% 112/112 [01:31<00:00,  1.22it/s]
+[ Wed May  6 21:11:54 2026 ] 	Mean training loss: 199.6422971317.
+100% 38/38 [00:07<00:00,  4.83it/s]
+[ Wed May  6 21:12:02 2026 ] [DEV EVAL] Total Inference Time: 7.56s
+[ Wed May  6 21:12:02 2026 ] [DEV EVAL] Inference Speed: 2268.56 Frames/s, 19.72 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:12:02 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:12:02 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:12:02 2026 ] Epoch 16, dev Conv1D WER:  99.30%, BiLSTM WER:  91.00%
+[ Wed May  6 21:12:02 2026 ] Dev WER: 91.00%
+[ Wed May  6 21:12:03 2026 ] 	Epoch: 17, Batch(0/112) done. Loss: 190.10  lr:0.000400
+[ Wed May  6 21:12:03 2026 ] 	CR_ConvCTC_static: 35.73, CR_SeqCTC_static: 16.51, CR_Conv_static: 1.31, CR_Seq_static: 0.02, CR_ConvCTC_motion: 78.35, CR_SeqCTC_motion: 16.75, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 25.00, CR_SeqCTC_fusion: 15.72, CR_Conv_fusion: 0.69, CR_Seq_fusion: 0.01
+[ Wed May  6 21:13:26 2026 ] 	Epoch: 17, Batch(100/112) done. Loss: 236.79  lr:0.000400
+[ Wed May  6 21:13:26 2026 ] 	CR_ConvCTC_static: 53.48, CR_SeqCTC_static: 16.64, CR_Conv_static: 0.29, CR_Seq_static: 0.01, CR_ConvCTC_motion: 93.72, CR_SeqCTC_motion: 16.09, CR_Conv_motion: 0.05, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 39.07, CR_SeqCTC_fusion: 16.28, CR_Conv_fusion: 1.15, CR_Seq_fusion: 0.01
+100% 112/112 [01:33<00:00,  1.20it/s]
+[ Wed May  6 21:13:35 2026 ] 	Mean training loss: 200.4248256683.
+100% 38/38 [00:07<00:00,  4.86it/s]
+[ Wed May  6 21:13:43 2026 ] [DEV EVAL] Total Inference Time: 7.52s
+[ Wed May  6 21:13:43 2026 ] [DEV EVAL] Inference Speed: 2279.46 Frames/s, 19.81 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:13:43 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:13:43 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:13:43 2026 ] Epoch 17, dev Conv1D WER:  100.00%, BiLSTM WER:  93.60%
+[ Wed May  6 21:13:43 2026 ] Dev WER: 93.60%
+[ Wed May  6 21:13:44 2026 ] 	Epoch: 18, Batch(0/112) done. Loss: 215.21  lr:0.000400
+[ Wed May  6 21:13:44 2026 ] 	CR_ConvCTC_static: 45.00, CR_SeqCTC_static: 21.54, CR_Conv_static: 0.71, CR_Seq_static: 0.02, CR_ConvCTC_motion: 72.57, CR_SeqCTC_motion: 21.99, CR_Conv_motion: 0.01, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 31.46, CR_SeqCTC_fusion: 21.43, CR_Conv_fusion: 0.47, CR_Seq_fusion: 0.01
+[ Wed May  6 21:15:06 2026 ] 	Epoch: 18, Batch(100/112) done. Loss: 210.50  lr:0.000400
+[ Wed May  6 21:15:06 2026 ] 	CR_ConvCTC_static: 43.02, CR_SeqCTC_static: 17.56, CR_Conv_static: 0.80, CR_Seq_static: 0.02, CR_ConvCTC_motion: 82.81, CR_SeqCTC_motion: 17.91, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 30.17, CR_SeqCTC_fusion: 17.42, CR_Conv_fusion: 0.76, CR_Seq_fusion: 0.01
+100% 112/112 [01:31<00:00,  1.22it/s]
+[ Wed May  6 21:15:15 2026 ] 	Mean training loss: 200.7556170736.
+100% 38/38 [00:07<00:00,  4.88it/s]
+[ Wed May  6 21:15:23 2026 ] [DEV EVAL] Total Inference Time: 7.52s
+[ Wed May  6 21:15:23 2026 ] [DEV EVAL] Inference Speed: 2280.33 Frames/s, 19.82 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:15:23 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:15:23 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:15:23 2026 ] Epoch 18, dev Conv1D WER:  100.00%, BiLSTM WER:  282.80%
+[ Wed May  6 21:15:23 2026 ] Dev WER: 100.00%
+[ Wed May  6 21:15:24 2026 ] 	Epoch: 19, Batch(0/112) done. Loss: 241.69  lr:0.000400
+[ Wed May  6 21:15:24 2026 ] 	CR_ConvCTC_static: 56.44, CR_SeqCTC_static: 19.37, CR_Conv_static: 1.04, CR_Seq_static: 0.02, CR_ConvCTC_motion: 86.24, CR_SeqCTC_motion: 19.16, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 39.20, CR_SeqCTC_fusion: 19.82, CR_Conv_fusion: 0.36, CR_Seq_fusion: 0.01
+[ Wed May  6 21:16:46 2026 ] 	Epoch: 19, Batch(100/112) done. Loss: 216.19  lr:0.000400
+[ Wed May  6 21:16:46 2026 ] 	CR_ConvCTC_static: 41.56, CR_SeqCTC_static: 18.20, CR_Conv_static: 0.31, CR_Seq_static: 0.02, CR_ConvCTC_motion: 86.23, CR_SeqCTC_motion: 18.52, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 31.86, CR_SeqCTC_fusion: 18.68, CR_Conv_fusion: 0.79, CR_Seq_fusion: 0.01
+100% 112/112 [01:31<00:00,  1.22it/s]
+[ Wed May  6 21:16:55 2026 ] 	Mean training loss: 199.3882361821.
+100% 38/38 [00:07<00:00,  4.87it/s]
+[ Wed May  6 21:17:03 2026 ] [DEV EVAL] Total Inference Time: 7.53s
+[ Wed May  6 21:17:03 2026 ] [DEV EVAL] Inference Speed: 2277.13 Frames/s, 19.79 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:17:03 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:17:03 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:17:03 2026 ] Epoch 19, dev Conv1D WER:  100.00%, BiLSTM WER:  91.00%
+[ Wed May  6 21:17:03 2026 ] Dev WER: 91.00%
+[ Wed May  6 21:17:04 2026 ] 	Epoch: 20, Batch(0/112) done. Loss: 307.18  lr:0.000040
+[ Wed May  6 21:17:04 2026 ] 	CR_ConvCTC_static: 70.69, CR_SeqCTC_static: 17.19, CR_Conv_static: 0.93, CR_Seq_static: 0.01, CR_ConvCTC_motion: 137.69, CR_SeqCTC_motion: 17.62, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 45.50, CR_SeqCTC_fusion: 16.46, CR_Conv_fusion: 1.06, CR_Seq_fusion: 0.02
+[ Wed May  6 21:18:27 2026 ] 	Epoch: 20, Batch(100/112) done. Loss: 177.15  lr:0.000040
+[ Wed May  6 21:18:27 2026 ] 	CR_ConvCTC_static: 33.30, CR_SeqCTC_static: 17.29, CR_Conv_static: 0.53, CR_Seq_static: 0.02, CR_ConvCTC_motion: 59.95, CR_SeqCTC_motion: 18.04, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 29.31, CR_SeqCTC_fusion: 17.83, CR_Conv_fusion: 0.83, CR_Seq_fusion: 0.03
+100% 112/112 [01:32<00:00,  1.22it/s]
+[ Wed May  6 21:18:35 2026 ] 	Mean training loss: 200.5552361352.
+100% 38/38 [00:07<00:00,  4.76it/s]
+[ Wed May  6 21:18:43 2026 ] [DEV EVAL] Total Inference Time: 7.69s
+[ Wed May  6 21:18:43 2026 ] [DEV EVAL] Inference Speed: 2229.94 Frames/s, 19.38 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:18:43 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:18:43 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:18:44 2026 ] Epoch 20, dev Conv1D WER:  222.80%, BiLSTM WER:  92.90%
+[ Wed May  6 21:18:44 2026 ] Dev WER: 92.90%
+[ Wed May  6 21:18:45 2026 ] 	Epoch: 21, Batch(0/112) done. Loss: 170.29  lr:0.000040
+[ Wed May  6 21:18:45 2026 ] 	CR_ConvCTC_static: 34.78, CR_SeqCTC_static: 17.01, CR_Conv_static: 0.25, CR_Seq_static: 0.03, CR_ConvCTC_motion: 56.79, CR_SeqCTC_motion: 17.50, CR_Conv_motion: 0.00, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 26.38, CR_SeqCTC_fusion: 16.67, CR_Conv_fusion: 0.83, CR_Seq_fusion: 0.02
+[ Wed May  6 21:20:06 2026 ] 	Epoch: 21, Batch(100/112) done. Loss: 208.63  lr:0.000040
+[ Wed May  6 21:20:06 2026 ] 	CR_ConvCTC_static: 35.72, CR_SeqCTC_static: 19.36, CR_Conv_static: 0.31, CR_Seq_static: 0.02, CR_ConvCTC_motion: 79.55, CR_SeqCTC_motion: 19.53, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 33.98, CR_SeqCTC_fusion: 18.68, CR_Conv_fusion: 1.46, CR_Seq_fusion: 0.02
+100% 112/112 [01:31<00:00,  1.23it/s]
+[ Wed May  6 21:20:16 2026 ] 	Mean training loss: 195.4935464859.
+100% 38/38 [00:07<00:00,  4.78it/s]
+[ Wed May  6 21:20:24 2026 ] [DEV EVAL] Total Inference Time: 7.65s
+[ Wed May  6 21:20:24 2026 ] [DEV EVAL] Inference Speed: 2239.98 Frames/s, 19.47 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:20:24 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:20:24 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:20:24 2026 ] Epoch 21, dev Conv1D WER:  197.60%, BiLSTM WER:  93.80%
+[ Wed May  6 21:20:24 2026 ] Dev WER: 93.80%
+[ Wed May  6 21:20:26 2026 ] 	Epoch: 22, Batch(0/112) done. Loss: 272.19  lr:0.000040
+[ Wed May  6 21:20:26 2026 ] 	CR_ConvCTC_static: 51.46, CR_SeqCTC_static: 18.74, CR_Conv_static: 0.56, CR_Seq_static: 0.01, CR_ConvCTC_motion: 125.42, CR_SeqCTC_motion: 18.62, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 38.02, CR_SeqCTC_fusion: 18.46, CR_Conv_fusion: 0.87, CR_Seq_fusion: 0.01
+[ Wed May  6 21:21:48 2026 ] 	Epoch: 22, Batch(100/112) done. Loss: 219.62  lr:0.000040
+[ Wed May  6 21:21:48 2026 ] 	CR_ConvCTC_static: 58.15, CR_SeqCTC_static: 14.09, CR_Conv_static: 0.34, CR_Seq_static: 0.02, CR_ConvCTC_motion: 85.41, CR_SeqCTC_motion: 15.19, CR_Conv_motion: 0.26, CR_Seq_motion: 0.33, CR_ConvCTC_fusion: 30.50, CR_SeqCTC_fusion: 14.19, CR_Conv_fusion: 1.13, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 21:21:57 2026 ] 	Mean training loss: 195.7058383397.
+100% 38/38 [00:07<00:00,  4.81it/s]
+[ Wed May  6 21:22:05 2026 ] [DEV EVAL] Total Inference Time: 7.57s
+[ Wed May  6 21:22:05 2026 ] [DEV EVAL] Inference Speed: 2263.29 Frames/s, 19.67 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:22:05 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:22:05 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:22:05 2026 ] Epoch 22, dev Conv1D WER:  96.80%, BiLSTM WER:  92.60%
+[ Wed May  6 21:22:05 2026 ] Dev WER: 92.60%
+[ Wed May  6 21:22:08 2026 ] 	Epoch: 23, Batch(0/112) done. Loss: 165.80  lr:0.000040
+[ Wed May  6 21:22:08 2026 ] 	CR_ConvCTC_static: 32.66, CR_SeqCTC_static: 13.36, CR_Conv_static: 0.70, CR_Seq_static: 0.03, CR_ConvCTC_motion: 69.47, CR_SeqCTC_motion: 13.82, CR_Conv_motion: 0.12, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 21.87, CR_SeqCTC_fusion: 13.01, CR_Conv_fusion: 0.73, CR_Seq_fusion: 0.02
+[ Wed May  6 21:23:29 2026 ] 	Epoch: 23, Batch(100/112) done. Loss: 171.47  lr:0.000040
+[ Wed May  6 21:23:29 2026 ] 	CR_ConvCTC_static: 34.41, CR_SeqCTC_static: 13.31, CR_Conv_static: 0.40, CR_Seq_static: 0.02, CR_ConvCTC_motion: 70.27, CR_SeqCTC_motion: 14.27, CR_Conv_motion: 0.06, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 24.75, CR_SeqCTC_fusion: 13.28, CR_Conv_fusion: 0.67, CR_Seq_fusion: 0.02
+100% 112/112 [01:31<00:00,  1.22it/s]
+[ Wed May  6 21:23:38 2026 ] 	Mean training loss: 189.6464841706.
+100% 38/38 [00:07<00:00,  4.94it/s]
+[ Wed May  6 21:23:46 2026 ] [DEV EVAL] Total Inference Time: 7.40s
+[ Wed May  6 21:23:46 2026 ] [DEV EVAL] Inference Speed: 2316.91 Frames/s, 20.14 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:23:46 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:23:46 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:23:46 2026 ] Epoch 23, dev Conv1D WER:  98.40%, BiLSTM WER:  92.50%
+[ Wed May  6 21:23:46 2026 ] Dev WER: 92.50%
+[ Wed May  6 21:23:48 2026 ] 	Epoch: 24, Batch(0/112) done. Loss: 178.57  lr:0.000040
+[ Wed May  6 21:23:48 2026 ] 	CR_ConvCTC_static: 38.14, CR_SeqCTC_static: 17.34, CR_Conv_static: 0.67, CR_Seq_static: 0.04, CR_ConvCTC_motion: 57.37, CR_SeqCTC_motion: 18.14, CR_Conv_motion: 0.01, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 29.32, CR_SeqCTC_fusion: 16.34, CR_Conv_fusion: 1.18, CR_Seq_fusion: 0.02
+[ Wed May  6 21:25:12 2026 ] 	Epoch: 24, Batch(100/112) done. Loss: 185.52  lr:0.000040
+[ Wed May  6 21:25:12 2026 ] 	CR_ConvCTC_static: 39.08, CR_SeqCTC_static: 15.93, CR_Conv_static: 0.87, CR_Seq_static: 0.03, CR_ConvCTC_motion: 69.58, CR_SeqCTC_motion: 15.89, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 27.32, CR_SeqCTC_fusion: 15.89, CR_Conv_fusion: 0.90, CR_Seq_fusion: 0.01
+100% 112/112 [01:33<00:00,  1.20it/s]
+[ Wed May  6 21:25:21 2026 ] 	Mean training loss: 191.3152112961.
+100% 38/38 [00:07<00:00,  4.86it/s]
+[ Wed May  6 21:25:28 2026 ] [DEV EVAL] Total Inference Time: 7.52s
+[ Wed May  6 21:25:28 2026 ] [DEV EVAL] Inference Speed: 2278.48 Frames/s, 19.80 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:25:29 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:25:29 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:25:29 2026 ] Epoch 24, dev Conv1D WER:  141.60%, BiLSTM WER:  92.10%
+[ Wed May  6 21:25:29 2026 ] Dev WER: 92.10%
+[ Wed May  6 21:25:32 2026 ] 	Epoch: 25, Batch(0/112) done. Loss: 220.91  lr:0.000040
+[ Wed May  6 21:25:32 2026 ] 	CR_ConvCTC_static: 40.72, CR_SeqCTC_static: 14.69, CR_Conv_static: 0.66, CR_Seq_static: 0.03, CR_ConvCTC_motion: 96.28, CR_SeqCTC_motion: 16.22, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 34.75, CR_SeqCTC_fusion: 15.88, CR_Conv_fusion: 1.67, CR_Seq_fusion: 0.03
+[ Wed May  6 21:26:53 2026 ] 	Epoch: 25, Batch(100/112) done. Loss: 186.24  lr:0.000040
+[ Wed May  6 21:26:53 2026 ] 	CR_ConvCTC_static: 36.66, CR_SeqCTC_static: 14.53, CR_Conv_static: 0.38, CR_Seq_static: 0.02, CR_ConvCTC_motion: 70.94, CR_SeqCTC_motion: 17.74, CR_Conv_motion: 0.31, CR_Seq_motion: 0.29, CR_ConvCTC_fusion: 28.68, CR_SeqCTC_fusion: 15.66, CR_Conv_fusion: 1.00, CR_Seq_fusion: 0.02
+100% 112/112 [01:30<00:00,  1.23it/s]
+[ Wed May  6 21:27:01 2026 ] 	Mean training loss: 191.1738196782.
+100% 38/38 [00:07<00:00,  4.81it/s]
+[ Wed May  6 21:27:09 2026 ] [DEV EVAL] Total Inference Time: 7.58s
+[ Wed May  6 21:27:09 2026 ] [DEV EVAL] Inference Speed: 2261.13 Frames/s, 19.65 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:27:09 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:27:10 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:27:10 2026 ] Epoch 25, dev Conv1D WER:  93.60%, BiLSTM WER:  93.20%
+[ Wed May  6 21:27:10 2026 ] Dev WER: 93.20%
+[ Wed May  6 21:27:11 2026 ] 	Epoch: 26, Batch(0/112) done. Loss: 204.38  lr:0.000040
+[ Wed May  6 21:27:11 2026 ] 	CR_ConvCTC_static: 45.00, CR_SeqCTC_static: 15.71, CR_Conv_static: 0.30, CR_Seq_static: 0.03, CR_ConvCTC_motion: 77.46, CR_SeqCTC_motion: 17.12, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 31.44, CR_SeqCTC_fusion: 16.66, CR_Conv_fusion: 0.63, CR_Seq_fusion: 0.01
+[ Wed May  6 21:28:33 2026 ] 	Epoch: 26, Batch(100/112) done. Loss: 216.32  lr:0.000040
+[ Wed May  6 21:28:33 2026 ] 	CR_ConvCTC_static: 41.94, CR_SeqCTC_static: 15.96, CR_Conv_static: 0.55, CR_Seq_static: 0.01, CR_ConvCTC_motion: 95.63, CR_SeqCTC_motion: 15.98, CR_Conv_motion: 0.05, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 29.81, CR_SeqCTC_fusion: 15.62, CR_Conv_fusion: 0.74, CR_Seq_fusion: 0.01
+100% 112/112 [01:31<00:00,  1.22it/s]
+[ Wed May  6 21:28:42 2026 ] 	Mean training loss: 191.9364342008.
+100% 38/38 [00:07<00:00,  4.79it/s]
+[ Wed May  6 21:28:50 2026 ] [DEV EVAL] Total Inference Time: 7.64s
+[ Wed May  6 21:28:50 2026 ] [DEV EVAL] Inference Speed: 2245.32 Frames/s, 19.51 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:28:50 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:28:50 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:28:50 2026 ] Epoch 26, dev Conv1D WER:  97.90%, BiLSTM WER:  92.10%
+[ Wed May  6 21:28:50 2026 ] Dev WER: 92.10%
+[ Wed May  6 21:28:52 2026 ] 	Epoch: 27, Batch(0/112) done. Loss: 203.49  lr:0.000040
+[ Wed May  6 21:28:52 2026 ] 	CR_ConvCTC_static: 39.56, CR_SeqCTC_static: 15.45, CR_Conv_static: 0.41, CR_Seq_static: 0.02, CR_ConvCTC_motion: 85.13, CR_SeqCTC_motion: 16.33, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 29.54, CR_SeqCTC_fusion: 15.69, CR_Conv_fusion: 1.34, CR_Seq_fusion: 0.01
+[ Wed May  6 21:30:15 2026 ] 	Epoch: 27, Batch(100/112) done. Loss: 159.68  lr:0.000040
+[ Wed May  6 21:30:15 2026 ] 	CR_ConvCTC_static: 29.61, CR_SeqCTC_static: 14.42, CR_Conv_static: 0.68, CR_Seq_static: 0.06, CR_ConvCTC_motion: 62.11, CR_SeqCTC_motion: 14.39, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 23.94, CR_SeqCTC_fusion: 13.53, CR_Conv_fusion: 0.91, CR_Seq_fusion: 0.01
+100% 112/112 [01:33<00:00,  1.19it/s]
+[ Wed May  6 21:30:25 2026 ] 	Mean training loss: 191.3287961824.
+100% 38/38 [00:07<00:00,  4.77it/s]
+[ Wed May  6 21:30:33 2026 ] [DEV EVAL] Total Inference Time: 7.67s
+[ Wed May  6 21:30:33 2026 ] [DEV EVAL] Inference Speed: 2236.63 Frames/s, 19.44 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:30:33 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:30:33 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:30:34 2026 ] Epoch 27, dev Conv1D WER:  111.90%, BiLSTM WER:  92.50%
+[ Wed May  6 21:30:34 2026 ] Dev WER: 92.50%
+[ Wed May  6 21:30:35 2026 ] 	Epoch: 28, Batch(0/112) done. Loss: 187.63  lr:0.000040
+[ Wed May  6 21:30:35 2026 ] 	CR_ConvCTC_static: 34.55, CR_SeqCTC_static: 19.82, CR_Conv_static: 0.84, CR_Seq_static: 0.03, CR_ConvCTC_motion: 63.98, CR_SeqCTC_motion: 18.85, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 30.94, CR_SeqCTC_fusion: 17.81, CR_Conv_fusion: 0.79, CR_Seq_fusion: 0.01
+[ Wed May  6 21:31:57 2026 ] 	Epoch: 28, Batch(100/112) done. Loss: 165.29  lr:0.000040
+[ Wed May  6 21:31:57 2026 ] 	CR_ConvCTC_static: 33.12, CR_SeqCTC_static: 16.10, CR_Conv_static: 0.34, CR_Seq_static: 0.02, CR_ConvCTC_motion: 58.43, CR_SeqCTC_motion: 16.58, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 24.70, CR_SeqCTC_fusion: 15.60, CR_Conv_fusion: 0.37, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 21:32:06 2026 ] 	Mean training loss: 192.9429769516.
+100% 38/38 [00:07<00:00,  4.77it/s]
+[ Wed May  6 21:32:14 2026 ] [DEV EVAL] Total Inference Time: 7.62s
+[ Wed May  6 21:32:14 2026 ] [DEV EVAL] Inference Speed: 2251.25 Frames/s, 19.57 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:32:14 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:32:14 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:32:15 2026 ] Epoch 28, dev Conv1D WER:  96.90%, BiLSTM WER:  91.80%
+[ Wed May  6 21:32:15 2026 ] Dev WER: 91.80%
+[ Wed May  6 21:32:17 2026 ] 	Epoch: 29, Batch(0/112) done. Loss: 236.53  lr:0.000040
+[ Wed May  6 21:32:17 2026 ] 	CR_ConvCTC_static: 46.14, CR_SeqCTC_static: 16.49, CR_Conv_static: 0.63, CR_Seq_static: 0.02, CR_ConvCTC_motion: 101.77, CR_SeqCTC_motion: 17.88, CR_Conv_motion: 0.06, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 34.83, CR_SeqCTC_fusion: 17.21, CR_Conv_fusion: 1.46, CR_Seq_fusion: 0.02
+[ Wed May  6 21:33:40 2026 ] 	Epoch: 29, Batch(100/112) done. Loss: 175.32  lr:0.000040
+[ Wed May  6 21:33:40 2026 ] 	CR_ConvCTC_static: 32.55, CR_SeqCTC_static: 14.34, CR_Conv_static: 0.70, CR_Seq_static: 0.05, CR_ConvCTC_motion: 71.83, CR_SeqCTC_motion: 15.06, CR_Conv_motion: 0.07, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 25.20, CR_SeqCTC_fusion: 14.93, CR_Conv_fusion: 0.57, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 21:33:48 2026 ] 	Mean training loss: 189.0793856212.
+100% 38/38 [00:07<00:00,  4.92it/s]
+[ Wed May  6 21:33:56 2026 ] [DEV EVAL] Total Inference Time: 7.45s
+[ Wed May  6 21:33:56 2026 ] [DEV EVAL] Inference Speed: 2300.90 Frames/s, 20.00 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:33:56 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:33:56 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:33:56 2026 ] Epoch 29, dev Conv1D WER:  96.40%, BiLSTM WER:  92.50%
+[ Wed May  6 21:33:56 2026 ] Dev WER: 92.50%
+[ Wed May  6 21:33:58 2026 ] 	Epoch: 30, Batch(0/112) done. Loss: 144.38  lr:0.000040
+[ Wed May  6 21:33:58 2026 ] 	CR_ConvCTC_static: 26.25, CR_SeqCTC_static: 14.56, CR_Conv_static: 0.10, CR_Seq_static: 0.03, CR_ConvCTC_motion: 50.43, CR_SeqCTC_motion: 15.02, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 22.45, CR_SeqCTC_fusion: 14.99, CR_Conv_fusion: 0.50, CR_Seq_fusion: 0.03
+[ Wed May  6 21:35:21 2026 ] 	Epoch: 30, Batch(100/112) done. Loss: 173.45  lr:0.000040
+[ Wed May  6 21:35:21 2026 ] 	CR_ConvCTC_static: 30.93, CR_SeqCTC_static: 14.34, CR_Conv_static: 0.63, CR_Seq_static: 0.04, CR_ConvCTC_motion: 75.30, CR_SeqCTC_motion: 14.30, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 23.22, CR_SeqCTC_fusion: 14.30, CR_Conv_fusion: 0.37, CR_Seq_fusion: 0.02
+100% 112/112 [01:33<00:00,  1.20it/s]
+[ Wed May  6 21:35:30 2026 ] 	Mean training loss: 183.5549694470.
+100% 38/38 [00:07<00:00,  4.88it/s]
+[ Wed May  6 21:35:38 2026 ] [DEV EVAL] Total Inference Time: 7.46s
+[ Wed May  6 21:35:38 2026 ] [DEV EVAL] Inference Speed: 2298.23 Frames/s, 19.97 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:35:38 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:35:39 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:35:39 2026 ] Epoch 30, dev Conv1D WER:  227.00%, BiLSTM WER:  90.50%
+[ Wed May  6 21:35:39 2026 ] Dev WER: 90.50%
+[ Wed May  6 21:35:42 2026 ] 	Epoch: 31, Batch(0/112) done. Loss: 240.86  lr:0.000040
+[ Wed May  6 21:35:42 2026 ] 	CR_ConvCTC_static: 44.41, CR_SeqCTC_static: 20.04, CR_Conv_static: 0.49, CR_Seq_static: 0.02, CR_ConvCTC_motion: 101.86, CR_SeqCTC_motion: 20.78, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 32.58, CR_SeqCTC_fusion: 19.92, CR_Conv_fusion: 0.74, CR_Seq_fusion: 0.01
+[ Wed May  6 21:37:04 2026 ] 	Epoch: 31, Batch(100/112) done. Loss: 154.19  lr:0.000040
+[ Wed May  6 21:37:04 2026 ] 	CR_ConvCTC_static: 24.90, CR_SeqCTC_static: 16.08, CR_Conv_static: 0.31, CR_Seq_static: 0.05, CR_ConvCTC_motion: 59.34, CR_SeqCTC_motion: 15.25, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 23.18, CR_SeqCTC_fusion: 14.81, CR_Conv_fusion: 0.25, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 21:37:13 2026 ] 	Mean training loss: 180.8727400643.
+100% 38/38 [00:07<00:00,  4.81it/s]
+[ Wed May  6 21:37:21 2026 ] [DEV EVAL] Total Inference Time: 7.61s
+[ Wed May  6 21:37:21 2026 ] [DEV EVAL] Inference Speed: 2253.37 Frames/s, 19.58 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:37:21 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:37:21 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:37:21 2026 ] Epoch 31, dev Conv1D WER:  112.80%, BiLSTM WER:  90.60%
+[ Wed May  6 21:37:21 2026 ] Dev WER: 90.60%
+[ Wed May  6 21:37:23 2026 ] 	Epoch: 32, Batch(0/112) done. Loss: 218.68  lr:0.000040
+[ Wed May  6 21:37:23 2026 ] 	CR_ConvCTC_static: 39.90, CR_SeqCTC_static: 15.71, CR_Conv_static: 0.27, CR_Seq_static: 0.01, CR_ConvCTC_motion: 105.75, CR_SeqCTC_motion: 15.96, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 24.96, CR_SeqCTC_fusion: 15.47, CR_Conv_fusion: 0.64, CR_Seq_fusion: 0.01
+[ Wed May  6 21:38:46 2026 ] 	Epoch: 32, Batch(100/112) done. Loss: 170.23  lr:0.000040
+[ Wed May  6 21:38:46 2026 ] 	CR_ConvCTC_static: 29.54, CR_SeqCTC_static: 16.52, CR_Conv_static: 0.28, CR_Seq_static: 0.02, CR_ConvCTC_motion: 61.38, CR_SeqCTC_motion: 18.57, CR_Conv_motion: 0.00, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 26.29, CR_SeqCTC_fusion: 17.23, CR_Conv_fusion: 0.36, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 21:38:54 2026 ] 	Mean training loss: 178.6050837381.
+100% 38/38 [00:07<00:00,  4.76it/s]
+[ Wed May  6 21:39:02 2026 ] [DEV EVAL] Total Inference Time: 7.69s
+[ Wed May  6 21:39:02 2026 ] [DEV EVAL] Inference Speed: 2229.43 Frames/s, 19.38 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:39:02 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:39:02 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:39:03 2026 ] Epoch 32, dev Conv1D WER:  176.50%, BiLSTM WER:  92.80%
+[ Wed May  6 21:39:03 2026 ] Dev WER: 92.80%
+[ Wed May  6 21:39:04 2026 ] 	Epoch: 33, Batch(0/112) done. Loss: 174.91  lr:0.000040
+[ Wed May  6 21:39:04 2026 ] 	CR_ConvCTC_static: 29.76, CR_SeqCTC_static: 16.44, CR_Conv_static: 0.59, CR_Seq_static: 0.03, CR_ConvCTC_motion: 70.69, CR_SeqCTC_motion: 15.99, CR_Conv_motion: 0.06, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 25.18, CR_SeqCTC_fusion: 16.00, CR_Conv_fusion: 0.15, CR_Seq_fusion: 0.01
+[ Wed May  6 21:40:28 2026 ] 	Epoch: 33, Batch(100/112) done. Loss: 176.25  lr:0.000040
+[ Wed May  6 21:40:28 2026 ] 	CR_ConvCTC_static: 29.01, CR_SeqCTC_static: 18.09, CR_Conv_static: 0.70, CR_Seq_static: 0.06, CR_ConvCTC_motion: 65.59, CR_SeqCTC_motion: 18.19, CR_Conv_motion: 0.00, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 25.79, CR_SeqCTC_fusion: 17.90, CR_Conv_fusion: 0.87, CR_Seq_fusion: 0.03
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 21:40:36 2026 ] 	Mean training loss: 177.0142859050.
+100% 38/38 [00:07<00:00,  4.80it/s]
+[ Wed May  6 21:40:44 2026 ] [DEV EVAL] Total Inference Time: 7.61s
+[ Wed May  6 21:40:44 2026 ] [DEV EVAL] Inference Speed: 2252.62 Frames/s, 19.58 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:40:44 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:40:44 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:40:44 2026 ] Epoch 33, dev Conv1D WER:  98.40%, BiLSTM WER:  92.10%
+[ Wed May  6 21:40:44 2026 ] Dev WER: 92.10%
+[ Wed May  6 21:40:45 2026 ] 	Epoch: 34, Batch(0/112) done. Loss: 180.89  lr:0.000040
+[ Wed May  6 21:40:45 2026 ] 	CR_ConvCTC_static: 31.00, CR_SeqCTC_static: 15.39, CR_Conv_static: 0.27, CR_Seq_static: 0.01, CR_ConvCTC_motion: 74.92, CR_SeqCTC_motion: 16.44, CR_Conv_motion: 0.06, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 25.94, CR_SeqCTC_fusion: 16.34, CR_Conv_fusion: 0.47, CR_Seq_fusion: 0.03
+[ Wed May  6 21:42:09 2026 ] 	Epoch: 34, Batch(100/112) done. Loss: 175.51  lr:0.000040
+[ Wed May  6 21:42:09 2026 ] 	CR_ConvCTC_static: 30.76, CR_SeqCTC_static: 13.26, CR_Conv_static: 0.58, CR_Seq_static: 0.02, CR_ConvCTC_motion: 76.52, CR_SeqCTC_motion: 14.53, CR_Conv_motion: 0.01, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 24.82, CR_SeqCTC_fusion: 14.43, CR_Conv_fusion: 0.56, CR_Seq_fusion: 0.02
+100% 112/112 [01:33<00:00,  1.19it/s]
+[ Wed May  6 21:42:18 2026 ] 	Mean training loss: 179.5669675555.
+100% 38/38 [00:07<00:00,  4.77it/s]
+[ Wed May  6 21:42:26 2026 ] [DEV EVAL] Total Inference Time: 7.62s
+[ Wed May  6 21:42:26 2026 ] [DEV EVAL] Inference Speed: 2251.33 Frames/s, 19.57 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:42:26 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:42:27 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:42:27 2026 ] Epoch 34, dev Conv1D WER:  96.20%, BiLSTM WER:  89.50%
+[ Wed May  6 21:42:27 2026 ] Dev WER: 89.50%
+[ Wed May  6 21:42:29 2026 ] 	Epoch: 35, Batch(0/112) done. Loss: 135.32  lr:0.000004
+[ Wed May  6 21:42:29 2026 ] 	CR_ConvCTC_static: 24.46, CR_SeqCTC_static: 11.75, CR_Conv_static: 0.58, CR_Seq_static: 0.02, CR_ConvCTC_motion: 53.78, CR_SeqCTC_motion: 12.10, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 19.72, CR_SeqCTC_fusion: 12.19, CR_Conv_fusion: 0.66, CR_Seq_fusion: 0.04
+[ Wed May  6 21:43:52 2026 ] 	Epoch: 35, Batch(100/112) done. Loss: 180.90  lr:0.000004
+[ Wed May  6 21:43:52 2026 ] 	CR_ConvCTC_static: 40.33, CR_SeqCTC_static: 17.34, CR_Conv_static: 0.36, CR_Seq_static: 0.03, CR_ConvCTC_motion: 61.49, CR_SeqCTC_motion: 17.85, CR_Conv_motion: 0.01, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 25.44, CR_SeqCTC_fusion: 17.68, CR_Conv_fusion: 0.34, CR_Seq_fusion: 0.02
+100% 112/112 [01:33<00:00,  1.20it/s]
+[ Wed May  6 21:44:01 2026 ] 	Mean training loss: 177.6462201391.
+100% 38/38 [00:07<00:00,  4.89it/s]
+[ Wed May  6 21:44:09 2026 ] [DEV EVAL] Total Inference Time: 7.49s
+[ Wed May  6 21:44:09 2026 ] [DEV EVAL] Inference Speed: 2290.16 Frames/s, 19.90 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:44:09 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:44:09 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:44:09 2026 ] Epoch 35, dev Conv1D WER:  97.70%, BiLSTM WER:  90.60%
+[ Wed May  6 21:44:09 2026 ] Dev WER: 90.60%
+[ Wed May  6 21:44:11 2026 ] 	Epoch: 36, Batch(0/112) done. Loss: 204.39  lr:0.000004
+[ Wed May  6 21:44:11 2026 ] 	CR_ConvCTC_static: 25.73, CR_SeqCTC_static: 16.13, CR_Conv_static: 0.23, CR_Seq_static: 0.02, CR_ConvCTC_motion: 107.56, CR_SeqCTC_motion: 15.54, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 23.44, CR_SeqCTC_fusion: 15.31, CR_Conv_fusion: 0.40, CR_Seq_fusion: 0.02
+[ Wed May  6 21:45:33 2026 ] 	Epoch: 36, Batch(100/112) done. Loss: 180.71  lr:0.000004
+[ Wed May  6 21:45:33 2026 ] 	CR_ConvCTC_static: 32.05, CR_SeqCTC_static: 16.92, CR_Conv_static: 0.60, CR_Seq_static: 0.03, CR_ConvCTC_motion: 70.05, CR_SeqCTC_motion: 17.74, CR_Conv_motion: 0.00, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 25.91, CR_SeqCTC_fusion: 17.02, CR_Conv_fusion: 0.36, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 21:45:43 2026 ] 	Mean training loss: 177.3652727263.
+100% 38/38 [00:07<00:00,  4.86it/s]
+[ Wed May  6 21:45:50 2026 ] [DEV EVAL] Total Inference Time: 7.50s
+[ Wed May  6 21:45:50 2026 ] [DEV EVAL] Inference Speed: 2284.71 Frames/s, 19.86 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:45:51 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:45:51 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:45:51 2026 ] Epoch 36, dev Conv1D WER:  97.20%, BiLSTM WER:  90.50%
+[ Wed May  6 21:45:51 2026 ] Dev WER: 90.50%
+[ Wed May  6 21:45:53 2026 ] 	Epoch: 37, Batch(0/112) done. Loss: 198.16  lr:0.000004
+[ Wed May  6 21:45:53 2026 ] 	CR_ConvCTC_static: 26.04, CR_SeqCTC_static: 14.22, CR_Conv_static: 0.10, CR_Seq_static: 0.01, CR_ConvCTC_motion: 101.84, CR_SeqCTC_motion: 15.13, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 25.97, CR_SeqCTC_fusion: 14.71, CR_Conv_fusion: 0.12, CR_Seq_fusion: 0.01
+[ Wed May  6 21:47:16 2026 ] 	Epoch: 37, Batch(100/112) done. Loss: 181.56  lr:0.000004
+[ Wed May  6 21:47:16 2026 ] 	CR_ConvCTC_static: 27.71, CR_SeqCTC_static: 16.77, CR_Conv_static: 0.21, CR_Seq_static: 0.02, CR_ConvCTC_motion: 76.65, CR_SeqCTC_motion: 17.15, CR_Conv_motion: 0.06, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 25.78, CR_SeqCTC_fusion: 17.12, CR_Conv_fusion: 0.05, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.21it/s]
+[ Wed May  6 21:47:24 2026 ] 	Mean training loss: 176.5587033544.
+100% 38/38 [00:07<00:00,  4.78it/s]
+[ Wed May  6 21:47:32 2026 ] [DEV EVAL] Total Inference Time: 7.65s
+[ Wed May  6 21:47:32 2026 ] [DEV EVAL] Inference Speed: 2239.86 Frames/s, 19.47 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:47:32 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:47:32 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:47:33 2026 ] Epoch 37, dev Conv1D WER:  97.30%, BiLSTM WER:  90.20%
+[ Wed May  6 21:47:33 2026 ] Dev WER: 90.20%
+[ Wed May  6 21:47:34 2026 ] 	Epoch: 38, Batch(0/112) done. Loss: 162.06  lr:0.000004
+[ Wed May  6 21:47:34 2026 ] 	CR_ConvCTC_static: 27.35, CR_SeqCTC_static: 15.27, CR_Conv_static: 0.36, CR_Seq_static: 0.02, CR_ConvCTC_motion: 61.50, CR_SeqCTC_motion: 16.60, CR_Conv_motion: 0.07, CR_Seq_motion: 0.02, CR_ConvCTC_fusion: 24.95, CR_SeqCTC_fusion: 15.75, CR_Conv_fusion: 0.14, CR_Seq_fusion: 0.02
+[ Wed May  6 21:48:56 2026 ] 	Epoch: 38, Batch(100/112) done. Loss: 189.96  lr:0.000004
+[ Wed May  6 21:48:56 2026 ] 	CR_ConvCTC_static: 30.59, CR_SeqCTC_static: 16.73, CR_Conv_static: 0.27, CR_Seq_static: 0.03, CR_ConvCTC_motion: 78.11, CR_SeqCTC_motion: 17.95, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 28.16, CR_SeqCTC_fusion: 17.38, CR_Conv_fusion: 0.69, CR_Seq_fusion: 0.03
+100% 112/112 [01:31<00:00,  1.22it/s]
+[ Wed May  6 21:49:05 2026 ] 	Mean training loss: 176.5368360792.
+100% 38/38 [00:07<00:00,  4.80it/s]
+[ Wed May  6 21:49:13 2026 ] [DEV EVAL] Total Inference Time: 7.62s
+[ Wed May  6 21:49:13 2026 ] [DEV EVAL] Inference Speed: 2249.42 Frames/s, 19.55 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:49:13 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:49:13 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:49:13 2026 ] Epoch 38, dev Conv1D WER:  95.80%, BiLSTM WER:  90.50%
+[ Wed May  6 21:49:13 2026 ] Dev WER: 90.50%
+[ Wed May  6 21:49:15 2026 ] 	Epoch: 39, Batch(0/112) done. Loss: 207.00  lr:0.000004
+[ Wed May  6 21:49:15 2026 ] 	CR_ConvCTC_static: 28.59, CR_SeqCTC_static: 14.89, CR_Conv_static: 0.28, CR_Seq_static: 0.01, CR_ConvCTC_motion: 103.99, CR_SeqCTC_motion: 16.90, CR_Conv_motion: 0.00, CR_Seq_motion: 0.01, CR_ConvCTC_fusion: 25.73, CR_SeqCTC_fusion: 16.06, CR_Conv_fusion: 0.51, CR_Seq_fusion: 0.02
+[ Wed May  6 21:50:38 2026 ] 	Epoch: 39, Batch(100/112) done. Loss: 204.33  lr:0.000004
+[ Wed May  6 21:50:38 2026 ] 	CR_ConvCTC_static: 30.01, CR_SeqCTC_static: 14.04, CR_Conv_static: 0.29, CR_Seq_static: 0.01, CR_ConvCTC_motion: 106.09, CR_SeqCTC_motion: 15.72, CR_Conv_motion: 0.19, CR_Seq_motion: 0.16, CR_ConvCTC_fusion: 23.38, CR_SeqCTC_fusion: 14.21, CR_Conv_fusion: 0.19, CR_Seq_fusion: 0.02
+100% 112/112 [01:32<00:00,  1.20it/s]
+[ Wed May  6 21:50:47 2026 ] 	Mean training loss: 175.8397259031.
+100% 38/38 [00:07<00:00,  4.91it/s]
+[ Wed May  6 21:50:54 2026 ] [DEV EVAL] Total Inference Time: 7.43s
+[ Wed May  6 21:50:54 2026 ] [DEV EVAL] Inference Speed: 2308.07 Frames/s, 20.06 Sequences/s
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:50:55 PM UTC 2026
+Preprocess Finished.
+/content/MSLR_ICCV2025
+preprocess.sh ./work_dir/sd/output-hypothesis-conv-fusion-dev.ctm ./work_dir/sd/tmp.ctm ./work_dir/sd/tmp2.ctm
+Wed May 6 09:50:55 PM UTC 2026
+Preprocess Finished.
+[ Wed May  6 21:50:55 2026 ] Epoch 39, dev Conv1D WER:  96.50%, BiLSTM WER:  90.10%
+[ Wed May  6 21:50:55 2026 ] Dev WER: 90.10%

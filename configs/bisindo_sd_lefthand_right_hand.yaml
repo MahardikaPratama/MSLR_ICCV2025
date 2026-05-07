@@ -1,0 +1,66 @@
+# Config file untuk model TwoStream_Cosign dengan setting signer dependent (sd) untuk dataset BISINDO
+work_dir: ./work_dir/sd/ # direktori untuk menyimpan model dan log
+device: 0 # device untuk training, bisa berupa int (misal 0 untuk GPU 0) atau string (misal 'cuda:0' atau 'cpu')
+phase: train # fase untuk menjalankan skrip, bisa berupa 'train' atau 'test'
+save_interval: 1 # interval untuk menyimpan model, dalam satuan epoch
+random_seed: 123 # seed untuk memastikan hasil yang dapat direproduksi
+eval_interval: 1 # interval untuk evaluasi model, dalam satuan epoch
+log_interval: 100 # interval untuk mencetak log, dalam satuan iterasi
+evaluate_tool: sclite # alat untuk evaluasi, bisa berupa 'sclite' atau 'wer'
+
+# feeder args untuk memuat data
+feeder: SkeletonFeeder
+dataset: bisindo # nama dataset yang digunakan (BISINDO signer dependent)
+num_worker: 2 # jumlah worker untuk memuat data
+feeder_args:
+  setting: sd # setting untuk dataset (signer dependent)
+  datatype: skeleton # jenis data yang digunakan
+  split: &split [21, 42]
+  norm_point: [0, 21]
+  used_part: &used_part ['hand21']
+  augmentation_types: [] # pilihan: ['SpatialJitter', 'SpatialScale', 'TemporalDrop', 'TemporalRescale']
+
+# model args
+model: TwoStream_Cosign
+model_args:
+  visual_args:
+    in_channels: 2 # 2 channel (x, y) karena sudah kita set menjadi 2D
+    split: *split
+    temporal_kernel: 5
+    hidden_size: 1024
+    modes: *used_part
+    level: '1'
+    adaptive: True
+    CR_args:
+      clip_length: 25
+      ratio: 0.2
+  conv_type: K3-P2-K3-P2
+  loss_weights:
+    CR_ConvCTC_static: 1.0
+    CR_SeqCTC_static: 1.0
+    CR_Conv_static: 2.0
+    CR_Seq_static: 2.0
+    CR_ConvCTC_motion: 1.0
+    CR_SeqCTC_motion: 1.0
+    CR_Conv_motion: 2.0
+    CR_Seq_motion: 2.0
+    CR_ConvCTC_fusion: 1.0
+    CR_SeqCTC_fusion: 1.0
+    CR_Conv_fusion: 2.0
+    CR_Seq_fusion: 2.0
+  norm_scale: 32
+
+# optim args
+batch_size: 8
+test_batch_size: 8
+optimizer_args:
+  base_lr: 0.0004
+  learning_ratio: 1
+  nesterov: false
+  optimizer: AdamW
+  start_epoch: 0
+  step:
+  - 20
+  - 35
+  weight_decay: 0.0001
+num_epoch: 40
