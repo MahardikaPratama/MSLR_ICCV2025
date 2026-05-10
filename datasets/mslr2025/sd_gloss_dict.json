@@ -33,28 +33,28 @@
             "frequency": 25
         },
         "9": {
-            "gloss": "B.INGGRIS",
-            "frequency": 25
-        },
-        "10": {
             "gloss": "BACA",
             "frequency": 25
         },
-        "11": {
+        "10": {
             "gloss": "BADAN",
             "frequency": 75
         },
+        "11": {
+            "gloss": "BAHASA",
+            "frequency": 25
+        },
         "12": {
             "gloss": "BAIK",
-            "frequency": 75
+            "frequency": 25
         },
         "13": {
-            "gloss": "BANYAK",
-            "frequency": 75
+            "gloss": "BAIK-BAIK",
+            "frequency": 25
         },
         "14": {
-            "gloss": "BAU",
-            "frequency": 25
+            "gloss": "BANYAK",
+            "frequency": 75
         },
         "15": {
             "gloss": "BELAJAR",
@@ -85,36 +85,36 @@
             "frequency": 25
         },
         "22": {
-            "gloss": "BOLEH",
-            "frequency": 25
-        },
-        "23": {
             "gloss": "BUAT",
             "frequency": 25
         },
-        "24": {
+        "23": {
             "gloss": "BUKU",
-            "frequency": 25
+            "frequency": 50
         },
-        "25": {
+        "24": {
             "gloss": "CIUM",
             "frequency": 25
         },
-        "26": {
+        "25": {
             "gloss": "DIA",
             "frequency": 125
         },
-        "27": {
+        "26": {
             "gloss": "DIMANA",
             "frequency": 25
         },
-        "28": {
+        "27": {
             "gloss": "ENAK",
             "frequency": 25
         },
-        "29": {
+        "28": {
             "gloss": "GAK",
-            "frequency": 50
+            "frequency": 25
+        },
+        "29": {
+            "gloss": "GAKBOLEH",
+            "frequency": 25
         },
         "30": {
             "gloss": "GEGARA",
@@ -125,23 +125,23 @@
             "frequency": 25
         },
         "32": {
-            "gloss": "GIMANA",
-            "frequency": 25
-        },
-        "33": {
             "gloss": "HADIAH",
             "frequency": 25
         },
-        "34": {
+        "33": {
             "gloss": "HARUS",
             "frequency": 25
         },
-        "35": {
+        "34": {
             "gloss": "IBU",
             "frequency": 75
         },
-        "36": {
+        "35": {
             "gloss": "IKAN",
+            "frequency": 25
+        },
+        "36": {
+            "gloss": "INGGRIS",
             "frequency": 25
         },
         "37": {
@@ -189,202 +189,186 @@
             "frequency": 25
         },
         "48": {
-            "gloss": "KEMANA",
-            "frequency": 25
-        },
-        "49": {
             "gloss": "KEMARIN",
             "frequency": 25
         },
-        "50": {
+        "49": {
             "gloss": "KENAPA",
             "frequency": 25
         },
-        "51": {
+        "50": {
             "gloss": "KITA",
             "frequency": 25
         },
-        "52": {
+        "51": {
             "gloss": "KOTOR",
             "frequency": 50
         },
-        "53": {
+        "52": {
             "gloss": "KUCING",
             "frequency": 25
         },
-        "54": {
+        "53": {
             "gloss": "KULIAH",
             "frequency": 25
         },
-        "55": {
+        "54": {
             "gloss": "KURUS",
             "frequency": 25
         },
-        "56": {
+        "55": {
             "gloss": "LIHAT",
             "frequency": 50
         },
-        "57": {
+        "56": {
             "gloss": "MAHAL",
             "frequency": 25
         },
-        "58": {
+        "57": {
             "gloss": "MAKAN",
             "frequency": 25
         },
-        "59": {
+        "58": {
             "gloss": "MANA",
-            "frequency": 75
+            "frequency": 125
         },
-        "60": {
+        "59": {
             "gloss": "MASUK",
             "frequency": 50
         },
-        "61": {
+        "60": {
             "gloss": "MENGEJEK",
             "frequency": 25
         },
-        "62": {
+        "61": {
             "gloss": "NASI",
             "frequency": 25
         },
-        "63": {
+        "62": {
             "gloss": "NILAI",
             "frequency": 25
         },
-        "64": {
-            "gloss": "NOVEL",
+        "63": {
+            "gloss": "OBAT",
             "frequency": 25
         },
-        "65": {
-            "gloss": "OBAT",
-            "frequency": 50
-        },
-        "66": {
+        "64": {
             "gloss": "ORANG",
             "frequency": 75
         },
-        "67": {
+        "65": {
             "gloss": "PADANG",
             "frequency": 25
         },
-        "68": {
+        "66": {
             "gloss": "PENCURI",
             "frequency": 25
         },
-        "69": {
+        "67": {
             "gloss": "PERGI",
             "frequency": 25
         },
-        "70": {
+        "68": {
             "gloss": "PERIKSA",
             "frequency": 25
         },
-        "71": {
+        "69": {
             "gloss": "PERNAH",
             "frequency": 25
         },
-        "72": {
+        "70": {
             "gloss": "POLISI",
             "frequency": 25
         },
-        "73": {
+        "71": {
             "gloss": "PUKUL",
             "frequency": 50
         },
-        "74": {
+        "72": {
             "gloss": "PULANG",
             "frequency": 25
         },
-        "75": {
+        "73": {
             "gloss": "PUNYA",
             "frequency": 50
         },
-        "76": {
+        "74": {
             "gloss": "PUSING",
             "frequency": 25
         },
-        "77": {
+        "75": {
             "gloss": "RIBUAN",
             "frequency": 25
         },
-        "78": {
+        "76": {
             "gloss": "RUMAH",
             "frequency": 25
         },
-        "79": {
+        "77": {
             "gloss": "SAMA",
             "frequency": 50
         },
-        "80": {
-            "gloss": "SAMPAH",
-            "frequency": 25
-        },
-        "81": {
+        "78": {
             "gloss": "SAMPAI",
             "frequency": 25
         },
-        "82": {
+        "79": {
             "gloss": "SANA",
             "frequency": 150
         },
-        "83": {
+        "80": {
             "gloss": "SEKARANG",
             "frequency": 25
         },
-        "84": {
+        "81": {
             "gloss": "SELAMAT",
             "frequency": 25
         },
-        "85": {
+        "82": {
             "gloss": "SEMUT",
             "frequency": 25
         },
-        "86": {
+        "83": {
             "gloss": "SEPATU",
             "frequency": 25
         },
-        "87": {
-            "gloss": "SERING,",
-            "frequency": 25
-        },
-        "88": {
+        "84": {
             "gloss": "SOBEK",
             "frequency": 25
         },
-        "89": {
+        "85": {
             "gloss": "SUDAH",
             "frequency": 25
         },
-        "90": {
+        "86": {
             "gloss": "SUKA",
             "frequency": 25
         },
-        "91": {
+        "87": {
             "gloss": "TAPI",
             "frequency": 50
         },
-        "92": {
+        "88": {
             "gloss": "TIDAK",
             "frequency": 25
         },
-        "93": {
+        "89": {
             "gloss": "TOILET",
             "frequency": 25
         },
-        "94": {
+        "90": {
             "gloss": "TOKO",
             "frequency": 25
         },
-        "95": {
-            "gloss": "TONG",
+        "91": {
+            "gloss": "TONG-SAMPAH",
             "frequency": 25
         },
-        "96": {
-            "gloss": "ULANG TAHUN",
+        "92": {
+            "gloss": "ULANGTAHUN",
             "frequency": 25
         },
-        "98": {
+        "93": {
             "gloss": "ULAR",
             "frequency": 50
         }
@@ -422,29 +406,29 @@
             "index": 8,
             "frequency": 25
         },
-        "B.INGGRIS": {
+        "BACA": {
             "index": 9,
             "frequency": 25
         },
-        "BACA": {
-            "index": 10,
-            "frequency": 25
-        },
         "BADAN": {
-            "index": 11,
+            "index": 10,
             "frequency": 75
+        },
+        "BAHASA": {
+            "index": 11,
+            "frequency": 25
         },
         "BAIK": {
             "index": 12,
-            "frequency": 75
+            "frequency": 25
+        },
+        "BAIK-BAIK": {
+            "index": 13,
+            "frequency": 25
         },
         "BANYAK": {
-            "index": 13,
-            "frequency": 75
-        },
-        "BAU": {
             "index": 14,
-            "frequency": 25
+            "frequency": 75
         },
         "BELAJAR": {
             "index": 15,
@@ -474,37 +458,37 @@
             "index": 21,
             "frequency": 25
         },
-        "BOLEH": {
+        "BUAT": {
             "index": 22,
             "frequency": 25
         },
-        "BUAT": {
-            "index": 23,
-            "frequency": 25
-        },
         "BUKU": {
+            "index": 23,
+            "frequency": 50
+        },
+        "CIUM": {
             "index": 24,
             "frequency": 25
         },
-        "CIUM": {
-            "index": 25,
-            "frequency": 25
-        },
         "DIA": {
-            "index": 26,
+            "index": 25,
             "frequency": 125
         },
         "DIMANA": {
-            "index": 27,
+            "index": 26,
             "frequency": 25
         },
         "ENAK": {
-            "index": 28,
+            "index": 27,
             "frequency": 25
         },
         "GAK": {
+            "index": 28,
+            "frequency": 25
+        },
+        "GAKBOLEH": {
             "index": 29,
-            "frequency": 50
+            "frequency": 25
         },
         "GEGARA": {
             "index": 30,
@@ -514,23 +498,23 @@
             "index": 31,
             "frequency": 25
         },
-        "GIMANA": {
+        "HADIAH": {
             "index": 32,
             "frequency": 25
         },
-        "HADIAH": {
+        "HARUS": {
             "index": 33,
             "frequency": 25
         },
-        "HARUS": {
-            "index": 34,
-            "frequency": 25
-        },
         "IBU": {
-            "index": 35,
+            "index": 34,
             "frequency": 75
         },
         "IKAN": {
+            "index": 35,
+            "frequency": 25
+        },
+        "INGGRIS": {
             "index": 36,
             "frequency": 25
         },
@@ -578,204 +562,188 @@
             "index": 47,
             "frequency": 25
         },
-        "KEMANA": {
+        "KEMARIN": {
             "index": 48,
             "frequency": 25
         },
-        "KEMARIN": {
+        "KENAPA": {
             "index": 49,
             "frequency": 25
         },
-        "KENAPA": {
+        "KITA": {
             "index": 50,
             "frequency": 25
         },
-        "KITA": {
-            "index": 51,
-            "frequency": 25
-        },
         "KOTOR": {
-            "index": 52,
+            "index": 51,
             "frequency": 50
         },
         "KUCING": {
-            "index": 53,
+            "index": 52,
             "frequency": 25
         },
         "KULIAH": {
-            "index": 54,
+            "index": 53,
             "frequency": 25
         },
         "KURUS": {
-            "index": 55,
+            "index": 54,
             "frequency": 25
         },
         "LIHAT": {
-            "index": 56,
+            "index": 55,
             "frequency": 50
         },
         "MAHAL": {
-            "index": 57,
+            "index": 56,
             "frequency": 25
         },
         "MAKAN": {
-            "index": 58,
+            "index": 57,
             "frequency": 25
         },
         "MANA": {
-            "index": 59,
-            "frequency": 75
+            "index": 58,
+            "frequency": 125
         },
         "MASUK": {
-            "index": 60,
+            "index": 59,
             "frequency": 50
         },
         "MENGEJEK": {
-            "index": 61,
+            "index": 60,
             "frequency": 25
         },
         "NASI": {
-            "index": 62,
+            "index": 61,
             "frequency": 25
         },
         "NILAI": {
-            "index": 63,
-            "frequency": 25
-        },
-        "NOVEL": {
-            "index": 64,
+            "index": 62,
             "frequency": 25
         },
         "OBAT": {
-            "index": 65,
-            "frequency": 50
+            "index": 63,
+            "frequency": 25
         },
         "ORANG": {
-            "index": 66,
+            "index": 64,
             "frequency": 75
         },
         "PADANG": {
-            "index": 67,
+            "index": 65,
             "frequency": 25
         },
         "PENCURI": {
-            "index": 68,
+            "index": 66,
             "frequency": 25
         },
         "PERGI": {
-            "index": 69,
+            "index": 67,
             "frequency": 25
         },
         "PERIKSA": {
-            "index": 70,
+            "index": 68,
             "frequency": 25
         },
         "PERNAH": {
-            "index": 71,
+            "index": 69,
             "frequency": 25
         },
         "POLISI": {
-            "index": 72,
+            "index": 70,
             "frequency": 25
         },
         "PUKUL": {
-            "index": 73,
+            "index": 71,
             "frequency": 50
         },
         "PULANG": {
-            "index": 74,
+            "index": 72,
             "frequency": 25
         },
         "PUNYA": {
-            "index": 75,
+            "index": 73,
             "frequency": 50
         },
         "PUSING": {
-            "index": 76,
+            "index": 74,
             "frequency": 25
         },
         "RIBUAN": {
-            "index": 77,
+            "index": 75,
             "frequency": 25
         },
         "RUMAH": {
-            "index": 78,
+            "index": 76,
             "frequency": 25
         },
         "SAMA": {
-            "index": 79,
+            "index": 77,
             "frequency": 50
         },
-        "SAMPAH": {
-            "index": 80,
-            "frequency": 25
-        },
         "SAMPAI": {
-            "index": 81,
+            "index": 78,
             "frequency": 25
         },
         "SANA": {
-            "index": 82,
+            "index": 79,
             "frequency": 150
         },
         "SEKARANG": {
-            "index": 83,
+            "index": 80,
             "frequency": 25
         },
         "SELAMAT": {
-            "index": 84,
+            "index": 81,
             "frequency": 25
         },
         "SEMUT": {
-            "index": 85,
+            "index": 82,
             "frequency": 25
         },
         "SEPATU": {
-            "index": 86,
-            "frequency": 25
-        },
-        "SERING,": {
-            "index": 87,
+            "index": 83,
             "frequency": 25
         },
         "SOBEK": {
-            "index": 88,
+            "index": 84,
             "frequency": 25
         },
         "SUDAH": {
-            "index": 89,
+            "index": 85,
             "frequency": 25
         },
         "SUKA": {
-            "index": 90,
+            "index": 86,
             "frequency": 25
         },
         "TAPI": {
-            "index": 91,
+            "index": 87,
             "frequency": 50
         },
         "TIDAK": {
-            "index": 92,
+            "index": 88,
             "frequency": 25
         },
         "TOILET": {
-            "index": 93,
+            "index": 89,
             "frequency": 25
         },
         "TOKO": {
-            "index": 94,
+            "index": 90,
             "frequency": 25
         },
-        "TONG": {
-            "index": 95,
+        "TONG-SAMPAH": {
+            "index": 91,
             "frequency": 25
         },
-        "ULANG TAHUN": {
-            "index": 96,
+        "ULANGTAHUN": {
+            "index": 92,
             "frequency": 25
         },
         "ULAR": {
-            "index": 97,
+            "index": 93,
             "frequency": 50
         }
     }
