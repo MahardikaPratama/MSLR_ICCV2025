@@ -1,78 +1,341 @@
-# Skeleton-based Continuous Sign Language Recognition for BISINDO
+<div align="center">
 
-🏆 This repository is an adaptation of the official repository for *A Closer Look at Skeleton-based Continuous Sign Language Recognition* (winner of ICCV 2025 SignEval 2025). This version has been specifically tailored to support **Signer-Dependent (SD)** tasks using the **BISINDO (Indonesian Sign Language)** dataset.
+# 🤟 BISINDO-CSLR
 
-The core implementation is built upon [VAC](https://github.com/VIPL-SLP/VAC_CSLR) and [CoSign](https://openaccess.thecvf.com/content/ICCV2023/html/Jiao_CoSign_Exploring_Co-occurrence_Signals_in_Skeleton-based_Continuous_Sign_Language_Recognition_ICCV_2023_paper.html) frameworks.
+### Skeleton-based Continuous Sign Language Recognition
+### for BISINDO — Bandung Variant · Signer-Independent
 
-## Prerequisites
+<br/>
 
-- This project is implemented in Pytorch (recommended `==2.0.0` to be compatible with `ctcdecode` and prevent errors). Thus, please install Pytorch first.
-- `ctcdecode==0.4` [[WayenVan/ctcdecode]](https://github.com/WayenVan/ctcdecode), for beam search decode.
-- `sclite` [[kaldi-asr/kaldi]](https://github.com/kaldi-asr/kaldi), install the kaldi tool to get sclite for evaluation. After installation, create a soft link to the sclite:  
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0.0-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![MediaPipe](https://img.shields.io/badge/MediaPipe-Holistic-0097A7?style=flat-square)](https://google.github.io/mediapipe/)
+[![License](https://img.shields.io/badge/License-Academic%20Use-green?style=flat-square)](LICENSE)
+[![Based on](https://img.shields.io/badge/Based%20on-ICCV%202025%20Winner-FFD700?style=flat-square)](https://openaccess.thecvf.com/)
+
+<br/>
+
+**Undergraduate Thesis (Tugas Akhir) · Politeknik Negeri Bandung · 2026**
+
+[Mahardika Pratama](mailto:) (221524044) &nbsp;·&nbsp; [Sarah](mailto:) (221524059)
+
+*D-IV Teknik Informatika — Jurusan Teknik Komputer dan Informatika*
+
+<br/>
+
+[📄 Thesis Report](#-citation) &nbsp;|&nbsp; [📦 Dataset](#-dataset) &nbsp;|&nbsp; [🚀 Quick Start](#-quick-start) &nbsp;|&nbsp; [⚙️ Configuration](#️-configuration--augmentation)
+
+</div>
+
+---
+
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Model Architecture](#-model-architecture)
+- [Dataset](#-dataset)
+- [Prerequisites](#-prerequisites)
+- [Quick Start](#-quick-start)
+  - [1. Installation](#1-installation)
+  - [2. Dataset Setup](#2-dataset-setup)
+  - [3. Preprocessing](#3-preprocessing)
+- [Configuration & Augmentation](#️-configuration--augmentation)
+- [Training & Evaluation](#️-training--evaluation)
+- [Repository Structure](#-repository-structure)
+- [Citation](#-citation)
+- [Acknowledgements](#-acknowledgements)
+- [Contact](#-contact)
+
+---
+
+## 🔍 Overview
+
+This repository is the official implementation for the undergraduate thesis:
+
+> **"Analisis Konfigurasi Pipeline Pre-Processing pada Model GCN-1DCNN-BiLSTM untuk Continuous Sign Language Recognition BISINDO Variasi Bandung dalam Skenario Signer-Independent"**
+>
+> *Analysis of Pre-Processing Pipeline Configuration on a GCN-1DCNN-BiLSTM Model for Continuous Sign Language Recognition of the Bandung Variant of BISINDO in a Signer-Independent Scenario*
+
+The central research question is: **how do pre-processing pipeline configurations affect model performance on skeleton-based CSLR?** Three independent variables are systematically analyzed:
+
+| Variable | Options Explored |
+|---|---|
+| **Input Signal Selection** | Skeleton component combinations (GL, GR, GP, GM) |
+| **Downsampling Ratio** | Frame subsampling rates |
+| **Data Augmentation** | Spatial & temporal augmentation strategies |
+
+All experiments are conducted under a **signer-independent** scenario — signers in the test set are entirely unseen during training — on a self-collected **BISINDO (Bahasa Isyarat Indonesia)** dataset in its **Bandung regional variant**.
+
+The implementation adapts:
+- 🏆 **[Min et al., ICCV Workshop 2025]** — *A Closer Look at Skeleton-based CSLR* (SignEval 2025 winner)
+- **[CoSign — Jiao et al., ICCV 2023]** — *Exploring Co-occurrence Signals in Skeleton-based CSLR*
+
+---
+
+## 🧠 Model Architecture
+
+<!-- 
+  TODO: Replace this placeholder with your architecture diagram.
+  Recommended: export from draw.io or a similar tool as a high-resolution PNG,
+  place it at docs/architecture.png, then uncomment the line below.
+-->
+
+> 📌 **Architecture diagram coming soon.**
+> *(Add your figure at `docs/architecture.png` and uncomment the line below.)*
+
+<!-- ![Architecture Diagram](docs/architecture.png) -->
+
+The model follows a skeleton-to-gloss pipeline:
+
+**MediaPipe Holistic** → **Skeleton Keypoints** (GL · GR · GP · GM) → **Pre-Processing** *(Input Selection → Downsampling → Augmentation)* → **GCN** → **1D-CNN** → **BiLSTM** → **CTC Decoder** → **Gloss Sequence**
+
+Evaluation is performed using **WER (Word Error Rate)** and **Inference Speed (seq/s)**.
+
+**Skeleton components extracted via MediaPipe Holistic:**
+
+| Symbol | Component | Keypoints |
+|---|---|---|
+| `GP` | Pose / Body | 33 landmarks |
+| `GL` | Left Hand | 21 landmarks |
+| `GR` | Right Hand | 21 landmarks |
+| `GM` | Face Mesh | 468 landmarks |
+
+---
+
+## 📦 Dataset
+
+The BISINDO dataset used in this research was **independently collected and curated** as part of this thesis. It captures the **Bandung regional variant** of BISINDO and is structured for signer-independent evaluation, with annotation performed using the **ELAN** tool and ground truth files generated via custom scripts.
+
+<div align="center">
+
+| Property | Detail |
+|---|---|
+| Language | BISINDO (Bandung Variant) |
+| Scenario | Signer-Independent |
+| Format | Pre-extracted skeleton (`.pkl`) |
+| Annotation Tool | ELAN |
+| Keypoint Extractor | MediaPipe Holistic |
+
+</div>
+
+### ⬇️ Download
+
+The pre-extracted skeleton dataset is publicly available on Google Drive:
+
+<div align="center">
+
+**[📥 Download BISINDO Skeleton Dataset (Google Drive)](https://drive.google.com/drive/folders/1jxAJ7VIvrL2X4WpvqhDdmZH6lUXGQrnF?usp=drive_link)**
+
+</div>
+
+Download the following files and place them inside the `datasets/` directory:
+
+```
+datasets/
+├── pose_bisindo_test.pkl
+└── pose_bisindo_train_dev.pkl
+```
+
+---
+
+## 🛠 Prerequisites
+
+Ensure the following are installed before proceeding:
+
+- **Python** 3.8+
+- **PyTorch `==2.0.0`** — required for `ctcdecode` compatibility → [pytorch.org](https://pytorch.org/get-started/locally/)
+- **`ctcdecode==0.4`** — beam search decoder → [[WayenVan/ctcdecode]](https://github.com/WayenVan/ctcdecode)
+- **`sclite`** (via Kaldi) — evaluation scoring tool → [[kaldi-asr/kaldi]](https://github.com/kaldi-asr/kaldi)
+
+After installing Kaldi, create a soft link to `sclite`:
 
 ```bash
 mkdir ./software
 ln -s PATH_TO_KALDI/tools/sctk-2.4.10/bin/sclite ./software/sclite
 ```
 
-## Setup Instructions
+---
 
-1. **Download the BISINDO dataset**. Download the pre-extracted skeleton pickle files and place them in the `./datasets` folder.
-   - `pose_bisindo_test.pkl`
-   - `pose_bisindo_train_dev.pkl`
+## 🚀 Quick Start
 
-2. **Preprocess the dataset**. Run the command to generate the gloss dict, dataset info, and groundtruth (`.stm` files) for evaluation.
+### 1. Installation
 
 ```bash
-cd ./preprocess/mslr2025
+git clone https://github.com/YOUR_USERNAME/bisindo-cslr.git
+cd bisindo-cslr
+pip install -r requirements.txt
+```
+
+### 2. Dataset Setup
+
+[Download the dataset](#️-download) from Google Drive and place the files as follows:
+
+```
+datasets/
+├── pose_bisindo_test.pkl
+└── pose_bisindo_train_dev.pkl
+```
+
+### 3. Preprocessing
+
+Generate the gloss dictionary, dataset info, and ground truth `.stm` files required for evaluation:
+
+```bash
+cd preprocess/mslr2025
 python mslr_process.py
 cd ../../
 ```
 
-## Configuration & Augmentation
+---
 
-The model uses a configuration file located at `configs/bisindo_sd.yaml`.
-You can configure dynamic data augmentation during training directly from this YAML file by modifying `augmentation_types` under `feeder_args`:
-```yaml
-feeder_args:
-  augmentation_types: [] # Options: ['SpatialJitter', 'SpatialScale', 'TemporalDrop', 'TemporalRescale']
+## ⚙️ Configuration & Augmentation
+
+All model and training hyperparameters are controlled via a single YAML file:
+
+```
+configs/bisindo_sd.yaml
 ```
 
-## Running the Model
+### Data Augmentation
 
-### Signer Dependent (BISINDO)
+Toggle augmentation strategies under `feeder_args`:
 
-- **Train:** Run the following command to start training the model:
+```yaml
+feeder_args:
+  augmentation_types: []
+  # Options: ['SpatialJitter', 'SpatialScale', 'TemporalDrop', 'TemporalRescale']
+```
+
+The four augmentation types investigated in this thesis:
+
+| Augmentation | Domain | Description |
+|---|---|---|
+| `SpatialJitter` | Spatial | Adds Gaussian noise (σ-controlled) to keypoint coordinates — simulates natural hand tremor and sensor noise |
+| `SpatialScale` | Spatial | Randomly scales keypoint coordinates — simulates signer distance variation |
+| `TemporalDrop` | Temporal | Randomly drops frames — simulates frame loss and variable recording conditions |
+| `TemporalRescale` | Temporal | Randomly rescales temporal sequence length — simulates signing speed variation |
+
+> Multiple types can be combined, e.g., `['SpatialJitter', 'TemporalDrop']`
+
+---
+
+## 🏋️ Training & Evaluation
+
+### Train
 
 ```bash
 python main.py --config ./configs/bisindo_sd.yaml
 ```
 
-- **Test:** Run the following command for evaluation (testing):
+### Evaluate
 
 ```bash
-python main.py --config ./configs/bisindo_sd.yaml --phase test --load-weights PATH_TO_PRETRAINED_MODEL
+python main.py --config ./configs/bisindo_sd.yaml \
+               --phase test \
+               --load-weights PATH_TO_PRETRAINED_MODEL
 ```
 
-*(Note: Replace `PATH_TO_PRETRAINED_MODEL` with your trained `.pt` model file path).*
+> Replace `PATH_TO_PRETRAINED_MODEL` with the path to your trained `.pt` checkpoint file.
 
-## Citation
+### Metrics
 
-If you find the base architectures useful in your research works, please consider citing:
+| Metric | Description | Direction |
+|---|---|---|
+| **WER** (Word Error Rate) | Edit distance between predicted and reference gloss sequences | ↓ Lower is better |
+| **Inference Speed** (seq/s) | Number of sequences processed per second | ↑ Higher is better |
 
-```latex
+---
+
+## 📁 Repository Structure
+
+```
+bisindo-cslr/
+│
+├── configs/
+│   └── bisindo_sd.yaml          # Main configuration (model, training, augmentation)
+│
+├── datasets/                    # Skeleton data — download separately (see Dataset section)
+│   ├── pose_bisindo_test.pkl
+│   └── pose_bisindo_train_dev.pkl
+│
+├── docs/                        # Documentation assets
+│   └── architecture.png         # (placeholder — add your architecture diagram here)
+│
+├── preprocess/
+│   └── mslr2025/
+│       └── mslr_process.py      # Preprocessing: gloss dict, dataset info, .stm files
+│
+├── software/
+│   └── sclite -> ...            # Soft link to sclite binary (from Kaldi)
+│
+├── feeder/                      # Data loading and augmentation modules
+├── model/                       # GCN, 1D-CNN, BiLSTM, CTC components
+├── utils/                       # Utilities and helper functions
+│
+├── main.py                      # Entry point — train / evaluate
+├── requirements.txt             # Python dependencies
+└── README.md
+```
+
+---
+
+## 📚 Citation
+
+If you use this code, dataset, or findings in your research, please cite:
+
+```bibtex
+@thesis{pratama2026bisindo,
+  title   = {Analisis Konfigurasi Pipeline Pre-Processing pada Model GCN-1DCNN-BiLSTM
+             untuk Continuous Sign Language Recognition BISINDO Variasi Bandung
+             dalam Skenario Signer-Independent},
+  author  = {Pratama, Mahardika and Sarah},
+  year    = {2026},
+  school  = {Politeknik Negeri Bandung},
+  type    = {Laporan Tugas Akhir},
+  program = {D-IV Teknik Informatika, Jurusan Teknik Komputer dan Informatika}
+}
+```
+
+This work builds upon the following:
+
+```bibtex
 @inproceedings{min2025closer,
-  title={A Closer Look at Skeleton-based Continuous Sign Language Recognition},
-  author={Min, Yuecong and Yang, Yifan and Jiao, Peiqi and Nan, Zixi and Chen, Xilin},
-  booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision Workshops},
-  year={2025}
+  title     = {A Closer Look at Skeleton-based Continuous Sign Language Recognition},
+  author    = {Min, Yuecong and Yang, Yifan and Jiao, Peiqi and Nan, Zixi and Chen, Xilin},
+  booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision Workshops},
+  year      = {2025}
 }
 
 @inproceedings{jiao2023cosign,
-  title={Cosign: Exploring co-occurrence signals in skeleton-based continuous sign language recognition},
-  author={Jiao, Peiqi and Min, Yuecong and Li, Yanan and Wang, Xiaotao and Lei, Lei and Chen, Xilin},
-  booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision},
-  pages={20676--20686},
-  year={2023}
+  title     = {CoSign: Exploring Co-occurrence Signals in Skeleton-based Continuous Sign Language Recognition},
+  author    = {Jiao, Peiqi and Min, Yuecong and Li, Yanan and Wang, Xiaotao and Lei, Lei and Chen, Xilin},
+  booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision},
+  pages     = {20676--20686},
+  year      = {2023}
 }
 ```
+
+---
+
+## 🙏 Acknowledgements
+
+This work was conducted as part of an undergraduate thesis at **Politeknik Negeri Bandung**. We gratefully acknowledge the base framework provided by Min et al. (ICCV Workshop 2025) and the CoSign architecture by Jiao et al. (ICCV 2023). We also thank all signers and contributors who participated in the BISINDO dataset collection process.
+
+---
+
+## 📬 Contact
+
+For questions about the research, dataset, or implementation:
+
+| Name | NIM | Institution |
+|---|---|---|
+| Mahardika Pratama | 221524044 | Politeknik Negeri Bandung |
+| Sarah | 221524059 | Politeknik Negeri Bandung |
+
+*Jurusan Teknik Komputer dan Informatika · D-IV Teknik Informatika*
+
+---
+
+<div align="center">
+<sub>Made with ❤️ for the Indonesian Deaf community · Politeknik Negeri Bandung · 2026</sub>
+</div>

@@ -10,14 +10,14 @@ evaluate_tool: sclite # alat untuk evaluasi, bisa berupa 'sclite' atau 'wer'
 
 # feeder args untuk memuat data
 feeder: SkeletonFeeder
-dataset: bisindo # nama dataset yang digunakan (BISINDO signer dependent)
+dataset: bisindo_sd # nama dataset yang digunakan (BISINDO signer dependent)
 num_worker: 2 # jumlah worker untuk memuat data
 feeder_args:
   setting: sd # setting untuk dataset (signer dependent)
   datatype: skeleton # jenis data yang digunakan
-  split: &split [21, 42]
-  norm_point: [0, 21]
-  used_part: &used_part ['hand21']
+  split: &split [25, 46, 67, 86]
+  norm_point: [0, 25, 46, 67]
+  used_part: &used_part ['body', 'hand21', 'mouth_8']
   augmentation_types: [] # pilihan: ['SpatialJitter', 'SpatialScale', 'TemporalDrop', 'TemporalRescale']
 
 # model args
@@ -51,8 +51,8 @@ model_args:
   norm_scale: 32
 
 # optim args
-batch_size: 4
-test_batch_size: 4
+batch_size: 8
+test_batch_size: 8
 optimizer_args:
   base_lr: 0.0004
   learning_ratio: 1
