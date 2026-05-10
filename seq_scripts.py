@@ -100,45 +100,39 @@ def seq_eval(
     # Pilih mode evaluasi (python atau eksternal)
     python_eval = True if evaluate_tool == "python" else False
 
-    # Buat subfolder khusus untuk hasil test jika mode test
-    test_results_dir = work_dir
+
+    # Penentuan direktori hasil sesuai mode dan task
     if mode == 'test':
-        test_results_dir = os.path.join(work_dir, 'test_results' + os.sep)
+        # Penamaan folder test: sd/si
+        test_type = 'si' if task == 'si' else 'sd'
+        test_results_dir = os.path.join(work_dir, 'test', test_type)
         if not os.path.exists(test_results_dir):
             os.makedirs(test_results_dir)
-    
-    # Tulis hasil prediksi ke file CTM
-    write2file(
-        test_results_dir + "output-hypothesis-fusion-{}.ctm".format(mode), total_info, total_sent_fusion
-    )
-    write2file(
-        test_results_dir + "output-hypothesis-conv-fusion-{}.ctm".format(mode), total_info, total_sent_conv_fusion
-    )
-
-    # Jika mode test, hasil akhir ditulis ke CSV di subfolder
-    if mode == 'test':
-        csv_file = f'{test_results_dir}test.csv'
+        # Simpan hasil prediksi ke CTM
+        write2file(
+            os.path.join(test_results_dir, "output-hypothesis-fusion-{}.ctm".format(mode)), total_info, total_sent_fusion
+        )
+        write2file(
+            os.path.join(test_results_dir, "output-hypothesis-conv-fusion-{}.ctm".format(mode)), total_info, total_sent_conv_fusion
+        )
+        # Simpan hasil ke CSV
+        csv_file = os.path.join(test_results_dir, 'test.csv')
         if task == 'us':
-            ctm_file = f'{test_results_dir}output-hypothesis-conv-fusion-test.ctm'
+            ctm_file = os.path.join(test_results_dir, 'output-hypothesis-conv-fusion-test.ctm')
         else:
-            ctm_file = f'{test_results_dir}output-hypothesis-fusion-test.ctm'
-        # Baca file CTM hasil prediksi
+            ctm_file = os.path.join(test_results_dir, 'output-hypothesis-fusion-test.ctm')
         with open(ctm_file, "r", encoding="utf-8") as file:
             lines = file.readlines()
         data = {}
-        # Proses setiap baris CTM menjadi dictionary id -> list kata
         for line_idx, line in enumerate(lines):
             parts = line.strip().split()
-            if len(parts) >= 5:  
-                id = parts[0]  
-                word = parts[4]  
+            if len(parts) >= 5:
+                id = parts[0]
+                word = parts[4]
                 if id not in data:
                     data[id] = []
                 data[id].append(word)
-
-        data = dict(sorted(data.items(), key=lambda item: item[0]))  # Urutkan berdasarkan id (string)
-
-        # Tulis hasil ke file CSV
+        data = dict(sorted(data.items(), key=lambda item: item[0]))
         with open(csv_file, "w", newline='', encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["id", "gloss"])
@@ -147,39 +141,46 @@ def seq_eval(
                 writer.writerow([id, gloss])
         return csv_file
     else:
+        # Mode selain test (train/val): simpan ke folder train
+        train_results_dir = os.path.join(work_dir, 'train')
+        if not os.path.exists(train_results_dir):
+            os.makedirs(train_results_dir)
+        write2file(
+            os.path.join(train_results_dir, "output-hypothesis-fusion-{}.ctm".format(mode)), total_info, total_sent_fusion
+        )
+        write2file(
+            os.path.join(train_results_dir, "output-hypothesis-conv-fusion-{}.ctm".format(mode)), total_info, total_sent_conv_fusion
+        )
         try:
             # Evaluasi hasil BiLSTM
             lstm_ret_fusion = evaluate(
-                prefix=work_dir,
+                prefix=train_results_dir,
                 mode=mode,
                 output_file="output-hypothesis-fusion-{}.ctm".format(mode),
                 evaluate_dir=cfg.dataset_info['evaluation_dir'],
                 evaluate_prefix=cfg.dataset_info['evaluation_prefix'],
-                output_dir="epoch_{}_result/".format(epoch),
+                output_dir=None,
                 python_evaluate=python_eval,
                 triplet=True,
             )
             # Evaluasi hasil Conv1D
             conv_ret_fusion = evaluate(
-                prefix=work_dir,
+                prefix=train_results_dir,
                 mode=mode,
                 output_file="output-hypothesis-conv-fusion-{}.ctm".format(mode),
                 evaluate_dir=cfg.dataset_info['evaluation_dir'],
                 evaluate_prefix=cfg.dataset_info['evaluation_prefix'],
-                output_dir="epoch_{}_result/".format(epoch),
+                output_dir=None,
                 python_evaluate=python_eval,
-                # triplet=True,
             )
         except:
             print("Unexpected error:", sys.exc_info()[0])
-            lstm_ret = 100.0
-        finally:
-            pass
-        # Log hasil evaluasi WER
+            lstm_ret_fusion = 100.0
+            conv_ret_fusion = 100.0
         recoder.print_log(
-            f"Epoch {epoch}, {mode} Conv1D WER: {conv_ret_fusion: 2.2f}%, BiLSTM WER: {lstm_ret_fusion: 2.2f}%", f"{work_dir}/{mode}.txt"
+            f"Epoch {epoch}, {mode} Conv1D WER: {conv_ret_fusion: 2.2f}%, BiLSTM WER: {lstm_ret_fusion: 2.2f}%", os.path.join(train_results_dir, f"{mode}.txt")
         )
-        return min([conv_ret_fusion, lstm_ret_fusion])       
+        return min([conv_ret_fusion, lstm_ret_fusion])
 
 
 # Fungsi untuk menulis hasil prediksi ke file CTM

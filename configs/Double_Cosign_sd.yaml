@@ -19,6 +19,7 @@ feeder_args:
   norm_point: [0, 25, 46, 67]
   used_part: &used_part ['body', 'hand21', 'mouth_8']
   augmentation_types: [] # pilihan: ['SpatialJitter', 'SpatialScale', 'TemporalDrop', 'TemporalRescale']
+  normalization_types: [] # ['spatial', 'missing_kp', 'temporal'] aktifkan sesuai kebutuhan
 
 # model args
 model: TwoStream_Cosign

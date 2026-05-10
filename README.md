@@ -61,8 +61,10 @@ The central research question is: **how do pre-processing pipeline configuration
 | Variable | Options Explored |
 |---|---|
 | **Input Signal Selection** | Skeleton component combinations (GL, GR, GP, GM) |
-| **Downsampling Ratio** | Frame subsampling rates |
+| **Downsampling Activation** | Enable/disable frame subsampling before augmentation/normalization |
+| **Downsampling Ratio** | Frame subsampling rate used when downsampling is enabled |
 | **Data Augmentation** | Spatial & temporal augmentation strategies |
+| **Normalization Pipeline** | Spatial normalization, missing keypoint reconstruction, temporal normalization |
 
 All experiments are conducted under a **signer-independent** scenario — signers in the test set are entirely unseen during training — on a self-collected **BISINDO (Bahasa Isyarat Indonesia)** dataset in its **Bandung regional variant**.
 
@@ -143,6 +145,7 @@ datasets/
 Ensure the following are installed before proceeding:
 
 - **Python** 3.8+
+- **SciPy** — used for interpolation and downsampling helpers
 - **PyTorch `==2.0.0`** — required for `ctcdecode` compatibility → [pytorch.org](https://pytorch.org/get-started/locally/)
 - **`ctcdecode==0.4`** — beam search decoder → [[WayenVan/ctcdecode]](https://github.com/WayenVan/ctcdecode)
 - **`sclite`** (via Kaldi) — evaluation scoring tool → [[kaldi-asr/kaldi]](https://github.com/kaldi-asr/kaldi)
@@ -190,11 +193,26 @@ cd ../../
 
 ## ⚙️ Configuration & Augmentation
 
-All model and training hyperparameters are controlled via a single YAML file:
+All model and training hyperparameters are controlled via YAML files in:
 
 ```
-configs/bisindo_sd.yaml
+configs/experiment_configs/normalization/
 ```
+
+### Experiment Scenarios
+
+Each scenario uses the same base model, but different normalization and downsampling settings:
+
+| Scenario | `downsampling` | `downsampling_ratio` | `normalization_types` |
+|---|---:|---:|---|
+| `Baseline` | `true` | `0.5` | `[]` |
+| `Baseline+SN` | `true` | `0.5` | `['spatial']` |
+| `Baseline+MKR` | `true` | `0.5` | `['missing_kp']` |
+| `Baseline+TN` | `true` | `0.5` | `['temporal']` |
+| `Baseline+SN+MKR` | `true` | `0.5` | `['spatial', 'missing_kp']` |
+| `Baseline+SN+TN` | `true` | `0.5` | `['spatial', 'temporal']` |
+| `Baseline+MKR+TN` | `true` | `0.5` | `['missing_kp', 'temporal']` |
+| `Baseline+SN+MKR+TN` | `true` | `0.5` | `['spatial', 'missing_kp', 'temporal']` |
 
 ### Data Augmentation
 
@@ -204,6 +222,9 @@ Toggle augmentation strategies under `feeder_args`:
 feeder_args:
   augmentation_types: []
   # Options: ['SpatialJitter', 'SpatialScale', 'TemporalDrop', 'TemporalRescale']
+  downsampling: true
+  downsampling_ratio: 0.5
+  normalization_types: ['spatial', 'missing_kp', 'temporal']
 ```
 
 The four augmentation types investigated in this thesis:
@@ -217,6 +238,16 @@ The four augmentation types investigated in this thesis:
 
 > Multiple types can be combined, e.g., `['SpatialJitter', 'TemporalDrop']`
 
+### Normalization Order
+
+When enabled in `feeder_args`, the preprocessing pipeline runs in this order:
+
+1. Downsampling
+2. Data augmentation
+3. Spatial normalization
+4. Missing keypoint reconstruction
+5. Temporal normalization
+
 ---
 
 ## 🏋️ Training & Evaluation
@@ -224,18 +255,30 @@ The four augmentation types investigated in this thesis:
 ### Train
 
 ```bash
-python main.py --config ./configs/bisindo_sd.yaml
+python main.py --config ./configs/experiment_configs/normalization/Baseline.yaml
 ```
 
 ### Evaluate
 
 ```bash
-python main.py --config ./configs/bisindo_sd.yaml \
+python main.py --config ./configs/experiment_configs/normalization/Baseline.yaml \
                --phase test \
                --load-weights PATH_TO_PRETRAINED_MODEL
 ```
 
 > Replace `PATH_TO_PRETRAINED_MODEL` with the path to your trained `.pt` checkpoint file.
+
+### Output Layout
+
+For each scenario, training and test outputs are written to:
+
+```text
+work_dir/{nama_skenario}/train/
+work_dir/{nama_skenario}/test/sd/
+work_dir/{nama_skenario}/test/si/
+```
+
+Per-epoch output folders are not used.
 
 ### Metrics
 
@@ -253,8 +296,18 @@ MSLR_ICCV2025/
 │
 ├── configs/
 │   ├── Double_Cosign_sd.yaml
-│   └── dataset_configs/
-│       └── bisindo_sd.yaml
+│   ├── dataset_configs/
+│   │   └── bisindo_sd.yaml
+│   └── experiment_configs/
+│       └── normalization/
+│           ├── Baseline.yaml
+│           ├── Baseline+MKR.yaml
+│           ├── Baseline+MKR+TN.yaml
+│           ├── Baseline+SN.yaml
+│           ├── Baseline+SN+MKR.yaml
+│           ├── Baseline+SN+MKR+TN.yaml
+│           ├── Baseline+SN+TN.yaml
+│           └── Baseline+TN.yaml
 │
 ├── datasets/
 │   ├── pose_bisindo_test.pkl
@@ -313,6 +366,16 @@ MSLR_ICCV2025/
 │   ├── log_hidden_state_1024.txt
 │   ├── log_hidden_state_256.txt
 │   └── log_hidden_state_512.txt
+│
+├── work_dir/
+│   ├── Baseline/
+│   ├── Baseline+MKR/
+│   ├── Baseline+MKR+TN/
+│   ├── Baseline+SN/
+│   ├── Baseline+SN+MKR/
+│   ├── Baseline+SN+MKR+TN/
+│   ├── Baseline+SN+TN/
+│   └── Baseline+TN/
 │
 ├── utils/
 │   ├── __init__.py

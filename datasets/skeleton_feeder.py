@@ -34,7 +34,9 @@ class SkeletonFeeder(data.Dataset):
         norm_point=None,
         used_part=None,
         augmentation_types=None,
-    ):
+        normalization_types=None,
+        downsampling=False,
+        downsampling_ratio=0.5):
         self.mode = mode  # Mode data (train/dev/test)
         self.mode_list = mode.split("_")  # Untuk mode gabungan (misal: train_dev)
         self.dict = gloss_dict  # Kamus gloss (gloss ke index)
@@ -90,9 +92,22 @@ class SkeletonFeeder(data.Dataset):
         self.norm_point = norm_point  # Titik pusat normalisasi
         if norm_point is None:
             print('no centeralization')
-        
+
         self.augmentation_types = augmentation_types if augmentation_types else []
         self.data_aug = self.pose_transform()  # Pipeline augmentasi diaktifkan lewat config
+
+        # Jenis normalisasi yang dapat diaktifkan via config:
+        # 'spatial'    : Normalisasi rentang dan sentralisasi skeleton
+        # 'missing_kp' : Rekonstruksi keypoint hilang (interpolasi)
+        # 'temporal'   : Normalisasi panjang urutan (resampling)
+        self.normalization_types = normalization_types if normalization_types else []
+        print(f"[SkeletonFeeder] Normalization pipeline: {self.normalization_types}")
+
+        # Downsampling config
+        self.downsampling = downsampling
+        self.downsampling_ratio = downsampling_ratio
+        if self.downsampling:
+            print(f"[SkeletonFeeder] Downsampling enabled, ratio: {self.downsampling_ratio}")
 
     # Mengambil satu sample data (dipanggil oleh DataLoader)
     def __getitem__(self, idx):
@@ -147,12 +162,55 @@ class SkeletonFeeder(data.Dataset):
         )
 
 
-    # Normalisasi dan augmentasi data skeleton
+    # Pipeline normalisasi dan augmentasi skeleton
+    def downsample(self, video, ratio=0.5):
+        """
+        Downsampling temporal sequence dengan rasio tertentu.
+        video: np.ndarray atau torch.Tensor (T, K, C)
+        ratio: float (0 < ratio <= 1)
+        """
+        if ratio >= 1.0 or ratio <= 0.0:
+            return video
+        T = video.shape[0]
+        new_len = max(1, int(T * ratio))
+        idx = np.linspace(0, T - 1, new_len).astype(int)
+        if isinstance(video, torch.Tensor):
+            return video[idx]
+        else:
+            return video[idx, ...]
+
     def normalize(self, video, label=None, file_id=None):
-        if self.data_type == 'skeleton':
-            input_data = self.data_aug(video)  # Selalu panggil data_aug (minimal ToTensor)
-            input_data = self.spatial_normalize(input_data)  # Normalisasi range
-            return input_data
+        """
+        Pipeline skeleton:
+        0. Downsampling (jika diaktifkan)
+        1. Augmentasi (jika diaktifkan)
+        2. Spatial normalization (jika dipilih)
+        3. Missing keypoint reconstruction (jika dipilih)
+        4. Temporal normalization (jika dipilih)
+        """
+        if self.data_type != 'skeleton':
+            return video
+
+        # 0. Downsampling sebelum augmentasi/normalisasi
+        if self.downsampling:
+            video = self.downsample(video, self.downsampling_ratio)
+
+        # 1. Augmentasi (ToTensor wajib)
+        input_data = self.data_aug(video)
+
+        # 2. Spatial normalization
+        if 'spatial' in self.normalization_types:
+            input_data = self.spatial_normalize(input_data)
+
+        # 3. Missing keypoint reconstruction
+        if 'missing_kp' in self.normalization_types:
+            input_data = self.missing_keypoint_reconstruction(input_data)
+
+        # 4. Temporal normalization (default: 64 frame, bisa diubah via config jika perlu)
+        if 'temporal' in self.normalization_types:
+            input_data = self.temporal_normalize(input_data, target_length=64)
+
+        return input_data
 
 
     # Normalisasi skeleton ke rentang [-1, 1] dan sentralisasi
