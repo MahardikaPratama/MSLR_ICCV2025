@@ -32,7 +32,7 @@ class NormBothLinear(nn.Module):
         return outputs
 
 class TwoStream_Cosign(nn.Module):
-    def __init__(self, visual_args, gloss_dict, conv_type, loss_weights, norm_scale=32) -> None:
+    def __init__(self, visual_args, gloss_dict, conv_type, loss_weights, norm_scale=32, class_weights=None) -> None:
         super().__init__()
         self.apply_CR = True if 'CR_args' in visual_args else False
         self.visual_module = CoSign2s(**visual_args)
@@ -58,8 +58,13 @@ class TwoStream_Cosign(nn.Module):
             setattr(self, f'contextual_module_{name}', contextual_module)
             setattr(self, f'classifier_{name}', classifier)
 
+        # Initialize CTCLoss with optional class weights
+        ctc_kwargs = {'reduction': 'none', 'zero_infinity': False}
+        if class_weights is not None:
+            ctc_kwargs['weight'] = class_weights
+        
         self.loss = {
-            'ctc': torch.nn.CTCLoss(reduction='none', zero_infinity=False),
+            'ctc': torch.nn.CTCLoss(**ctc_kwargs),
             'kl': KLdis()
         }
         self.loss_weights = loss_weights
