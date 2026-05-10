@@ -58,17 +58,14 @@ class TwoStream_Cosign(nn.Module):
             setattr(self, f'contextual_module_{name}', contextual_module)
             setattr(self, f'classifier_{name}', classifier)
 
-        # Initialize CTCLoss with optional class weights
-        ctc_kwargs = {'reduction': 'none', 'zero_infinity': False}
-        if class_weights is not None:
-            ctc_kwargs['weight'] = class_weights
-        
+        # Initialize CTCLoss (torch.nn.CTCLoss doesn't support weight param, apply manually)
         self.loss = {
-            'ctc': torch.nn.CTCLoss(**ctc_kwargs),
+            'ctc': torch.nn.CTCLoss(reduction='none', zero_infinity=False),
             'kl': KLdis()
         }
         self.loss_weights = loss_weights
         self.norm_scale = norm_scale
+        self.class_weights = class_weights  # Store for manual application in loss computation
 
     def backward_hook(self, module, grad_input, grad_output):
         for g in grad_input:
@@ -113,12 +110,22 @@ class TwoStream_Cosign(nn.Module):
             }
 
     def get_ctc_loss(self, no_scale_logits, label, feat_len, label_len):
-        return self.loss['ctc'](
+        ctc_loss = self.loss['ctc'](
                         (no_scale_logits*self.norm_scale).log_softmax(-1),
                         label.cpu().int(),
                         feat_len.cpu().int(),
                         label_len.cpu().int(),
-                    ).mean()
+                    )  # Returns per-sample loss with shape (batch_size,)
+        
+        # Apply class weights if available (based on primary class in sequence)
+        if self.class_weights is not None:
+            class_weight_mask = torch.ones_like(ctc_loss)
+            for i, labels in enumerate(label.cpu().int()):
+                if len(labels) > 0 and labels[0] > 0:  # Skip padding
+                    class_weight_mask[i] = self.class_weights[labels[0]]
+            ctc_loss = ctc_loss * class_weight_mask
+        
+        return ctc_loss.mean()
 
     def get_loss(self, ret_dict, inputs_dict):
         loss, loss_dict = 0, {}
