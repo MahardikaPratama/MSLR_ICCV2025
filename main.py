@@ -44,7 +44,9 @@ class SLRProcessor(object):
         if hasattr(self.arg, 'enable_class_weighting') and self.arg.enable_class_weighting:
             weighting_method = getattr(self.arg, 'weighting_method', 'inverse_frequency')
             weighting_gamma = getattr(self.arg, 'weighting_gamma', 0.8)
-            train_info_path = f"./datasets/{self.arg.dataset.split('_')[0]}/{self.arg.dataset}_train_info.json"
+            # Construct train_info_path from dict_path directory (not from dataset name)
+            dict_path = self.arg.dataset_info['dict_path']
+            train_info_path = dict_path.replace('_gloss_dict.json', '_train_info.json')
             self.class_weights = calculate_class_weights(
                 self.gloss_dict, 
                 train_info_path, 
