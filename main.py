@@ -128,7 +128,7 @@ class SLRProcessor(object):
     # Memuat info dataset dari file yaml
     def load_dataset_info(self):
         # 7. Muat info dataset dari YAML
-        with open(f"./configs/{self.arg.dataset}.yaml", 'r') as f:
+        with open(f"./configs/dataset_configs/{self.arg.dataset}.yaml", 'r') as f:
             self.arg.dataset_info = yaml.load(f, Loader=yaml.FullLoader)
 
     # Menentukan kapan model disimpan dan dievaluasi

@@ -1,4 +1,4 @@
 dataset_root: /data/kota502/github_repo/MahardikaPratama/dataset/mslr_dataset2/
 dict_path: ./datasets/mslr2025/sd_gloss_dict.json
-evaluation_dir: ./evaluation/slr_eval
+evaluation_dir: ./datasets/mslr2025
 evaluation_prefix: mslr-sd-groundtruth
