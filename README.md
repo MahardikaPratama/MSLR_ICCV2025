@@ -81,9 +81,9 @@ The implementation adapts:
 -->
 
 > 📌 **Architecture diagram coming soon.**
-> *(Add your figure at `docs/architecture.png` and uncomment the line below.)*
+<!-- > *(Add your figure at `docs/architecture.png` and uncomment the line below.)* -->
 
-<!-- ![Architecture Diagram](docs/architecture.png) -->
+![Architecture Diagram](docs/architecture.png)
 
 The model follows a skeleton-to-gloss pipeline:
 
@@ -249,32 +249,95 @@ python main.py --config ./configs/bisindo_sd.yaml \
 ## 📁 Repository Structure
 
 ```
-bisindo-cslr/
+MSLR_ICCV2025/
 │
 ├── configs/
-│   └── bisindo_sd.yaml          # Main configuration (model, training, augmentation)
+│   ├── Double_Cosign_sd.yaml
+│   └── dataset_configs/
+│       └── bisindo_sd.yaml
 │
-├── datasets/                    # Skeleton data — download separately (see Dataset section)
+├── datasets/
 │   ├── pose_bisindo_test.pkl
-│   └── pose_bisindo_train_dev.pkl
+│   ├── pose_bisindo_train_dev.pkl
+│   ├── pose_bisindo_test_v2.pkl
+│   ├── pose_bisindo_train_dev_v2.pkl
+│   ├── skeleton_feeder.py
+│   ├── downsample_skeleton.py
+│   └── mslr2025/
+│       ├── sd_dev_list.txt
+│       ├── sd_test_list.txt
+│       ├── sd_train_list.txt
+│       ├── mslr_process.py
+│       └── SD/
+│           ├── dev.csv
+│           ├── test.csv
+│           └── train.csv
 │
-├── docs/                        # Documentation assets
-│   └── architecture.png         # (placeholder — add your architecture diagram here)
+├── docs/
+│   └── architecture.png
+│
+├── evaluation/
+│   └── slr_eval/
+│       ├── mergectmstm.py
+│       ├── preprocess.sh
+│       ├── python_wer_evaluation.py
+│       ├── wer_calculation.py
+│       └── __init__.py
+│
+├── modules/
+│   ├── __init__.py
+│   ├── visual_extractor.py
+│   ├── criterion/
+│   │   └── radialctc.py
+│   ├── stgcn_layers/
+│   │   ├── __init__.py
+│   │   ├── gcn_utils.py
+│   │   └── stgcn_block.py
+│   └── temporal_layers/
+│       ├── __init__.py
+│       ├── BiLSTM.py
+│       └── tconv.py
 │
 ├── preprocess/
 │   └── mslr2025/
-│       └── mslr_process.py      # Preprocessing: gloss dict, dataset info, .stm files
+│       ├── mslr_process.py
+│       ├── sd_dev_list.txt
+│       ├── sd_test_list.txt
+│       ├── sd_train_list.txt
+│       └── SD/
+│           ├── dev.csv
+│           ├── test.csv
+│           └── train.csv
 │
-├── software/
-│   └── sclite -> ...            # Soft link to sclite binary (from Kaldi)
+├── results/
+│   ├── log_hidden_state_1024.txt
+│   ├── log_hidden_state_256.txt
+│   └── log_hidden_state_512.txt
 │
-├── feeder/                      # Data loading and augmentation modules
-├── model/                       # GCN, 1D-CNN, BiLSTM, CTC components
-├── utils/                       # Utilities and helper functions
+├── utils/
+│   ├── __init__.py
+│   ├── decode.py
+│   ├── device.py
+│   ├── optimizer.py
+│   ├── pack_code.py
+│   ├── parameters.py
+│   ├── random_state.py
+│   ├── record.py
+│   └── skeleton_augmentation.py
 │
-├── main.py                      # Entry point — train / evaluate
-├── requirements.txt             # Python dependencies
-└── README.md
+├── BASELINE_PIPELINE.md
+├── identifikasi_data_hilang.ipynb
+├── main.py
+├── PANDUAN_COLAB.md
+├── PREPROCESSING_WORKFLOW.md
+├── README.md
+├── requirements.txt
+├── seq_scripts.py
+├── skenario-eksperimen-01.ipynb
+├── slr_network.py
+├── TESTING_WORKFLOW.md
+├── TRAINING_WORKFLOW.md
+└── .gitignore
 ```
 
 ---
