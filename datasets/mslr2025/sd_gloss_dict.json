@@ -361,31 +361,27 @@
             "frequency": 25
         },
         "91": {
-            "gloss": "TAHUN",
-            "frequency": 25
-        },
-        "92": {
             "gloss": "TAPI",
             "frequency": 50
         },
-        "93": {
+        "92": {
             "gloss": "TIDAK",
             "frequency": 25
         },
-        "94": {
+        "93": {
             "gloss": "TOILET",
             "frequency": 25
         },
-        "95": {
+        "94": {
             "gloss": "TOKO",
             "frequency": 25
         },
-        "96": {
+        "95": {
             "gloss": "TONG",
             "frequency": 25
         },
-        "97": {
-            "gloss": "ULANG",
+        "96": {
+            "gloss": "ULANG TAHUN",
             "frequency": 25
         },
         "98": {
@@ -754,10 +750,6 @@
             "index": 90,
             "frequency": 25
         },
-        "TAHUN": {
-            "index": 91,
-            "frequency": 25
-        },
         "TAPI": {
             "index": 92,
             "frequency": 50
@@ -778,7 +770,7 @@
             "index": 96,
             "frequency": 25
         },
-        "ULANG": {
+        "ULANG TAHUN": {
             "index": 97,
             "frequency": 25
         },

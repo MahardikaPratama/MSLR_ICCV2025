@@ -34,7 +34,7 @@ for idx, line in enumerate(stm):
                 addedlines += 1  # Lewati baris CTM tambahan untuk ID yang sama
     else:
         # Jika tidak cocok, tambahkan baris kosong (dummy) ke CTM agar jumlah baris sama dengan STM
-        ctmDict.insert(idx + addedlines, [l[0], "1 0.000 0.030 [EMPTY]"])
+        ctmDict.insert(idx + addedlines, [l[0], "1", "0.000", "0.030", "[EMPTY]"])
 
 # Tutup file STM dan CTM setelah selesai membaca
 stm.close()

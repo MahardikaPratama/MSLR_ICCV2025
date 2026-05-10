@@ -23,7 +23,11 @@ def load_prediction(fpath):
     file_info = open(fpath, 'r', encoding='utf-8').readlines()
     pre_dict = dict()
     for line in file_info:
-        file_name, _, _, _, wd = line[:-1].split(" ")
+        parts = line[:-1].split(" ")
+        file_name, wd = parts[0], parts[4]
+        # Skip [EMPTY] markers
+        if wd == "[EMPTY]":
+            continue
         if file_name not in pre_dict.keys():
             pre_dict[file_name] = [wd]
         else:
@@ -228,6 +232,6 @@ def wer_calculation(gt_path, primary_pred, auxiliary_pred=None):
 
 
 if __name__ == '__main__':
-    wer_calculation('phoenix2014-groundtruth-dev.stm',
+    wer_calculation('mslr-sd-groundtruth-dev.stm',
                     'out.output-hypothesis-dev.ctm')
     #                     'out.output-hypothesis-dev-conv.ctm')

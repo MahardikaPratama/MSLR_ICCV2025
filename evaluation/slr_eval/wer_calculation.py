@@ -18,7 +18,13 @@ def evaluate(prefix="./", mode="dev", evaluate_dir=None, evaluate_prefix=None,
     tmp_stm_path = os.path.join(prefix, "tmp.stm")
     out_path = os.path.join(prefix, f"out.{output_file}")
 
-    os.system(f"bash {script_dir}/preprocess.sh {output_path} {tmp_path} {tmp2_path}")
+    # Use BISINDO-specific preprocessing for MSLR dataset
+    if evaluate_prefix and "mslr" in evaluate_prefix.lower():
+        preprocess_script = "preprocess_bisindo.sh"
+    else:
+        preprocess_script = "preprocess.sh"
+    
+    os.system(f"bash {script_dir}/{preprocess_script} {output_path} {tmp_path} {tmp2_path}")
     # if not csl_daily:
     #     os.system(f"bash {evaluate_dir}/preprocess.sh {prefix + output_file} {prefix}tmp.ctm {prefix}tmp2.ctm")
     # else:
