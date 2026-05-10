@@ -9,6 +9,8 @@ software/
 datasets/*.pkl
 .history/
 *.pt
+# Model weights - Download from Google Drive instead
+# https://drive.google.com/drive/folders/1_f4UR0-VInfMaCvIIyTR8LUMwHVv8iyX?usp=sharing
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

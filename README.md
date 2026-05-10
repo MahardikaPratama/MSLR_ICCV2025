@@ -138,7 +138,6 @@ datasets/
 └── pose_bisindo_train_dev.pkl
 ```
 
----
 
 ## 🛠 Prerequisites
 
@@ -317,7 +316,6 @@ MSLR_ICCV2025/
 │   ├── skeleton_feeder.py
 │   ├── downsample_skeleton.py
 │   └── mslr2025/
-│       ├── sd_dev_list.txt
 │       ├── sd_test_list.txt
 │       ├── sd_train_list.txt
 │       ├── mslr_process.py
@@ -353,7 +351,6 @@ MSLR_ICCV2025/
 │
 ├── preprocess/
 │   └── mslr2025/
-│       ├── mslr_process.py
 │       ├── sd_dev_list.txt
 │       ├── sd_test_list.txt
 │       ├── sd_train_list.txt
