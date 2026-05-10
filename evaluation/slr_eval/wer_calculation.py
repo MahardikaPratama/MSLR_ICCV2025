@@ -12,41 +12,48 @@ def evaluate(prefix="./", mode="dev", evaluate_dir=None, evaluate_prefix=None,
     sclite_path = "./software/sclite"
     print(os.getcwd())
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    os.system(f"bash {script_dir}/preprocess.sh {prefix + output_file} {prefix}tmp.ctm {prefix}tmp2.ctm")
+    output_path = os.path.join(prefix, output_file)
+    tmp_path = os.path.join(prefix, "tmp.ctm")
+    tmp2_path = os.path.join(prefix, "tmp2.ctm")
+    tmp_stm_path = os.path.join(prefix, "tmp.stm")
+    out_path = os.path.join(prefix, f"out.{output_file}")
+
+    os.system(f"bash {script_dir}/preprocess.sh {output_path} {tmp_path} {tmp2_path}")
     # if not csl_daily:
     #     os.system(f"bash {evaluate_dir}/preprocess.sh {prefix + output_file} {prefix}tmp.ctm {prefix}tmp2.ctm")
     # else:
     #     os.system(f"cp {prefix + output_file} {prefix}tmp2.ctm")
     # pdb.set_trace()
-    os.system(f"cat {evaluate_dir}/{evaluate_prefix}-{mode}.stm | sort  -k1,1 > {prefix}tmp.stm")
+    os.system(f"cat {evaluate_dir}/{evaluate_prefix}-{mode}.stm | sort  -k1,1 > {tmp_stm_path}")
     # pdb.set_trace()
     # tmp2.ctm: prediction result; tmp.stm: ground-truth result
-    os.system(f"python {script_dir}/mergectmstm.py {prefix}tmp2.ctm {prefix}tmp.stm")
-    os.system(f"cp {prefix}tmp2.ctm {prefix}out.{output_file}")
+    os.system(f"python {script_dir}/mergectmstm.py {tmp2_path} {tmp_stm_path}")
+    os.system(f"cp {tmp2_path} {out_path}")
     if python_evaluate:
-        ret = wer_calculation(f"{evaluate_dir}/{evaluate_prefix}-{mode}.stm", f"{prefix}out.{output_file}")
+        ret = wer_calculation(f"{evaluate_dir}/{evaluate_prefix}-{mode}.stm", out_path)
         if triplet:
             wer_calculation(
                 f"{evaluate_dir}/{evaluate_prefix}-{mode}.stm",
-                f"{prefix}out.{output_file}",
-                f"{prefix}out.{output_file}".replace(".ctm", "-conv.ctm")
+                out_path,
+                out_path.replace(".ctm", "-conv.ctm")
             )
         return ret
     if output_dir is not None:
-        if not os.path.isdir(prefix + output_dir):
-            os.makedirs(prefix + output_dir)
+        output_dir_path = os.path.join(prefix, output_dir)
+        if not os.path.isdir(output_dir_path):
+            os.makedirs(output_dir_path)
         os.system(
-            f"{sclite_path}  -h {prefix}out.{output_file} ctm"
-            f" -r {prefix}tmp.stm stm -f 0 -o sgml sum rsum pra -O {prefix + output_dir}"
+            f"{sclite_path}  -h {out_path} ctm"
+            f" -r {tmp_stm_path} stm -f 0 -o sgml sum rsum pra -O {output_dir_path}"
         )
     else:
         os.system(
-            f"{sclite_path}  -h {prefix}out.{output_file} ctm"
-            f" -r {prefix}tmp.stm stm -f 0 -o sgml sum rsum pra"
+            f"{sclite_path}  -h {out_path} ctm"
+            f" -r {tmp_stm_path} stm -f 0 -o sgml sum rsum pra"
         )
     ret = os.popen(
-        f"{sclite_path}  -h {prefix}out.{output_file} ctm "
-        f"-r {prefix}tmp.stm stm -f 0 -o dtl stdout |grep Error"
+        f"{sclite_path}  -h {out_path} ctm "
+        f"-r {tmp_stm_path} stm -f 0 -o dtl stdout |grep Error"
     ).readlines()[0]
     # pdb.set_trace()
     return float(ret.split("=")[1].split("%")[0])
