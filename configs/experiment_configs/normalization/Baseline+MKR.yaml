@@ -19,6 +19,8 @@ feeder_args:
   used_part: &used_part ['body', 'hand21', 'mouth_8']
   augmentation_types: []
   normalization_types: ['missing_kp']
+  downsampling: true         # aktifkan downsampling
+  downsampling_ratio: 0.5    # rasio default 0.5 (ambil 50% frame)
 
 model: TwoStream_Cosign
 model_args:
