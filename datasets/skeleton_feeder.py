@@ -395,7 +395,7 @@ class SkeletonFeeder(data.Dataset):
 
     # Mengembalikan jumlah data
     def __len__(self):
-        return len(self.inputs_list) - 1
+        return len(self.inputs_list)
 
 
     # Fungsi untuk menggabungkan batch (custom collate)
