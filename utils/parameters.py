@@ -69,22 +69,6 @@ def get_parser():
     parser.add_argument(
         '--evaluate-tool', default="python", help='sclite or python')
 
-    parser.add_argument(
-        '--enable-class-weighting',
-        type=str2bool,
-        default=False,
-        help='enable class weighting in CTCLoss or not')
-    parser.add_argument(
-        '--weighting-method',
-        type=str,
-        default='inverse_frequency',
-        help='class weighting method: inverse_frequency, balanced, smooth')
-    parser.add_argument(
-        '--weighting-gamma',
-        type=float,
-        default=0.8,
-        help='gamma value used by smooth class weighting')
-
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # feeder
     parser.add_argument(

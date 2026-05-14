@@ -15,7 +15,6 @@ import faulthandler
 faulthandler.enable()
 from seq_scripts import seq_train, seq_eval
 import slr_network
-from utils.class_weighting import calculate_class_weights, log_class_weights
 
 
  # Kelas utama untuk memproses training dan evaluasi SLR
@@ -39,22 +38,6 @@ class SLRProcessor(object):
         self.load_dataset_info()  # 7
         with open(self.arg.dataset_info['dict_path'], 'r') as f:
             self.gloss_dict = json.load(f)
-        # 6.5. Hitung class weights jika diaktifkan
-        self.class_weights = None
-        if hasattr(self.arg, 'enable_class_weighting') and self.arg.enable_class_weighting:
-            weighting_method = getattr(self.arg, 'weighting_method', 'inverse_frequency')
-            weighting_gamma = getattr(self.arg, 'weighting_gamma', 0.8)
-            # Construct train_info_path from dict_path directory (not from dataset name)
-            dict_path = self.arg.dataset_info['dict_path']
-            train_info_path = dict_path.replace('_gloss_dict.json', '_train_info.json')
-            self.class_weights = calculate_class_weights(
-                self.gloss_dict, 
-                train_info_path, 
-                method=weighting_method,
-                gamma=weighting_gamma
-            )
-            self.class_weights = self.class_weights.cuda()
-            log_class_weights(self.gloss_dict, train_info_path, weighting_method, top_k=15)
         # 8. Inisialisasi model & optimizer
         self.model, self.optimizer = self.loading()  # 9
         self.best_dev_wer = 1000
@@ -123,7 +106,6 @@ class SLRProcessor(object):
         model = model_class(
             **args,
             gloss_dict=self.gloss_dict,
-            class_weights=self.class_weights
         )
         return model
 

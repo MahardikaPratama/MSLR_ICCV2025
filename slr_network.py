@@ -32,7 +32,7 @@ class NormBothLinear(nn.Module):
         return outputs
 
 class TwoStream_Cosign(nn.Module):
-    def __init__(self, visual_args, gloss_dict, conv_type, loss_weights, norm_scale=32, class_weights=None) -> None:
+    def __init__(self, visual_args, gloss_dict, conv_type, loss_weights, norm_scale=32) -> None:
         super().__init__()
         self.apply_CR = True if 'CR_args' in visual_args else False
         self.visual_module = CoSign2s(**visual_args)
@@ -65,7 +65,6 @@ class TwoStream_Cosign(nn.Module):
         }
         self.loss_weights = loss_weights
         self.norm_scale = norm_scale
-        self.class_weights = class_weights  # Store for manual application in loss computation
 
     def backward_hook(self, module, grad_input, grad_output):
         for g in grad_input:
@@ -116,14 +115,6 @@ class TwoStream_Cosign(nn.Module):
                         feat_len.cpu().int(),
                         label_len.cpu().int(),
                     )  # Returns per-sample loss with shape (batch_size,)
-        
-        # Apply class weights if available (based on primary class in sequence)
-        if self.class_weights is not None:
-            class_weight_mask = torch.ones_like(ctc_loss)
-            for i, labels in enumerate(label.cpu().int()):
-                if len(labels) > 0 and labels[0] > 0:  # Skip padding
-                    class_weight_mask[i] = self.class_weights[labels[0]]
-            ctc_loss = ctc_loss * class_weight_mask
         
         return ctc_loss.mean()
 

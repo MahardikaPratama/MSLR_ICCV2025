@@ -51,18 +51,6 @@ model_args:
     CR_Seq_fusion: 2.0
   norm_scale: 32
 
-# ============================================
-# Class Weighting Config (untuk mengatasi overfitting pada kelas yang sering muncul)
-# ============================================
-enable_class_weighting: true    # Set true untuk mengaktifkan class weighting
-weighting_method: smooth  # Options: 'inverse_frequency', 'balanced', 'smooth'
-weighting_gamma: 0.8             # Parameter untuk smooth method (0.0-1.0)
-# Penjelasan:
-#   - inverse_frequency: weight[i] = total / (num_classes * count[i])
-#   - balanced: weight[i] = 1 - (count[i] / total)
-#   - smooth: weight[i] = (1 - count[i]/total) ^ gamma
-# ============================================
-
 batch_size: 4
 test_batch_size: 4
 optimizer_args:
