@@ -134,8 +134,10 @@ Download the following files and place them inside the `datasets/` directory:
 
 ```
 datasets/
-├── pose_bisindo_test.pkl
-└── pose_bisindo_train_dev.pkl
+├── pose_bisindo_train_dev_sd.pkl
+├── pose_bisindo_test_sd.pkl
+├── pose_bisindo_test_si-maj.pkl
+└── pose_bisindo_test_si-min.pkl
 ```
 
 
@@ -174,8 +176,10 @@ pip install -r requirements.txt
 
 ```
 datasets/
-├── pose_bisindo_test.pkl
-└── pose_bisindo_train_dev.pkl
+├── pose_bisindo_train_dev_sd.pkl
+├── pose_bisindo_test_sd.pkl
+├── pose_bisindo_test_si-maj.pkl
+└── pose_bisindo_test_si-min.pkl
 ```
 
 ### 3. Preprocessing
@@ -269,17 +273,30 @@ python main.py --config ./configs/experiment_configs/normalization/Baseline.yaml
 
 ### Output Layout
 
-For each scenario, training and test outputs are written to:
+This experimental framework is designed for a **single unified training phase followed by parallel evaluation across three distinct testing splits (Signer-Dependent, Signer-Independent Majority, and Signer-Independent Minority)**.
+
+For each experimental scenario, training logs and model checkpoints are stored in the root of the working directory (`work_dir/`), while the prediction outputs (CSV) and quantitative WER performance metrics (TXT) are isolated within respective subdirectories:
 
 ```text
-work_dir/{nama_skenario}/train/
-work_dir/{nama_skenario}/test/sd/
-work_dir/{nama_skenario}/test/si/
+work_dir/{scenario_name}/train/
+work_dir/{scenario_name}/test/
+├── test_sd/
+│   ├── test_sd.csv
+│   └── test_sd_wer.txt
+├── test_si_major/
+│   ├── test_si_major.csv
+│   └── test_si_major_wer.txt
+└── test_si_minor/
+    ├── test_si_minor.csv
+    └── test_si_minor_wer.txt
 ```
 
-Per-epoch output folders are not used.
+**Interpreting Final Results:**
+- **`*_wer.txt` files**: Serve as the primary quantitative evaluation metric. These files contain the final **Word Error Rate (WER)** percentages computed for both the Conv1D and BiLSTM decoding modules. Lower WER values indicate superior model accuracy for the respective testing split (SD, SI-Major, or SI-Minor).
+- **`*.csv` files**: Contain the discrete sequential mapping of video IDs to the raw, predicted gloss sequences. These are provided for qualitative analysis and direct observation of the generated sign language tokens.
+- **`*.ctm` files**: Intermediate alignment timestamp records generated and parsed by the Kaldi `sclite` scoring toolkit. These are utilized internally for word-level sequence evaluation and can generally be bypassed unless granular token-level alignment analysis is required.
 
-### Metrics
+s### Metrics
 
 | Metric | Description | Direction |
 |---|---|---|
@@ -296,7 +313,7 @@ MSLR_ICCV2025/
 ├── configs/
 │   ├── Double_Cosign_sd.yaml
 │   ├── dataset_configs/
-│   │   └── bisindo_sd.yaml
+│   │   └── bisindo.yaml
 │   └── experiment_configs/
 │       └── normalization/
 │           ├── Baseline.yaml
@@ -309,10 +326,10 @@ MSLR_ICCV2025/
 │           └── Baseline+TN.yaml
 │
 ├── datasets/
-│   ├── pose_bisindo_test.pkl
-│   ├── pose_bisindo_train_dev.pkl
-│   ├── pose_bisindo_test_v2.pkl
-│   ├── pose_bisindo_train_dev_v2.pkl
+│   ├── pose_bisindo_train_dev_sd.pkl
+│   ├── pose_bisindo_test_sd.pkl
+│   ├── pose_bisindo_test_si-maj.pkl
+│   ├── pose_bisindo_test_si-min.pkl
 │   ├── skeleton_feeder.py
 │   ├── downsample_skeleton.py
 │   └── mslr2025/

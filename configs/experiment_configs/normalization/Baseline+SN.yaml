@@ -9,7 +9,7 @@ log_interval: 100
 evaluate_tool: sclite
 
 feeder: SkeletonFeeder
-dataset: bisindo_sd
+dataset: bisindo
 num_worker: 2
 feeder_args:
   setting: sd

@@ -83,7 +83,7 @@ Pastikan Anda telah mengatur strategi *data augmentation* di file `./datasets/sk
 
 Jalankan *cell* ini untuk memulai *training* pada *task* Signer Dependent:
 ```bash
-!python main.py --config ./configs/bisindo_sd.yaml
+!python main.py --config ./configs/bisindo.yaml
 ```
 
 ## 5. Proses Testing
@@ -93,7 +93,7 @@ Untuk melakukan testing, Anda membutuhkan file model hasil *training* atau *pret
 Jalankan *cell* ini untuk melakukan evaluasi model pada *task* Signer Dependent:
 ```bash
 !python main.py \
-    --config ./configs/bisindo_sd.yaml \
+    --config ./configs/bisindo.yaml \
     --phase test \
     --load-weights PATH_TO_PRETRAINED_MODEL
 ```

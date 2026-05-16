@@ -82,7 +82,7 @@ class MainProcessorTestCase(unittest.TestCase):
             "random_seed": 123,
             "print_log": False,
             "log_interval": 1,
-            "dataset": "bisindo_sd",
+            "dataset": "bisindo",
             "model": "DummyModel",
             "feeder": "DummyDataset",
             "device": "cpu",
@@ -135,7 +135,7 @@ class MainProcessorTestCase(unittest.TestCase):
         self.assertTrue(os.path.exists(config_path))
         with open(config_path, "r", encoding="utf-8") as f:
             saved = yaml.safe_load(f)
-        self.assertEqual(saved["dataset"], "bisindo_sd")
+        self.assertEqual(saved["dataset"], "bisindo")
         self.assertEqual(saved["work_dir"], self.tempdir.name)
 
     def test_load_dataset_info_reads_dataset_config(self):

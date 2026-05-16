@@ -46,22 +46,24 @@ class SkeletonFeeder(data.Dataset):
         self.dataset = dataset  # Nama dataset
         self.used_part = used_part  # Bagian skeleton yang digunakan
 
-        # Memuat data pose dan info video
-        # Untuk mode train/dev/test
-        if len(self.mode_list) == 2:
-            # Jika mode gabungan (misal: train_dev), gabungkan dua file info
-            inputs_list = []
-            for mode_type in self.mode_list:
-                with open(f"./datasets/mslr2025/{self.setting}_{mode_type}_info.json", 'r') as f:
-                    inputs_list_temp = json.load(f)
-                    inputs_list.extend(inputs_list_temp)
-        else:
-            # Jika mode tunggal, load satu file info
-            with open(f"./datasets/mslr2025/{self.setting}_{mode}_info.json", 'r') as f:
-                inputs_list = json.load(f)
+        # Load file info sesuai mode
+        # Mode yang didukung: train, dev, test_sd, test_si_major, test_si_minor
+        info_file = f"./datasets/mslr2025/{mode}_info.json"
+        with open(info_file, 'r') as f:
+            inputs_list = json.load(f)
                 
         # Load file pickle pose sesuai mode
-        pkl_file = "./datasets/pose_bisindo_test.pkl" if mode == 'test' else "./datasets/pose_bisindo_train_dev.pkl"
+        if mode == 'train' or mode == 'dev':
+            pkl_file = "./datasets/pose_bisindo_train_dev_sd.pkl"
+        elif mode == 'test_sd':
+            pkl_file = "./datasets/pose_bisindo_test_sd.pkl"
+        elif mode == 'test_si_major':
+            pkl_file = "./datasets/pose_bisindo_test_si-maj.pkl"
+        elif mode == 'test_si_minor':
+            pkl_file = "./datasets/pose_bisindo_test_si-min.pkl"
+        else:
+            raise ValueError(f"Unknown mode: {mode}")
+
         with open(pkl_file, "rb") as f:
             self.kps_global = pickle.load(f)
 

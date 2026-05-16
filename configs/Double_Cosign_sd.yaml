@@ -10,7 +10,7 @@ evaluate_tool: sclite # alat untuk evaluasi, bisa berupa 'sclite' atau 'wer'
 
 # feeder args untuk memuat data
 feeder: SkeletonFeeder
-dataset: bisindo_sd # nama dataset yang digunakan (BISINDO signer dependent)
+dataset: bisindo # nama dataset yang digunakan (BISINDO signer dependent)
 num_worker: 2 # jumlah worker untuk memuat data
 feeder_args:
   setting: sd # setting untuk dataset (signer dependent)

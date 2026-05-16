@@ -12,10 +12,10 @@ Baseline ini merupakan sistem Continuous Sign Language Recognition (CSLR) berbas
 ```
 MSLR_ICCV2025/
 ├── datasets/
-│   ├── mslr2025/
-│   ├── pose_bisindo_train_dev.pkl
-│   ├── pose_bisindo_test.pkl
-│   └── skeleton_feeder.py
+│   ├── pose_bisindo_train_dev_sd.pkl
+│   ├── pose_bisindo_test_sd.pkl
+│   ├── pose_bisindo_test_si-maj.pkl
+│   └── pose_bisindo_test_si-min.pkl
 ├── modules/
 │   ├── stgcn_layers/
 │   │   ├── gcn_utils.py
@@ -45,7 +45,7 @@ MSLR_ICCV2025/
 ├── configs/
 │   ├── Double_Cosign_sd.yaml
 │   └── dataset_configs/
-│       └── bisindo_sd.yaml
+│       └── bisindo.yaml
 ├── utils/
 │   ├── __init__.py
 │   ├── decode.py
@@ -65,7 +65,7 @@ MSLR_ICCV2025/
 **Penjelasan folder dan file utama:**
 - **datasets/**: Loader, pre-processing, dan file data skeleton.
       - **mslr2025/**: Data skeleton per subject/split.
-      - **pose_bisindo_train_dev.pkl, pose_bisindo_test.pkl**: File pickle data skeleton hasil ekstraksi pose.
+      - **pose_bisindo_train_dev_sd.pkl, pose_bisindo_test_*.pkl**: File pickle data skeleton hasil ekstraksi pose dengan pembagian SD, SI-Maj, dan SI-Min.
       - **skeleton_feeder.py**: Loader utama untuk data skeleton.
 - **modules/**: Implementasi model utama.
       - **stgcn_layers/**: Layer Graph Convolution (ST-GCN).
@@ -92,7 +92,7 @@ MSLR_ICCV2025/
 - **configs/**: File konfigurasi YAML eksperimen.
       - **Double_Cosign_sd.yaml**: Contoh file konfigurasi eksperimen.
       - **dataset_configs/**: Konfigurasi dataset.
-            - **bisindo_sd.yaml**: Konfigurasi dataset Bisindo SD.
+            - **bisindo.yaml**: Konfigurasi dataset Bisindo SD.
 - **utils/**: Fungsi utilitas umum (helper, logging, dsb).
       - **decode.py, device.py, optimizer.py, pack_code.py, parameters.py, random_state.py, record.py, skeleton_augmentation.py**: Utility training dan data.
       - **__init__.py**: Inisialisasi modul utils.

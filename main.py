@@ -122,7 +122,10 @@ class SLRProcessor(object):
     def load_data(self):
         print("Loading data")
         self.feeder = getattr(datasets, self.arg.feeder)
-        dataset_list = zip(["train", "dev", "test"], [True, False, False])
+        dataset_list = zip(
+            ["train", "dev", "test_sd", "test_si_major", "test_si_minor"],
+            [True, False, False, False, False]
+        )
         g2i_dict = {k: v['index'] for k, v in self.gloss_dict['gloss2id'].items()}
         for idx, (mode, train_flag) in enumerate(dataset_list):
             arg = self.arg.feeder_args
@@ -233,8 +236,14 @@ class SLRProcessor(object):
         elif self.arg.phase == 'test':
             self.recoder.print_log('Model:   {}.'.format(self.arg.model))
             self.recoder.print_log('Weights: {}.'.format(self.arg.load_weights))
+            self.recoder.print_log('--- Testing on Dev ---')
             self.test('dev', 6667)
-            self.test('test', 6667)
+            self.recoder.print_log('--- Testing on Test SD ---')
+            self.test('test_sd', 6667)
+            self.recoder.print_log('--- Testing on Test SI-Major ---')
+            self.test('test_si_major', 6667)
+            self.recoder.print_log('--- Testing on Test SI-Minor ---')
+            self.test('test_si_minor', 6667)
             self.recoder.print_log('Evaluation Done.\n')
 
 # 1. Blok utama program untuk menjalankan CSLR
