@@ -1,0 +1,31 @@
+id|gloss|text
+P06_S001_R01|AYAH SAMA IBU MANA|Di mana ayah sama Ibu?
+P06_S002_R01|DIA ANAK BAIK SAMPAI BANYAK ORANG SUKA|Dia anak baik sehingga banyak orang menyukainya
+P06_S003_R01|APA KAMU PERNAH BACA BUKU BAHASA INGGRIS|Apa kamu pernah membaca novel bahasa inggris?
+P06_S004_R01|BADAN AKU GEMUK TAPI BADAN ADIK KURUS|Badan ku gemuk, tapi badan adik kurus
+P06_S005_R01|AKU PUSING AKU HARUS PERIKSA MANA|Saya sering pusing, saya harus periksa ke mana?
+P06_S006_R01|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P06_S007_R01|IBU AKU PUNYA KUCING SAMA IKAN|Ibu aku punya kucing sama ikan.
+P06_S008_R01|AKU CIUM BADAN DIA|Saya mencium bau badan dia
+P06_S009_R01|AKU LIHAT ADA ULAR MASUK KELAS|Saya melihat ada ular masuk kelas
+P06_S010_R01|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
+P06_S011_R01|GAKBOLEH PULANG SEKARANG KAMU|Kamu tidak boleh pulang sekarang.
+P06_S012_R01|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P06_S013_R01|KENAPA KAMU GAK MASUK KULIAH KEMARIN|Mengapa kemarin kamu tidak kuliah?
+P06_S014_R01|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P06_S015_R01|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P06_S016_R01|BUKU AKU SOBEK GEGARA DIA|Dia menyobek buku saya
+P06_S017_R01|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
+P06_S018_R01|ULAR SANA MAKAN KAMBING|Kambing di sana dimakan ular
+P06_S019_R01|KAMU PERGI MANA|Kemana kamu mau pergi?
+P06_S020_R01|KITA ISTIRAHAT JAM BERAPA|Jam berapa kita istirahat?
+P06_S021_R01|KAMU PUNYA ANGGOTA KELUARGA BERAPA|Berapa jumlah anggota keluarga kamu?
+P06_S022_R01|MANA IBU KAMU BAIK-BAIK ATAU TIDAK|Bagaimana keadaan ibumu?
+P06_S023_R01|KAMU BELAJAR BISINDO KAPAN|Kapan kamu belajar Bisindo?
+P06_S024_R01|AKU NILAI JELEK|Nilai ku jelek
+P06_S025_R01|ULANGTAHUN SELAMAT|Selamat ulang tahun
+P06_S026_R01|KAKAK AKU KASIH HADIAH BUAT AKU|Kakak saya memberi saya hadiah.
+P06_S027_R01|SANA TOILET KOTOR|Toilet di sana kotor
+P06_S028_R01|SEPATU DIA KOTOR|Sepatu dia kotor
+P06_S029_R01|RUMAH DIMANA KAMU|Rumah kamu di mana?
+P06_S030_R01|DIA MENGEJEK AKU|Dia mengejek saya

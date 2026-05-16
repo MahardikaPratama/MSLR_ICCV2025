@@ -17,44 +17,62 @@ from seq_scripts import seq_train, seq_eval
 import slr_network
 
 
- # Kelas utama untuk memproses training dan evaluasi SLR
- # Tugas utama kelas ini adalah mengelola seluruh proses training dan evaluasi,
- # termasuk memuat data, membangun model, menyimpan model, dan menjalankan loop training/evaluasi.
- # Kelas ini juga menangani konfigurasi dan logging selama proses berlangsung.
+
 class SLRProcessor(object):
+    # 2. Inisialisasi objek SLRProcessor dengan memuat parameter, dataset, model, dan optimizer
     def __init__(self, arg):
+        """
+        Deskripsi:
+        Fungsi inisialisasi untuk objek SLRProcessor yang memuat parameter konfigurasi, dataset, model, dan optimizer.
+
+        Input:
+        1. arg → objek yang berisi parameter konfigurasi untuk proses training dan testing.
+
+        Proses:
+        1. Memanggil konstruktor parent class menggunakan super().__init__().
+        2. Menyimpan parameter konfigurasi ke dalam self.arg.
+        3. Memanggil fungsi save_arg() untuk menyimpan konfigurasi argument.
+        4. Mengecek apakah random_fix bernilai True.
+        4a. Jika bernilai True, maka membuat random state menggunakan random_seed.
+        5. Membuat device GPU menggunakan utils.GpuDataParallel().
+        6. Membuat objek recorder untuk pencatatan log proses.
+        7. Menginisialisasi dictionary dataset dan data_loader.
+        8. Memanggil fungsi load_dataset_info() untuk memuat informasi dataset.
+        9. Membuka file dictionary gloss berdasarkan path dataset_info['dict_path'].
+        10. Memuat dictionary gloss menggunakan json.load().
+        11. Memanggil fungsi loading() untuk memuat model dan optimizer.
+        12. Menginisialisasi best_dev_wer dengan nilai 1000.
+        13. Mengambil task dataset dari dua karakter terakhir nama dataset.
+
+        Output:
+        1. Parameter konfigurasi tersimpan.
+        2. Dataset, model, optimizer, dan recorder berhasil diinisialisasi.
+        3. Dictionary gloss berhasil dimuat.
+        """
         super().__init__()
-        # 3. Simpan argumen & set seed
         self.arg = arg
         self.save_arg()  # 4
         if self.arg.random_fix:
             self.rng = utils.RandomState(seed=self.arg.random_seed)
-        # 5. Inisialisasi device & logger
         self.device = utils.GpuDataParallel()
         self.recoder = utils.Recorder(self.arg.work_dir, self.arg.print_log, self.arg.log_interval)
         self.dataset = {}
         self.data_loader = {}
-        # 6. Muat info dataset & kamus gloss
         self.load_dataset_info()  # 7
         with open(self.arg.dataset_info['dict_path'], 'r') as f:
             self.gloss_dict = json.load(f)
-        # 8. Inisialisasi model & optimizer
         self.model, self.optimizer = self.loading()  # 9
         self.best_dev_wer = 1000
         self.tasks = self.arg.dataset[-2:]
 
-    # Menyimpan argumen konfigurasi ke file yaml
     def save_arg(self):
-        # 4. Simpan argumen ke file config
         arg_dict = vars(self.arg)
         if not os.path.exists(self.arg.work_dir):
             os.makedirs(self.arg.work_dir)
         with open('{}/config.yaml'.format(self.arg.work_dir), 'w') as f:
             yaml.dump(arg_dict, f)
 
-    # Memuat model dan optimizer
     def loading(self):
-        # 9. Set device, bangun model & optimizer, load bobot jika ada, load data
         self.device.set_device(self.arg.device)
         print("Loading model")
         model = self.build_module(self.arg.model_args)
@@ -68,16 +86,12 @@ class SLRProcessor(object):
         self.load_data()
         return model, optimizer
 
-    # Memindahkan model ke device (GPU)
     def model_to_device(self, model):
-        # 9.1. Pindahkan model ke device
         model = model.to(self.device.output_device)
         model.cuda()
         return model
 
-    # Memuat bobot model dari file
     def load_model_weights(self, model, weight_path):
-        # 9.0. Load bobot model dari file
         state_dict = torch.load(weight_path, weights_only=False)['model_state_dict']
         if len(self.arg.ignore_weights):
             for w in self.arg.ignore_weights:
@@ -87,9 +101,7 @@ class SLRProcessor(object):
                     print('Can Not Remove Weights: {}.'.format(w))
         model.load_state_dict(state_dict, strict=False)
 
-    # Membuat DataLoader untuk dataset
     def build_dataloader(self, dataset, mode, train_flag):
-        # 12. Buat DataLoader
         return torch.utils.data.DataLoader(
             dataset,
             batch_size=self.arg.batch_size if mode == "train" else self.arg.test_batch_size,
@@ -99,9 +111,7 @@ class SLRProcessor(object):
             collate_fn=self.feeder.collate_fn,
         )
 
-    # Membuat model dari argumen
     def build_module(self, args):
-        # 10. Ambil kelas model & inisialisasi
         model_class = getattr(slr_network, self.arg.model)
         model = model_class(
             **args,
@@ -109,9 +119,7 @@ class SLRProcessor(object):
         )
         return model
 
-    # Memuat data dan membuat DataLoader
     def load_data(self):
-        # 11. Muat feeder, dataset, dan DataLoader
         print("Loading data")
         self.feeder = getattr(datasets, self.arg.feeder)
         dataset_list = zip(["train", "dev", "test"], [True, False, False])
@@ -125,22 +133,16 @@ class SLRProcessor(object):
             self.data_loader[mode] = self.build_dataloader(self.dataset[mode], mode, train_flag)
         print("Loading data finished.")
 
-    # Memuat info dataset dari file yaml
     def load_dataset_info(self):
-        # 7. Muat info dataset dari YAML
         with open(f"./configs/dataset_configs/{self.arg.dataset}.yaml", 'r') as f:
             self.arg.dataset_info = yaml.load(f, Loader=yaml.FullLoader)
 
-    # Menentukan kapan model disimpan dan dievaluasi
     def judge_save_eval(self, epoch):
-        # 15. Tentukan kapan simpan/evaluasi model
         save_model = (epoch % self.arg.save_interval == 0) and (epoch >= 0.5 * self.arg.num_epoch)
         eval_model = (epoch % self.arg.eval_interval == 0) and (epoch >= 0)
         return save_model, eval_model
 
-    # Menyimpan model ke file
     def save_model(self, epoch, save_path):
-        # 18. Simpan model ke file
         torch.save({
             'epoch': epoch,
             'model_state_dict': self.model.state_dict(),
@@ -149,9 +151,7 @@ class SLRProcessor(object):
             'rng_state': self.rng.save_rng_state(),
         }, save_path)
 
-    # Menyimpan model dengan format custom (best dan current)
     def custom_save_model(self, dev_wer, epoch, save_dir):
-        # 19. Simpan model best & current
         dirs = os.listdir(save_dir)
         dirs = list(filter(lambda x: x.endswith('.pt'), dirs))
         assert len(dirs) <= 2
@@ -176,9 +176,7 @@ class SLRProcessor(object):
             self.save_model(epoch, model_path)
             self.best_dev_wer = dev_wer
 
-    # Proses training model
     def train(self):
-        # 16. Training loop utama
         self.recoder.print_log('Parameters:\n{}\n'.format(str(vars(self.arg))))
         for epoch in range(self.arg.optimizer_args['start_epoch'], self.arg.num_epoch):
             save_model, eval_model = self.judge_save_eval(epoch)
@@ -192,9 +190,7 @@ class SLRProcessor(object):
             if save_model:
                 self.custom_save_model(dev_error, epoch, self.arg.work_dir)
 
-    # Proses evaluasi model
     def test(self, mode, epoch):
-        # 17. Evaluasi model (dev/test)
         wer = seq_eval(
             self.arg,
             self.data_loader[mode],
@@ -209,9 +205,29 @@ class SLRProcessor(object):
         )
         return wer
 
-    # Fungsi utama untuk menjalankan training atau testing
     def start(self):
-        # 13. Mulai training atau testing
+        """
+        Deskripsi:
+        Fungsi utama untuk menjalankan proses training atau testing model CSLR.
+
+        Input:
+        1. self.arg.phase → mode proses ('train' atau 'test').
+        2. Parameter model dan weight hasil konfigurasi.
+
+        Proses:
+        1. Mengecek nilai self.arg.phase.
+        1a. Jika bernilai 'train', maka memanggil fungsi train() untuk melakukan proses training.
+        1b. Jika bernilai 'test', maka:
+                - menampilkan informasi model,
+                - menampilkan informasi weight model,
+                - memanggil fungsi test() menggunakan mode 'dev',
+                - memanggil fungsi test() menggunakan mode 'test',
+                - menampilkan log bahwa evaluasi selesai dilakukan.
+
+        Output:
+        1. Proses training model dijalankan.
+        2. Proses evaluasi model dijalankan.
+        """
         if self.arg.phase == 'train':
             self.train()
         elif self.arg.phase == 'test':
@@ -221,9 +237,31 @@ class SLRProcessor(object):
             self.test('test', 6667)
             self.recoder.print_log('Evaluation Done.\n')
 
-
-## 2. Entry point utama
+# 1. Blok utama program untuk menjalankan CSLR
 if __name__ == '__main__':
+    """
+    Deskripsi:
+    Blok utama program untuk membaca konfigurasi argument, memuat parameter dari file konfigurasi, 
+    kemudian menjalankan proses Continuous Sign Language Recognition (CSLR).
+
+    Input:
+    1. Argument command line dari terminal.
+    2. File konfigurasi (.yaml) apabila parameter config diberikan.
+
+    Proses:
+    1. Membuat/mengambil parser untuk mendefinisikan argument yang bisa digunakan saat program dijalankan.
+    2. Membaca argument dari terminal lalu menyimpannya ke variabel p.
+    3. Mengecek apakah parameter config diberikan.
+       3a. Jika p.config tidak bernilai None, maka file konfigurasi YAML dibuka dan dibaca.
+       3b. Jika parameter pada file konfigurasi tidak sesuai dengan parser argument, maka program menampilkan pesan error.
+       3c. Jika parameter valid, maka nilai parameter dari file konfigurasi dijadikan default argument.
+    4. Membaca ulang seluruh argument dan menyimpannya ke variabel args.
+    5. Membuat objek SLRProcessor menggunakan argument yang telah diproses.
+    6. Menjalankan proses utama CSLR melalui method start().
+
+    Output:
+    Program CSLR dijalankan sesuai konfigurasi argument dan file konfigurasi yang diberikan.
+    """    
     sparser = utils.get_parser()
     p = sparser.parse_args()
     if p.config is not None:
