@@ -130,7 +130,7 @@ The pre-extracted skeleton dataset is publicly available on Google Drive:
 
 </div>
 
-Download the following files and place them inside the `datasets/` directory:
+Download the entire Google Drive folder and place all of its contents directly inside the `datasets/` directory:
 
 ```
 datasets/
@@ -296,7 +296,7 @@ work_dir/{scenario_name}/test/
 - **`*.csv` files**: Contain the discrete sequential mapping of video IDs to the raw, predicted gloss sequences. These are provided for qualitative analysis and direct observation of the generated sign language tokens.
 - **`*.ctm` files**: Intermediate alignment timestamp records generated and parsed by the Kaldi `sclite` scoring toolkit. These are utilized internally for word-level sequence evaluation and can generally be bypassed unless granular token-level alignment analysis is required.
 
-s### Metrics
+### Metrics
 
 | Metric | Description | Direction |
 |---|---|---|
