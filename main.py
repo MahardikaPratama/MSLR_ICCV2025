@@ -133,6 +133,7 @@ class SLRProcessor(object):
             arg["mode"] = mode
             arg["transform_mode"] = train_flag
             arg["dataset"] = self.arg.dataset
+            arg["dataset_root"] = self.arg.dataset_info.get("dataset_root", "./datasets")
             self.dataset[mode] = self.feeder(gloss_dict=g2i_dict, **arg)
             self.data_loader[mode] = self.build_dataloader(self.dataset[mode], mode, train_flag)
         print("Loading data finished.")

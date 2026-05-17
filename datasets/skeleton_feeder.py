@@ -29,6 +29,7 @@ class SkeletonFeeder(data.Dataset):
         transform_mode=True,
         datatype="lmdb",
         dataset='bisindo',
+        dataset_root="./datasets/mslr2025",
         si_signer=None,
         split=None,
         norm_point=None,
@@ -44,25 +45,32 @@ class SkeletonFeeder(data.Dataset):
         self.data_type = datatype  # Jenis data (skeleton/lmdb)
         self.transform_mode = "train" if transform_mode else "test"  # Mode augmentasi
         self.dataset = dataset  # Nama dataset
+        self.dataset_root = dataset_root
         self.used_part = used_part  # Bagian skeleton yang digunakan
 
         # Load file info sesuai mode
         # Mode yang didukung: train, dev, test_sd, test_si_major, test_si_minor
-        info_file = f"./datasets/mslr2025/{mode}_info.json"
+        info_file = os.path.join(self.dataset_root, f"{mode}_info.json")
         with open(info_file, 'r') as f:
             inputs_list = json.load(f)
                 
         # Load file pickle pose sesuai mode
         if mode == 'train' or mode == 'dev':
-            pkl_file = "./datasets/pose_bisindo_train_dev_sd.pkl"
+            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_train_dev_sd.pkl")
         elif mode == 'test_sd':
-            pkl_file = "./datasets/pose_bisindo_test_sd.pkl"
+            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_sd.pkl")
         elif mode == 'test_si_major':
-            pkl_file = "./datasets/pose_bisindo_test_si-maj.pkl"
+            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_si-maj.pkl")
         elif mode == 'test_si_minor':
-            pkl_file = "./datasets/pose_bisindo_test_si-min.pkl"
+            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_si-min.pkl")
         else:
             raise ValueError(f"Unknown mode: {mode}")
+
+        if not os.path.exists(pkl_file):
+            raise FileNotFoundError(
+                f"Pose file tidak ditemukan: {pkl_file}. "
+                f"Pastikan file .pkl berada di dataset_root: {self.dataset_root}"
+            )
 
         with open(pkl_file, "rb") as f:
             self.kps_global = pickle.load(f)
