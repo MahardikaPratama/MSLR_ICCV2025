@@ -3,6 +3,7 @@
 ## 1. Import libraries & set CUDA order
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+import shutil
 import utils
 import numpy as np
 import modules
@@ -165,12 +166,12 @@ class SLRProcessor(object):
             if 'cur' in item:
                 cur_path = os.path.join(save_dir, item)
         if cur_path is not None:
-            os.system(f'rm {cur_path}')
+            os.remove(cur_path)
         model_path = "{}cur_dev_{:05.2f}_epoch{}_model.pt".format(save_dir, dev_wer, epoch)
         self.save_model(epoch, model_path)
         if best_path is not None:
             if dev_wer <= self.best_dev_wer:
-                os.system(f'rm {best_path}')
+                os.remove(best_path)
                 model_path = "{}best_dev_{:05.2f}_epoch{}_model.pt".format(save_dir, dev_wer, epoch)
                 self.save_model(epoch, model_path)
                 self.best_dev_wer = dev_wer
@@ -179,19 +180,61 @@ class SLRProcessor(object):
             self.save_model(epoch, model_path)
             self.best_dev_wer = dev_wer
 
+    def finalize_model_artifacts(self, dev_wer, epoch, save_dir):
+        dirs = os.listdir(save_dir)
+        pt_files = [os.path.join(save_dir, item) for item in dirs if item.endswith('.pt')]
+
+        for path in pt_files:
+            name = os.path.basename(path)
+            if 'cur' in name or 'best' in name:
+                os.remove(path)
+
+        final_wer = 999.99 if dev_wer is None else dev_wer
+        model_path = "{}best_dev_{:05.2f}_epoch{}_model.pt".format(save_dir, final_wer, epoch)
+        self.save_model(epoch, model_path)
+        self.recoder.print_log(
+            "Final model saved from last epoch: {}".format(model_path)
+        )
+
+    def sync_workdir_to_google_drive(self):
+        target_root = getattr(self.arg, 'google_drive_dir', None)
+        if not target_root:
+            return
+
+        src_dir = os.path.abspath(self.arg.work_dir)
+        target_root = os.path.abspath(os.path.expanduser(target_root))
+        os.makedirs(target_root, exist_ok=True)
+
+        dst_dir = os.path.join(target_root, os.path.basename(os.path.normpath(src_dir)))
+        if os.path.exists(dst_dir):
+            shutil.rmtree(dst_dir)
+        shutil.copytree(src_dir, dst_dir)
+        self.recoder.print_log(
+            "Work dir synced to Google Drive: {}".format(dst_dir)
+        )
+
     def train(self):
         self.recoder.print_log('Parameters:\n{}\n'.format(str(vars(self.arg))))
+        last_epoch = None
+        last_dev_error = None
         for epoch in range(self.arg.optimizer_args['start_epoch'], self.arg.num_epoch):
             save_model, eval_model = self.judge_save_eval(epoch)
             seq_train(
                 self.data_loader['train'], self.model, self.optimizer, self.device,
                 epoch, self.recoder, **self.arg.train_args
             )
-            if eval_model:
+            dev_error = None
+            if eval_model or save_model or (epoch == self.arg.num_epoch - 1):
                 dev_error = self.test('dev', epoch)
                 self.recoder.print_log("Dev WER: {:05.2f}%".format(dev_error))
             if save_model:
                 self.custom_save_model(dev_error, epoch, self.arg.work_dir)
+            last_epoch = epoch
+            last_dev_error = dev_error
+
+        if last_epoch is not None:
+            self.finalize_model_artifacts(last_dev_error, last_epoch, self.arg.work_dir)
+        self.sync_workdir_to_google_drive()
 
     def test(self, mode, epoch):
         wer = seq_eval(

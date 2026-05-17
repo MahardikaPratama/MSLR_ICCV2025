@@ -1,5 +1,6 @@
 # Baseline + Temporal Normalization
 work_dir: ./work_dir/Baseline+TN/
+google_drive_dir: /content/drive/MyDrive/MSLR_RESULTS
 device: 0
 phase: train
 save_interval: 1

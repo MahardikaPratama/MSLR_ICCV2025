@@ -1,5 +1,6 @@
 # Baseline (tanpa normalisasi tambahan)
 work_dir: ./work_dir/Baseline/
+google_drive_dir: /content/drive/MyDrive/MSLR_RESULTS
 device: 0
 phase: train
 save_interval: 1
