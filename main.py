@@ -289,6 +289,8 @@ class SLRProcessor(object):
             self.recoder.print_log('--- Testing on Test SI-Minor ---')
             self.test('test_si_minor', 6667)
             self.recoder.print_log('Evaluation Done.\n')
+            # Sync test results to Google Drive if configured
+            self.sync_workdir_to_google_drive()
 
 # 1. Blok utama program untuk menjalankan CSLR
 if __name__ == '__main__':
