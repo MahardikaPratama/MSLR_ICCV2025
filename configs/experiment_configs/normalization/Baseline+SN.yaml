@@ -15,9 +15,9 @@ num_worker: 2
 feeder_args:
   setting: sd
   datatype: skeleton
-  split: &split [25, 46, 67, 86]
-  norm_point: [0, 25, 46, 67]
-  used_part: &used_part ['body', 'hand21', 'mouth_8']
+  split: &split [21, 42]
+  norm_point: [0, 21]
+  used_part: &used_part ['hand21']
   augmentation_types: []
   normalization_types: ['spatial']
   downsampling: true         # aktifkan downsampling
