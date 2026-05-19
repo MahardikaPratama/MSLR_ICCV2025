@@ -216,8 +216,6 @@ class SLRProcessor(object):
 
     def train(self):
         self.recoder.print_log('Parameters:\n{}\n'.format(str(vars(self.arg))))
-        last_epoch = None
-        last_dev_error = None
         for epoch in range(self.arg.optimizer_args['start_epoch'], self.arg.num_epoch):
             save_model, eval_model = self.judge_save_eval(epoch)
             seq_train(
@@ -230,11 +228,8 @@ class SLRProcessor(object):
                 self.recoder.print_log("Dev WER: {:05.2f}%".format(dev_error))
             if save_model:
                 self.custom_save_model(dev_error, epoch, self.arg.work_dir)
-            last_epoch = epoch
-            last_dev_error = dev_error
 
-        if last_epoch is not None:
-            self.finalize_model_artifacts(last_dev_error, last_epoch, self.arg.work_dir)
+        # Langsung sync — best_ model sudah ada dari custom_save_model
         self.sync_workdir_to_google_drive()
 
     def test(self, mode, epoch):
