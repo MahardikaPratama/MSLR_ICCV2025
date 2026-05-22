@@ -6,7 +6,8 @@ RGBFEAT
 INSTR
 work_dir/
 software/
-datasets/*.pkl
+datasets/mslr2025/*.pkl
+*.pkl
 .history/
 *.pt
 docs/
