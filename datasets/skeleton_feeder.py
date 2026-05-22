@@ -19,8 +19,14 @@ from scipy.interpolate import interp1d
 sys.path.append("..")
 
 
-# Kelas utama untuk memproses dan menyediakan data skeleton untuk training/testing
 class SkeletonFeeder(data.Dataset):
+    """Dataset feeder untuk data skeleton BISINDO.
+
+    Kelas ini membaca metadata video, memuat pose dari file pickle, memfilter
+    sample yang valid, lalu menyiapkan augmentasi, normalisasi, dan collate
+    function untuk dipakai oleh DataLoader.
+    """
+
     def __init__(
         self,
         gloss_dict,
@@ -37,11 +43,38 @@ class SkeletonFeeder(data.Dataset):
         augmentation_types=None,
         normalization_types=None,
         downsampling=False,
-        downsampling_ratio=0.5):
+        downsampling_ratio=0.5,
+        temporal_length=194):
+        """Inisialisasi feeder dan seluruh pipeline data.
+
+        Input:
+        1. gloss_dict: kamus gloss ke index.
+        2. mode: split dataset yang dipakai.
+        3. setting: konfigurasi eksperimen.
+        4. transform_mode: penanda mode train atau test.
+        5. datatype: jenis data yang diproses.
+        6. dataset: nama dataset.
+        7. dataset_root: folder utama file dataset.
+        8. split, norm_point, used_part: parameter normalisasi skeleton.
+        9. augmentation_types: daftar augmentasi yang diaktifkan.
+        10. normalization_types: daftar normalisasi yang diaktifkan.
+        11. downsampling dan downsampling_ratio: opsi pemendekan urutan video.
+        12. temporal_length: panjang frame target untuk normalisasi temporal (default: 194).
+
+        Proses:
+        1. Menyimpan argumen dasar ke atribut class.
+        2. Membaca metadata video dari file JSON.
+        3. Memuat pose global sesuai mode.
+        4. Memfilter input yang benar-benar punya pose.
+        5. Menyiapkan indeks keypoint, augmentasi, dan normalisasi.
+
+        Output:
+        1. Instance SkeletonFeeder yang siap digunakan DataLoader.
+        """
         self.mode = mode  # Mode data (train/dev/test)
         self.mode_list = mode.split("_")  # Untuk mode gabungan (misal: train_dev)
         self.dict = gloss_dict  # Kamus gloss (gloss ke index)
-        self.setting = setting  # Setting eksperimen (si/us)
+        self.setting = setting  # Setting eksperimen (sd/si)
         self.data_type = datatype  # Jenis data (skeleton/lmdb)
         self.transform_mode = "train" if transform_mode else "test"  # Mode augmentasi
         self.dataset = dataset  # Nama dataset
@@ -53,27 +86,9 @@ class SkeletonFeeder(data.Dataset):
         info_file = os.path.join(self.dataset_root, f"{mode}_info.json")
         with open(info_file, 'r') as f:
             inputs_list = json.load(f)
-                
-        # Load file pickle pose sesuai mode
-        if mode == 'train' or mode == 'dev':
-            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_train_dev_sd.pkl")
-        elif mode == 'test_sd':
-            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_sd.pkl")
-        elif mode == 'test_si_major':
-            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_si-maj.pkl")
-        elif mode == 'test_si_minor':
-            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_si-min.pkl")
-        else:
-            raise ValueError(f"Unknown mode: {mode}")
 
-        if not os.path.exists(pkl_file):
-            raise FileNotFoundError(
-                f"Pose file tidak ditemukan: {pkl_file}. "
-                f"Pastikan file .pkl berada di dataset_root: {self.dataset_root}"
-            )
-
-        with open(pkl_file, "rb") as f:
-            self.kps_global = pickle.load(f)
+        # Load file pose (pickle) sesuai mode                
+        self.kps_global = self.load_kps_global(mode)
 
         # Filter hanya video yang ada di pose
         self.inputs_list = list()
@@ -106,6 +121,9 @@ class SkeletonFeeder(data.Dataset):
         self.augmentation_types = augmentation_types if augmentation_types else []
         self.data_aug = self.pose_transform()  # Pipeline augmentasi diaktifkan lewat config
 
+        # Panjang target untuk normalisasi temporal (resampling)
+        self.temporal_length = temporal_length
+
         # Jenis normalisasi yang dapat diaktifkan via config:
         # 'spatial'    : Normalisasi rentang dan sentralisasi skeleton
         # 'missing_kp' : Rekonstruksi keypoint hilang (interpolasi)
@@ -121,6 +139,23 @@ class SkeletonFeeder(data.Dataset):
 
     # Mengambil satu sample data (dipanggil oleh DataLoader)
     def __getitem__(self, idx):
+        """Mengambil satu sample data berdasarkan indeks.
+
+        Input:
+        1. idx: indeks sample di dalam self.inputs_list.
+
+        Proses:
+        1. Membaca pose dan label dari sample terpilih.
+        2. Memilih bagian skeleton sesuai pose_idx.
+        3. Menghitung fitur motion antar frame.
+        4. Menggabungkan pose, motion, dan confidence.
+        5. Menjalankan pipeline normalisasi dan augmentasi.
+
+        Output:
+        1. Tensor input yang sudah diproses.
+        2. Label dalam bentuk LongTensor.
+        3. Informasi asli sample untuk logging/evaluasi.
+        """
         if self.data_type == 'skeleton':
             input_data, label, fi = self.read_pose(idx)  # Ambil pose dan label
             input_data = input_data[:, self.pose_idx, :2]  # Ambil bagian pose yang dipilih
@@ -144,6 +179,16 @@ class SkeletonFeeder(data.Dataset):
 
     # Fungsi opsional untuk menghapus data tidak valid (tidak dipakai utama)
     def deleteInvalidInputs(self):
+        """Membentuk ulang daftar input dengan membuang signer tertentu.
+
+        Proses:
+        1. Menelusuri seluruh item pada inputs_list.
+        2. Mengabaikan data dengan signer 'Signer05'.
+        3. Menambahkan elemen terakhir yang dipilih manual.
+
+        Output:
+        1. List baru yang sudah disaring.
+        """
         new_list = []
         for index in range(len(self.inputs_list)-1):
             fi = self.inputs_list[index]
@@ -156,6 +201,22 @@ class SkeletonFeeder(data.Dataset):
 
     # Membaca pose dan label untuk satu video
     def read_pose(self, index, num_glosses=-1):
+        """Membaca pose mentah dan label gloss untuk satu sample.
+
+        Input:
+        1. index: indeks sample yang akan dibaca.
+        2. num_glosses: parameter opsional untuk membatasi jumlah gloss.
+
+        Proses:
+        1. Mengambil metadata video dari self.inputs_list.
+        2. Mengambil keypoints pose dari self.kps_global berdasarkan video_id.
+        3. Mengubah string gloss_sequence menjadi daftar index gloss.
+
+        Output:
+        1. pose_data: array keypoints mentah.
+        2. label_list: daftar index label gloss.
+        3. fi: metadata lengkap sample.
+        """
         fi = self.inputs_list[index]  # Info video
         pose_data = self.kps_global[fi['video_id']]['keypoints']  # Pose
         label = fi['gloss_sequence']  # Label gloss
@@ -172,12 +233,57 @@ class SkeletonFeeder(data.Dataset):
         )
 
 
+    # Memuat file pickle pose berdasarkan mode
+    def load_kps_global(self, mode):
+        """Memuat dictionary pose global dari file pickle sesuai mode.
+
+        Input:
+        1. mode: split dataset yang sedang dipakai.
+
+        Proses:
+        1. Menentukan nama file pickle berdasarkan mode.
+        2. Mengecek apakah file tersebut tersedia.
+        3. Membaca isi pickle dan mengembalikannya sebagai dictionary.
+
+        Output:
+        1. Dictionary pose global yang dipetakan berdasarkan video_id.
+        """
+        if mode == 'train' or mode == 'dev':
+            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_train_dev_sd.pkl")
+        elif mode == 'test_sd':
+            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_sd.pkl")
+        elif mode == 'test_si_major':
+            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_si-maj.pkl")
+        elif mode == 'test_si_minor':
+            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_si-min.pkl")
+        else:
+            raise ValueError(f"Unknown mode: {mode}")
+
+        if not os.path.exists(pkl_file):
+            raise FileNotFoundError(
+                f"Pose file tidak ditemukan: {pkl_file}. "
+                f"Pastikan file .pkl berada di dataset_root: {self.dataset_root}"
+            )
+
+        with open(pkl_file, "rb") as f:
+            return pickle.load(f)
+
+
     # Pipeline normalisasi dan augmentasi skeleton
     def downsample(self, video, ratio=0.5):
-        """
-        Downsampling temporal sequence dengan rasio tertentu.
-        video: np.ndarray atau torch.Tensor (T, K, C)
-        ratio: float (0 < ratio <= 1)
+        """Melakukan downsampling temporal pada urutan video.
+
+        Input:
+        1. video: array atau tensor dengan bentuk (T, K, C).
+        2. ratio: rasio sampling ulang, bernilai antara 0 dan 1.
+
+        Proses:
+        1. Jika rasio tidak valid, video dikembalikan apa adanya.
+        2. Menghitung jumlah frame baru berdasarkan ratio.
+        3. Mengambil indeks frame secara merata sepanjang video.
+
+        Output:
+        1. Video yang sudah dipendekkan secara temporal.
         """
         if ratio >= 1.0 or ratio <= 0.0:
             return video
@@ -190,41 +296,64 @@ class SkeletonFeeder(data.Dataset):
             return video[idx, ...]
 
     def normalize(self, video, label=None, file_id=None):
-        """
-        Pipeline skeleton:
-        0. Downsampling (jika diaktifkan)
-        1. Augmentasi (jika diaktifkan)
-        2. Spatial normalization (jika dipilih)
-        3. Missing keypoint reconstruction (jika dipilih)
-        4. Temporal normalization (jika dipilih)
+        """Menjalankan pipeline normalisasi dan augmentasi.
+
+        Input:
+        1. video: tensor hasil gabungan pose dan motion.
+        2. label: label opsional.
+        3. file_id: identitas sample opsional.
+
+        Proses:
+        1. Downsampling jika diaktifkan.
+        2. Menjalankan transformasi augmentasi dari self.data_aug.
+        3. Menjalankan spatial normalization bila dipilih.
+        4. Menjalankan rekonstruksi keypoint hilang bila dipilih.
+        5. Menjalankan temporal normalization bila dipilih.
+
+        Output:
+        1. Tensor video yang sudah diproses.
         """
         if self.data_type != 'skeleton':
             return video
 
-        # 0. Downsampling sebelum augmentasi/normalisasi
-        if self.downsampling:
-            video = self.downsample(video, self.downsampling_ratio)
-
-        # 1. Augmentasi (ToTensor wajib)
+        # 0. Augmentasi (ToTensor wajib)
         input_data = self.data_aug(video)
 
-        # 2. Spatial normalization
+        # 1. Spatial normalization
         if 'spatial' in self.normalization_types:
             input_data = self.spatial_normalize(input_data)
 
-        # 3. Missing keypoint reconstruction
+        # 2. Missing keypoint reconstruction
         if 'missing_kp' in self.normalization_types:
             input_data = self.missing_keypoint_reconstruction(input_data)
 
-        # 4. Temporal normalization (default: 64 frame, bisa diubah via config jika perlu)
+        # 3. Temporal normalization (resample ke panjang target yang dapat disetel)
         if 'temporal' in self.normalization_types:
-            input_data = self.temporal_normalize(input_data, target_length=64)
+            input_data = self.temporal_normalize(input_data, target_length=self.temporal_length)
+
+        # 4. Downsampling paling akhir supaya target temporal tetap mengacu ke data original
+        if self.downsampling:
+            input_data = self.downsample(input_data, self.downsampling_ratio)
 
         return input_data
 
 
     # Normalisasi skeleton ke rentang [-1, 1] dan sentralisasi
     def spatial_normalize(self, origin_input_data):
+        """Menormalkan koordinat skeleton ke rentang yang lebih kecil.
+
+        Input:
+        1. origin_input_data: tensor dengan channel koordinat dan fitur tambahan.
+
+        Proses:
+        1. Mengambil confidence dari channel terakhir.
+        2. Menskalakan nilai mentah menggunakan self.norm_div.
+        3. Mengambil koordinat xy untuk disentralisasi per bagian tubuh.
+        4. Mengembalikan tensor gabungan koordinat ter-normalisasi dan fitur lain.
+
+        Output:
+        1. Tensor skeleton yang sudah dinormalisasi secara spasial.
+        """
         conf = origin_input_data[:,:,6]  # Ambil confidence
         origin_input_data = origin_input_data / self.norm_div - 1  # Normalisasi range
 
@@ -265,16 +394,20 @@ class SkeletonFeeder(data.Dataset):
     
     # Rekonstruksi keypoint hilang menggunakan interpolasi linier temporal
     def missing_keypoint_reconstruction(self, origin_input_data):
-        """
-        origin_input_data : torch.Tensor (T, K, C)
+        """Mengisi koordinat keypoint yang hilang dengan interpolasi temporal.
 
-        Input  :
-            channel 0: x
-            channel 1: y
-            channel lain tetap dipertahankan
+        Input:
+        1. origin_input_data: tensor (T, K, C) yang sudah menjadi tensor.
 
-        Output :
-            torch.Tensor (T, K, C)
+        Proses:
+        1. Menyalin input ke tensor hasil agar aman dimodifikasi.
+        2. Mengambil koordinat xy ke NumPy untuk interpolasi.
+        3. Mendeteksi frame yang missing pada tiap keypoint.
+        4. Mengisi nilai kosong dengan interpolasi atau frame terdekat.
+        5. Menulis kembali hasil ke tensor output.
+
+        Output:
+        1. Tensor dengan koordinat keypoint yang sudah direkonstruksi.
         """
 
         result = origin_input_data.clone()
@@ -342,12 +475,20 @@ class SkeletonFeeder(data.Dataset):
 
     # Normalisasi temporal dengan resampling interpolasi linier
     def temporal_normalize(self, origin_input_data, target_length):
-        """
-        origin_input_data : torch.Tensor (T, K, C)
-        target_length     : int
+        """Menyesuaikan panjang urutan video ke jumlah frame target.
 
-        Output :
-            torch.Tensor (target_length, K, C)
+        Input:
+        1. origin_input_data: tensor (T, K, C) sebagai input awal.
+        2. target_length: panjang frame yang ingin dihasilkan.
+
+        Proses:
+        1. Jika panjang sudah sama, data dikembalikan tanpa perubahan.
+        2. Mengonversi data ke NumPy untuk interpolasi.
+        3. Membuat grid indeks lama dan baru.
+        4. Melakukan interpolasi linear untuk setiap keypoint dan channel.
+
+        Output:
+        1. Tensor dengan panjang temporal sesuai target_length.
         """
 
         T, K, C = origin_input_data.shape
@@ -384,6 +525,16 @@ class SkeletonFeeder(data.Dataset):
 
     # Membuat pipeline augmentasi (training/test)
     def pose_transform(self):
+        """Membangun pipeline augmentasi sesuai mode training atau testing.
+
+        Proses:
+        1. Jika mode train, menyusun daftar augmentasi sesuai augmentation_types.
+        2. Menambahkan ToTensor sebagai transform terakhir.
+        3. Jika mode test, hanya memakai ToTensor.
+
+        Output:
+        1. Objek Compose yang siap dipanggil pada data skeleton.
+        """
         if self.transform_mode == "train":
             print(f"Apply training transform: {self.augmentation_types}")
             transforms = []
@@ -405,12 +556,27 @@ class SkeletonFeeder(data.Dataset):
 
     # Mengembalikan jumlah data
     def __len__(self):
+        """Mengembalikan jumlah sample yang tersedia setelah filtering."""
         return len(self.inputs_list)
 
 
     # Fungsi untuk menggabungkan batch (custom collate)
     @staticmethod
     def collate_fn(batch):
+        """Menggabungkan daftar sample menjadi satu batch untuk DataLoader.
+
+        Input:
+        1. batch: list sample hasil __getitem__.
+
+        Proses:
+        1. Mengurutkan sample berdasarkan panjang video.
+        2. Menghitung panjang asli dan panjang padding.
+        3. Melakukan padding frame depan dan belakang.
+        4. Menyusun label dan metadata ke format batch.
+
+        Output:
+        1. Dict batch yang berisi video, panjang video, label, dan info asal.
+        """
         # Urutkan batch berdasarkan panjang video (descending)
         batch = [item for item in sorted(batch, key=lambda x: len(x[0]), reverse=True)]
         video, label, info = list(zip(*batch))  # Unzip
