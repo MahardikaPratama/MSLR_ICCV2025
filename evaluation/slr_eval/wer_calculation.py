@@ -18,12 +18,13 @@ def evaluate(prefix="./", mode="dev", evaluate_dir=None, evaluate_prefix=None,
     tmp_stm_path = os.path.join(prefix, "tmp.stm")
     out_path = os.path.join(prefix, f"out.{output_file}")
 
-    # Use BISINDO-specific preprocessing for MSLR dataset
+    # Jika evaluate_prefix mengandung "mslr", gunakan preprocess_bisindo.sh, jika tidak gunakan preprocess.sh. Kedua script ini akan memproses output_file menjadi format yang sesuai untuk evaluasi WER. Setelah itu, kita akan menggunakan sclite untuk menghitung WER dengan membandingkan hasil prediksi (tmp2.ctm) dengan ground-truth (tmp.stm). Jika python_evaluate True, kita juga akan menghitung WER menggunakan fungsi wer_calculation() yang sudah diimplementasikan. Jika triplet True, kita juga akan menghitung WER untuk hasil konversi yang disimpan di out_path.replace(".ctm", "-conv.ctm").
     if evaluate_prefix and "mslr" in evaluate_prefix.lower():
         preprocess_script = "preprocess_bisindo.sh"
     else:
         preprocess_script = "preprocess.sh"
     
+    # Jalankan script preprocess untuk memproses output_file menjadi format yang sesuai untuk evaluasi WER. Script ini akan menghasilkan file tmp.ctm dan tmp2.ctm yang akan digunakan untuk evaluasi. Setelah itu, kita akan menggunakan sclite untuk menghitung WER dengan membandingkan hasil prediksi (tmp2.ctm) dengan ground-truth (tmp.stm). Jika python_evaluate True, kita juga akan menghitung WER menggunakan fungsi wer_calculation() yang sudah diimplementasikan. Jika triplet True, kita juga akan menghitung WER untuk hasil konversi yang disimpan di out_path.replace(".ctm", "-conv.ctm").
     os.system(f"bash {script_dir}/{preprocess_script} {output_path} {tmp_path} {tmp2_path}")
     # if not csl_daily:
     #     os.system(f"bash {evaluate_dir}/preprocess.sh {prefix + output_file} {prefix}tmp.ctm {prefix}tmp2.ctm")
