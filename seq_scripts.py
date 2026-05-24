@@ -126,18 +126,20 @@ def seq_eval(
             batch_frames = data['len_x'].sum().item()
         else:
             batch_frames = sum(data['len_x'])
+        # Hitung jumlah sequence dalam batch untuk kecepatan
         batch_sequences = len(data['origin_info'])
         
         with torch.no_grad():
             start_time = time.time()
             ret_dict = model(data)  # Forward pass tanpa gradien
             end_time = time.time()
-            
+
+        # Update total waktu inferensi dan jumlah frame/sequence 
         total_inference_time += (end_time - start_time)
         total_frames += batch_frames
         total_sequences += batch_sequences
 
-    # Simpan info file dan hasil prediksi
+        # Simpan info file dan hasil prediksi
         total_info += [file_name.split("|")[0] for file_name in data['origin_info']]
         total_sent_fusion += ret_dict['recognized_sents_fusion']
         total_sent_conv_fusion += ret_dict['conv_sents_fusion']
@@ -146,6 +148,7 @@ def seq_eval(
     fps = total_frames / total_inference_time if total_inference_time > 0 else 0
     sps = total_sequences / total_inference_time if total_inference_time > 0 else 0
     
+    # Log waktu inferensi dan kecepatan
     recoder.print_log(f"[{mode.upper()} EVAL] Total Inference Time: {total_inference_time:.2f}s")
     recoder.print_log(f"[{mode.upper()} EVAL] Inference Speed: {fps:.2f} Frames/s, {sps:.2f} Sequences/s")
 
@@ -159,9 +162,11 @@ def seq_eval(
     else:
         results_dir = os.path.join(work_dir, 'train', mode)
 
+    # Buat direktori hasil jika belum ada
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
 
+    #  Tulis hasil prediksi ke file CTM untuk kedua jalur (BiLSTM dan Conv1D)
     write2file(
         os.path.join(results_dir, "output-hypothesis-fusion-{}.ctm".format(mode)), total_info, total_sent_fusion
     )
@@ -169,21 +174,34 @@ def seq_eval(
         os.path.join(results_dir, "output-hypothesis-conv-fusion-{}.ctm".format(mode)), total_info, total_sent_conv_fusion
     )
     
+    # Jika mode test, buat file CSV dari CTM untuk keperluan submission atau analisis lebih lanjut
     if mode.startswith('test'):
+        #  Buat file CSV dengan format id dan gloss dari file CTM hasil BiLSTM fusion
         csv_file = os.path.join(results_dir, f'{mode}.csv')
+        # Baca file CTM, ekstrak id dan kata, lalu simpan dalam format CSV dengan kolom id dan gloss
         ctm_file = os.path.join(results_dir, "output-hypothesis-fusion-{}.ctm".format(mode))
+        # Buka file CTM, baca setiap baris, ekstrak id dan kata, lalu simpan dalam dictionary berdasarkan id. Setelah itu, tulis ke file CSV dengan kolom id dan gloss (gabungan kata-kata).
         with open(ctm_file, "r", encoding="utf-8") as file:
             lines = file.readlines()
+        # Initialisasi dictionary untuk menyimpan id dan kata-kata yang terkait
         data = {}
+        # Iterasi setiap baris dalam file CTM, ekstrak id (kolom pertama) dan kata (kolom kelima), lalu simpan dalam dictionary berdasarkan id. Jika id sudah ada, tambahkan kata ke list yang terkait dengan id tersebut.
         for line_idx, line in enumerate(lines):
+            # Setiap baris diharapkan memiliki format: id 1 start_time end_time word. Kita ekstrak id dan word, lalu simpan dalam dictionary. Jika id sudah ada, kita tambahkan kata ke list yang terkait dengan id tersebut.
             parts = line.strip().split()
+            #  Jika format baris valid (minimal 5 bagian), ekstrak id dan kata, lalu simpan dalam dictionary. Jika id sudah ada, tambahkan kata ke list yang terkait dengan id tersebut.
             if len(parts) >= 5:
+                # Ekstrak id (kolom pertama) dan kata (kolom kelima), lalu simpan dalam dictionary. Jika id sudah ada, tambahkan kata ke list yang terkait dengan id tersebut.
                 id = parts[0]
                 word = parts[4]
+                # Jika id belum ada dalam dictionary, buat entry baru dengan list kosong. Kemudian tambahkan kata ke list yang terkait dengan id tersebut.
                 if id not in data:
                     data[id] = []
+                # Tambahkan kata ke list yang terkait dengan id tersebut. Jika id sudah ada, kita tambahkan kata ke list yang terkait dengan id tersebut.
                 data[id].append(word)
+        # Setelah membaca semua baris, kita memiliki dictionary yang berisi id dan list kata-kata terkait. Selanjutnya, kita tulis ke file CSV dengan kolom id dan gloss (gabungan kata-kata). Kita urutkan dictionary berdasarkan id agar hasil CSV terurut.
         data = dict(sorted(data.items(), key=lambda item: item[0]))
+        # Tulis ke file CSV dengan kolom id dan gloss (gabungan kata-kata). Kita gabungkan list kata-kata menjadi satu string untuk kolom gloss. Setiap baris CSV akan berisi id dan gloss yang terkait.
         with open(csv_file, "w", newline='', encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["id", "gloss"])
