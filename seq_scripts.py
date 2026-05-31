@@ -109,8 +109,8 @@ def seq_eval(
     """
     model.eval()  # Set model ke mode evaluasi
     total_info = []  # List untuk menyimpan info file
-    total_sent_fusion = []  # List hasil prediksi BiLSTM
-    total_sent_conv_fusion = []  # List hasil prediksi Conv1D
+    total_sent_fusion = []  # Hasil decoding dari jalur BiLSTM/kontekstual
+    total_sent_conv_fusion = []  # Hasil decoding dari jalur Conv1D temporal
     
     total_inference_time = 0.0
     total_frames = 0
@@ -139,7 +139,7 @@ def seq_eval(
         total_frames += batch_frames
         total_sequences += batch_sequences
 
-        # Simpan info file dan hasil prediksi
+        # Simpan info file dan hasil prediksi dari kedua jalur evaluasi
         total_info += [file_name.split("|")[0] for file_name in data['origin_info']]
         total_sent_fusion += ret_dict['recognized_sents_fusion']
         total_sent_conv_fusion += ret_dict['conv_sents_fusion']
@@ -166,7 +166,7 @@ def seq_eval(
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
 
-    #  Tulis hasil prediksi ke file CTM untuk kedua jalur (BiLSTM dan Conv1D)
+    # Tulis hasil prediksi ke file CTM untuk kedua jalur evaluasi
     write2file(
         os.path.join(results_dir, "output-hypothesis-fusion-{}.ctm".format(mode)), total_info, total_sent_fusion
     )
@@ -210,7 +210,7 @@ def seq_eval(
                 writer.writerow([id, gloss])
 
     try:
-        # Evaluasi hasil BiLSTM
+        # Evaluasi hasil jalur BiLSTM/kontekstual
         lstm_ret_fusion = evaluate(
             prefix=results_dir + "/",
             mode=mode,
@@ -221,7 +221,7 @@ def seq_eval(
             python_evaluate=python_eval,
             triplet=True,
         )
-        # Evaluasi hasil Conv1D
+        # Evaluasi hasil jalur Conv1D temporal
         conv_ret_fusion = evaluate(
             prefix=results_dir + "/",
             mode=mode,
@@ -237,7 +237,8 @@ def seq_eval(
         conv_ret_fusion = 100.0
         
     recoder.print_log(
-        f"[{mode.upper()}] Conv1D WER: {conv_ret_fusion: 2.2f}%, BiLSTM WER: {lstm_ret_fusion: 2.2f}%", os.path.join(results_dir, f"{mode}_wer.txt")
+        f"[{mode.upper()}] Conv1D temporal WER: {conv_ret_fusion: 2.2f}%, BiLSTM contextual WER: {lstm_ret_fusion: 2.2f}%",
+        os.path.join(results_dir, f"{mode}_wer.txt")
     )
     return min([conv_ret_fusion, lstm_ret_fusion])
 

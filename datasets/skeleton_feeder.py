@@ -138,7 +138,9 @@ class SkeletonFeeder(data.Dataset):
 
         # Preprocess deterministik sekali saat dataset dibangun.
         self.samples = self.build_samples()
-        print(mode, len(self))  # Print info jumlah data
+        print(
+            f"[SkeletonFeeder][{self.mode}] samples_for_model={len(self.samples)}"
+        )
 
     # Mengambil satu sample data (dipanggil oleh DataLoader)
     def __getitem__(self, idx):
@@ -275,6 +277,8 @@ class SkeletonFeeder(data.Dataset):
             return []
 
         samples = []
+        total_frames_before = 0
+        total_frames_after = 0
         for index in range(len(self.inputs_list)):
             input_data, label, fi = self.read_pose(index)
             input_data = input_data[:, self.pose_idx, :2]
@@ -286,9 +290,17 @@ class SkeletonFeeder(data.Dataset):
 
             final = np.concatenate([input_data, total_motion, conf[:, :, None]], axis=-1)
             final = torch.from_numpy(final).float()
+            total_frames_before += len(final)
             final = self.normalize(final)
+            total_frames_after += len(final)
 
             samples.append((final, torch.LongTensor(label), fi['original_info']))
+
+        print(
+            f"[SkeletonFeeder][{self.mode}] data_before={len(self.inputs_list)} "
+            f"data_after={len(samples)} frames_before={total_frames_before} "
+            f"frames_after={total_frames_after}"
+        )
 
         return samples
 
