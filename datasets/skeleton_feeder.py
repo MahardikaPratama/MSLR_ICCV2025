@@ -99,7 +99,6 @@ class SkeletonFeeder(data.Dataset):
                 pass  # Abaikan video yang tidak ditemukan
 
         self.norm_div = (10240 - 1) / 2  # Nilai normalisasi skeleton
-        print(mode, len(self))  # Print info jumlah data
 
         # Menentukan index bagian pose yang digunakan
         if self.data_type == 'skeleton':
@@ -137,6 +136,10 @@ class SkeletonFeeder(data.Dataset):
         if self.downsampling:
             print(f"[SkeletonFeeder] Downsampling enabled, ratio: {self.downsampling_ratio}")
 
+        # Preprocess deterministik sekali saat dataset dibangun.
+        self.samples = self.build_samples()
+        print(mode, len(self))  # Print info jumlah data
+
     # Mengambil satu sample data (dipanggil oleh DataLoader)
     def __getitem__(self, idx):
         """Mengambil satu sample data berdasarkan indeks.
@@ -145,11 +148,9 @@ class SkeletonFeeder(data.Dataset):
         1. idx: indeks sample di dalam self.inputs_list.
 
         Proses:
-        1. Membaca pose dan label dari sample terpilih.
-        2. Memilih bagian skeleton sesuai pose_idx.
-        3. Menghitung fitur motion antar frame.
-        4. Menggabungkan pose, motion, dan confidence.
-        5. Menjalankan pipeline normalisasi dan augmentasi.
+        1. Mengambil sample yang sudah dipreprocess saat inisialisasi.
+        2. Menjalankan augmentasi online jika mode train.
+        3. Mengembalikan tensor input, label, dan metadata asal.
 
         Output:
         1. Tensor input yang sudah diproses.
@@ -157,23 +158,12 @@ class SkeletonFeeder(data.Dataset):
         3. Informasi asli sample untuk logging/evaluasi.
         """
         if self.data_type == 'skeleton':
-            input_data, label, fi = self.read_pose(idx)  # Ambil pose dan label
-            input_data = input_data[:, self.pose_idx, :2]  # Ambil bagian pose yang dipilih
-            conf = np.zeros_like(input_data)[:, :, 0]  # Confidence dummy
-
-            # Hitung fitur gerak (motion)
-            total_motion = np.zeros(input_data.shape[0:2] + (4,))
-            total_motion[1:, :, 0:2] = input_data[1:, :, 0:2] - input_data[0:-1, :, 0:2]  # Delta maju
-            total_motion[0:-1, :, 2:4] = input_data[:-1, :, 0:2] - input_data[1:, :, 0:2]  # Delta mundur
-
-            # Gabungkan pose, motion, dan confidence
-            final = np.concatenate([input_data, total_motion, conf[:,:,None]], axis=-1)
-
-            input_data = self.normalize(final)  # Normalisasi dan augmentasi
+            input_data, label, fi = self.samples[idx]
+            input_data = self.apply_online_transform(input_data)
             return (
                 input_data,
-                torch.LongTensor(label),
-                self.inputs_list[idx]['original_info'],
+                label,
+                fi,
             )
 
 
@@ -269,6 +259,40 @@ class SkeletonFeeder(data.Dataset):
             return pickle.load(f)
 
 
+    def build_samples(self):
+        """Membangun cache sample yang sudah dipreprocess.
+
+        Proses:
+        1. Membaca pose mentah dan label setiap sample.
+        2. Menyusun fitur pose, motion, dan confidence.
+        3. Menjalankan preprocessing deterministik sekali saja.
+        4. Menyimpan tensor hasil bersama label dan metadata.
+
+        Output:
+        1. List tuple (video, label, original_info) yang siap dipakai __getitem__.
+        """
+        if self.data_type != 'skeleton':
+            return []
+
+        samples = []
+        for index in range(len(self.inputs_list)):
+            input_data, label, fi = self.read_pose(index)
+            input_data = input_data[:, self.pose_idx, :2]
+            conf = np.zeros_like(input_data)[:, :, 0]
+
+            total_motion = np.zeros(input_data.shape[0:2] + (4,))
+            total_motion[1:, :, 0:2] = input_data[1:, :, 0:2] - input_data[0:-1, :, 0:2]
+            total_motion[0:-1, :, 2:4] = input_data[:-1, :, 0:2] - input_data[1:, :, 0:2]
+
+            final = np.concatenate([input_data, total_motion, conf[:, :, None]], axis=-1)
+            final = torch.from_numpy(final).float()
+            final = self.normalize(final)
+
+            samples.append((final, torch.LongTensor(label), fi['original_info']))
+
+        return samples
+
+
     # Pipeline normalisasi dan augmentasi skeleton
     def downsample(self, video, ratio=0.5):
         """Melakukan downsampling temporal pada urutan video.
@@ -296,7 +320,7 @@ class SkeletonFeeder(data.Dataset):
             return video[idx, ...]
 
     def normalize(self, video, label=None, file_id=None):
-        """Menjalankan pipeline normalisasi dan augmentasi.
+        """Menjalankan pipeline normalisasi deterministik.
 
         Input:
         1. video: tensor hasil gabungan pose dan motion.
@@ -304,11 +328,10 @@ class SkeletonFeeder(data.Dataset):
         3. file_id: identitas sample opsional.
 
         Proses:
-        1. Downsampling jika diaktifkan.
-        2. Menjalankan transformasi augmentasi dari self.data_aug.
-        3. Menjalankan spatial normalization bila dipilih.
-        4. Menjalankan rekonstruksi keypoint hilang bila dipilih.
-        5. Menjalankan temporal normalization bila dipilih.
+        1. Menjalankan spatial normalization bila dipilih.
+        2. Menjalankan rekonstruksi keypoint hilang bila dipilih.
+        3. Menjalankan temporal normalization bila dipilih.
+        4. Menjalankan downsampling bila diaktifkan.
 
         Output:
         1. Tensor video yang sudah diproses.
@@ -316,8 +339,7 @@ class SkeletonFeeder(data.Dataset):
         if self.data_type != 'skeleton':
             return video
 
-        # 0. Augmentasi (ToTensor wajib)
-        input_data = self.data_aug(video)
+        input_data = video
 
         # 1. Spatial normalization
         if 'spatial' in self.normalization_types:
@@ -336,6 +358,15 @@ class SkeletonFeeder(data.Dataset):
             input_data = self.downsample(input_data, self.downsampling_ratio)
 
         return input_data
+
+
+    def apply_online_transform(self, input_data):
+        """Menjalankan augmentasi online pada sample yang sudah dipreprocess."""
+        if self.transform_mode != "train":
+            return input_data
+        if isinstance(input_data, torch.Tensor):
+            input_data = input_data.cpu().numpy()
+        return self.data_aug(input_data)
 
 
     # Normalisasi skeleton ke rentang [-1, 1] dan sentralisasi
@@ -557,6 +588,8 @@ class SkeletonFeeder(data.Dataset):
     # Mengembalikan jumlah data
     def __len__(self):
         """Mengembalikan jumlah sample yang tersedia setelah filtering."""
+        if hasattr(self, "samples"):
+            return len(self.samples)
         return len(self.inputs_list)
 
 
