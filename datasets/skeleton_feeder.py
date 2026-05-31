@@ -398,43 +398,70 @@ class SkeletonFeeder(data.Dataset):
         Output:
         1. Tensor skeleton yang sudah dinormalisasi secara spasial.
         """
-        conf = origin_input_data[:,:,6]  # Ambil confidence
-        origin_input_data = origin_input_data / self.norm_div - 1  # Normalisasi range
+        if not isinstance(origin_input_data, torch.Tensor):
+            origin_input_data = torch.as_tensor(origin_input_data)
 
-        input_data = origin_input_data[:, :, 0:2]  # Ambil koordinat xy
-        if self.norm_point is not None:
-            index = 0
-            for part in self.used_part:
-                if index == 0:
-                    start, end = 0, self.split[0]
-                else:
-                    start, end = self.split[index-1], self.split[index]
-                if part == 'body':
-                    # Sentralisasi body
-                    input_data[:, start:end] = (
-                        input_data[:, start:end] - input_data[0,self.norm_point[index]:self.norm_point[index]+2].mean(0)[None,None]
-                    )
-                elif part == 'hand21':
-                    # Sentralisasi tangan kiri
-                    input_data[:, start:end] = (
-                        input_data[:, start:end] - input_data[:,self.norm_point[index]][:,None,:]
-                    )
-                    index += 1
-                    start, end = self.split[index-1], self.split[index]
-                    # Sentralisasi tangan kanan
-                    input_data[:, start:end] = (
-                        input_data[:, start:end] - input_data[:,self.norm_point[index]][:,None,:]
-                    )
-                else:
-                    # Sentralisasi bagian lain
-                    input_data[:, start:end] = (
-                        input_data[:, start:end] - input_data[:,self.norm_point[index]][:,None,:]
-                    )
+        out = origin_input_data.clone().float()
+        out[:, :, 0:2] = out[:, :, 0:2] / self.norm_div - 1
+
+        if self.norm_point is None or self.split is None or self.used_part is None:
+            return out
+
+        index = 0
+        split_points = [0] + list(self.split)
+        for part in self.used_part:
+            if index >= len(self.norm_point) or index >= len(split_points) - 1:
+                break
+
+            start, end = split_points[index], split_points[index + 1]
+
+            if part == 'body':
+                # Sentralisasi body dengan titik referensi yang sudah ada.
+                ref_idx = self.norm_point[index]
+                ref_point = out[:, ref_idx, 0:2].mean(dim=0, keepdim=True)
+                out[:, start:end, 0:2] = out[:, start:end, 0:2] - ref_point[None, None, :]
                 index += 1
-        # Gabungkan hasil normalisasi dan fitur lain
-        return torch.cat(
-            [input_data, origin_input_data[:, :, 2:6], conf.unsqueeze(-1)], dim=-1
-        )
+
+            elif part == 'hand21':
+                # Normalisasi kiri dan kanan mengikuti wrist-to-middle scaling.
+                hand_norm_point = list(self.norm_point)
+                if len(hand_norm_point) >= 4:
+                    left_wrist_idx, left_middle_idx, right_wrist_idx, right_middle_idx = hand_norm_point[:4]
+                else:
+                    left_wrist_idx, left_middle_idx, right_wrist_idx, right_middle_idx = 0, 12, 21, 33
+
+                left_wrist = out[:, left_wrist_idx, 0:2]
+                left_scale = torch.linalg.norm(
+                    out[:, left_middle_idx, 0:2] - left_wrist,
+                    dim=1,
+                    keepdim=True,
+                ).clamp_min(1e-8)
+                out[:, start:end, 0:2] = (out[:, start:end, 0:2] - left_wrist[:, None, :]) / left_scale[:, None, :]
+
+                index += 1
+                if index >= len(split_points) - 1:
+                    break
+
+                start, end = split_points[index], split_points[index + 1]
+
+                right_wrist = out[:, right_wrist_idx, 0:2]
+                right_scale = torch.linalg.norm(
+                    out[:, right_middle_idx, 0:2] - right_wrist,
+                    dim=1,
+                    keepdim=True,
+                ).clamp_min(1e-8)
+                out[:, start:end, 0:2] = (out[:, start:end, 0:2] - right_wrist[:, None, :]) / right_scale[:, None, :]
+
+                index += 1
+
+            else:
+                # Sentralisasi bagian lain mengikuti titik referensi per bagian.
+                ref_idx = self.norm_point[index]
+                ref_point = out[:, ref_idx, 0:2]
+                out[:, start:end, 0:2] = out[:, start:end, 0:2] - ref_point[:, None, :]
+                index += 1
+
+        return out
     
     # Rekonstruksi keypoint hilang menggunakan interpolasi linier temporal
     def missing_keypoint_reconstruction(self, origin_input_data):
