@@ -106,6 +106,10 @@ class SkeletonFeeder(data.Dataset):
             for part in self.used_part:
                 if part == 'body':
                     self.pose_idx += [i for i in range(61, 86)]  # Index body
+                elif part == 'left_hand':
+                    self.pose_idx += [i for i in range(0, 21)]  # Index tangan kiri
+                elif part == 'right_hand':
+                    self.pose_idx += [i for i in range(21, 42)]  # Index tangan kanan
                 elif part == 'hand21':
                     self.pose_idx += [i for i in range(0, 21)]  # Index tangan kiri
                     self.pose_idx += [i for i in range(21, 42)]  # Index tangan kanan

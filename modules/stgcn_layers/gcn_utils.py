@@ -69,7 +69,8 @@ class Graph:
 
         Input:
             - layout (str): nama layout, salah satu dari
-              ['custom_hand21', 'custom_body', 'custom_mouth_8'].
+                            ['custom_hand21', 'custom_left_hand', 'custom_right_hand',
+                             'custom_body', 'custom_mouth_8'].
 
         Proses:
             - Tentukan self.num_node sesuai jumlah keypoint layout.
@@ -84,7 +85,7 @@ class Graph:
             - self.center (int)         : indeks node pusat skeleton.
         """
 
-        if layout == 'custom_hand21':
+        if layout in ('custom_hand21', 'custom_left_hand', 'custom_right_hand'):
             # tangan memiliki 21 keypoint: 1 wrist + 4 sendi x 5 jari
             self.num_node = 21
             # buat self-loop untuk setiap node agar fitur joint itu sendiri

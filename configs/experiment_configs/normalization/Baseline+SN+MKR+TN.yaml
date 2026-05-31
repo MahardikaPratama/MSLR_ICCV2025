@@ -17,7 +17,7 @@ feeder_args:
   datatype: skeleton
   split: &split [21, 42]
   norm_point: [0, 21]
-  used_part: &used_part ['hand21']
+  used_part: &used_part ['left_hand', 'right_hand']
   augmentation_types: []
   normalization_types: ['spatial', 'missing_kp', 'temporal']
   downsampling: true         # aktifkan downsampling
