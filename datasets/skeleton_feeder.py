@@ -142,9 +142,6 @@ class SkeletonFeeder(data.Dataset):
 
         # Preprocess deterministik sekali saat dataset dibangun.
         self.samples = self.build_samples()
-        print(
-            f"[SkeletonFeeder][{self.mode}] samples_for_model={len(self.samples)}"
-        )
 
     # Mengambil satu sample data (dipanggil oleh DataLoader)
     def __getitem__(self, idx):

@@ -47,11 +47,15 @@ def seq_train(loader, model, optimizer, device, epoch_idx, recoder):
     """
     model.train()  # Set model ke mode training
     loss_value = []  # List untuk menyimpan nilai loss tiap batch
+    total_samples = 0  # Jumlah sample yang benar-benar diproses model pada epoch ini
+    total_batches = 0  # Jumlah batch valid yang diproses
     clr = [group['lr'] for group in optimizer.optimizer.param_groups]  # Ambil learning rate saat ini
 
     # Iterasi setiap batch data
     for batch_idx, data in enumerate(tqdm(loader)):
         data = device.dict_data_to_device(data)  # Pindahkan data ke device (CPU/GPU)
+        total_batches += 1
+        total_samples += len(data['origin_info'])
         ret_dict = model(data)  # Forward pass, dapatkan output model
 
         loss, loss_details = model.get_loss(ret_dict, data)  # Hitung loss dan detail loss
@@ -76,6 +80,9 @@ def seq_train(loader, model, optimizer, device, epoch_idx, recoder):
             )
     optimizer.scheduler.step()  # Update learning rate scheduler
     recoder.print_log('\tMean training loss: {:.10f}.'.format(np.mean(loss_value)))  # Log rata-rata loss
+    recoder.print_log(
+        f'\tEpoch {epoch_idx} processed {total_samples} samples in {total_batches} batches.'
+    )
     return loss_value  # Kembalikan list loss
 
 
