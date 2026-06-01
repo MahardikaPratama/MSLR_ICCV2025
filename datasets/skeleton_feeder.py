@@ -297,12 +297,6 @@ class SkeletonFeeder(data.Dataset):
 
             samples.append((final, torch.LongTensor(label), fi['original_info']))
 
-        print(
-            f"[SkeletonFeeder][{self.mode}] data_before={len(self.inputs_list)} "
-            f"data_after={len(samples)} frames_before={total_frames_before} "
-            f"frames_after={total_frames_after}"
-        )
-
         return samples
 
 
