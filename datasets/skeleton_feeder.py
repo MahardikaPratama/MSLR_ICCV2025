@@ -13,6 +13,7 @@ import numpy as np
 
 import torch.utils.data as data
 from utils import skeleton_augmentation
+from utils import skeleton_transform
 from itertools import chain
 from scipy.interpolate import interp1d
 
@@ -300,32 +301,6 @@ class SkeletonFeeder(data.Dataset):
         return samples
 
 
-    # Pipeline normalisasi dan augmentasi skeleton
-    def downsample(self, video, ratio=0.5):
-        """Melakukan downsampling temporal pada urutan video.
-
-        Input:
-        1. video: array atau tensor dengan bentuk (T, K, C).
-        2. ratio: rasio sampling ulang, bernilai antara 0 dan 1.
-
-        Proses:
-        1. Jika rasio tidak valid, video dikembalikan apa adanya.
-        2. Menghitung jumlah frame baru berdasarkan ratio.
-        3. Mengambil indeks frame secara merata sepanjang video.
-
-        Output:
-        1. Video yang sudah dipendekkan secara temporal.
-        """
-        if ratio >= 1.0 or ratio <= 0.0:
-            return video
-        T = video.shape[0]
-        new_len = max(1, int(T * ratio))
-        idx = np.linspace(0, T - 1, new_len).astype(int)
-        if isinstance(video, torch.Tensor):
-            return video[idx]
-        else:
-            return video[idx, ...]
-
     def normalize(self, video, label=None, file_id=None):
         """Menjalankan pipeline normalisasi deterministik.
 
@@ -350,19 +325,25 @@ class SkeletonFeeder(data.Dataset):
 
         # 1. Spatial normalization
         if 'spatial' in self.normalization_types:
-            input_data = self.spatial_normalize(input_data)
+            input_data = skeleton_transform.spatial_normalize(
+                input_data,
+                norm_div=self.norm_div,
+                norm_point=self.norm_point,
+                split=self.split,
+                used_part=self.used_part
+            )
 
         # 2. Missing keypoint reconstruction
         if 'missing_kp' in self.normalization_types:
-            input_data = self.missing_keypoint_reconstruction(input_data)
+            input_data = skeleton_transform.missing_keypoint_reconstruction(input_data)
 
         # 3. Temporal normalization (resample ke panjang target yang dapat disetel)
         if 'temporal' in self.normalization_types:
-            input_data = self.temporal_normalize(input_data, target_length=self.temporal_length)
+            input_data = skeleton_transform.temporal_normalize(input_data, target_length=self.temporal_length)
 
         # 4. Downsampling paling akhir supaya target temporal tetap mengacu ke data original
         if self.downsampling:
-            input_data = self.downsample(input_data, self.downsampling_ratio)
+            input_data = skeleton_transform.downsample(input_data, self.downsampling_ratio)
 
         return input_data
 
@@ -376,217 +357,7 @@ class SkeletonFeeder(data.Dataset):
         return self.data_aug(input_data)
 
 
-    # Normalisasi skeleton ke rentang [-1, 1] dan sentralisasi
-    def spatial_normalize(self, origin_input_data):
-        """Menormalkan koordinat skeleton ke rentang yang lebih kecil.
 
-        Input:
-        1. origin_input_data: tensor dengan channel koordinat dan fitur tambahan.
-
-        Proses:
-        1. Mengambil confidence dari channel terakhir.
-        2. Menskalakan nilai mentah menggunakan self.norm_div.
-        3. Mengambil koordinat xy untuk disentralisasi per bagian tubuh.
-        4. Mengembalikan tensor gabungan koordinat ter-normalisasi dan fitur lain.
-
-        Output:
-        1. Tensor skeleton yang sudah dinormalisasi secara spasial.
-        """
-        if not isinstance(origin_input_data, torch.Tensor):
-            origin_input_data = torch.as_tensor(origin_input_data)
-
-        out = origin_input_data.clone().float()
-        out[:, :, 0:2] = out[:, :, 0:2] / self.norm_div - 1
-
-        if self.norm_point is None or self.split is None or self.used_part is None:
-            return out
-
-        index = 0
-        split_points = [0] + list(self.split)
-        for part in self.used_part:
-            if index >= len(self.norm_point) or index >= len(split_points) - 1:
-                break
-
-            start, end = split_points[index], split_points[index + 1]
-
-            if part == 'body':
-                # Sentralisasi body dengan titik referensi yang sudah ada.
-                ref_idx = self.norm_point[index]
-                ref_point = out[:, ref_idx, 0:2].mean(dim=0, keepdim=True)
-                out[:, start:end, 0:2] = out[:, start:end, 0:2] - ref_point[None, None, :]
-                index += 1
-
-            elif part == 'hand21':
-                # Normalisasi kiri dan kanan mengikuti wrist-to-middle scaling.
-                hand_norm_point = list(self.norm_point)
-                if len(hand_norm_point) >= 4:
-                    left_wrist_idx, left_middle_idx, right_wrist_idx, right_middle_idx = hand_norm_point[:4]
-                else:
-                    left_wrist_idx, left_middle_idx, right_wrist_idx, right_middle_idx = 0, 12, 21, 33
-
-                left_wrist = out[:, left_wrist_idx, 0:2]
-                left_scale = torch.linalg.norm(
-                    out[:, left_middle_idx, 0:2] - left_wrist,
-                    dim=1,
-                    keepdim=True,
-                ).clamp_min(1e-8)
-                out[:, start:end, 0:2] = (out[:, start:end, 0:2] - left_wrist[:, None, :]) / left_scale[:, None, :]
-
-                index += 1
-                if index >= len(split_points) - 1:
-                    break
-
-                start, end = split_points[index], split_points[index + 1]
-
-                right_wrist = out[:, right_wrist_idx, 0:2]
-                right_scale = torch.linalg.norm(
-                    out[:, right_middle_idx, 0:2] - right_wrist,
-                    dim=1,
-                    keepdim=True,
-                ).clamp_min(1e-8)
-                out[:, start:end, 0:2] = (out[:, start:end, 0:2] - right_wrist[:, None, :]) / right_scale[:, None, :]
-
-                index += 1
-
-            else:
-                # Sentralisasi bagian lain mengikuti titik referensi per bagian.
-                ref_idx = self.norm_point[index]
-                ref_point = out[:, ref_idx, 0:2]
-                out[:, start:end, 0:2] = out[:, start:end, 0:2] - ref_point[:, None, :]
-                index += 1
-
-        return out
-    
-    # Rekonstruksi keypoint hilang menggunakan interpolasi linier temporal
-    def missing_keypoint_reconstruction(self, origin_input_data):
-        """Mengisi koordinat keypoint yang hilang dengan interpolasi temporal.
-
-        Input:
-        1. origin_input_data: tensor (T, K, C) yang sudah menjadi tensor.
-
-        Proses:
-        1. Menyalin input ke tensor hasil agar aman dimodifikasi.
-        2. Mengambil koordinat xy ke NumPy untuk interpolasi.
-        3. Mendeteksi frame yang missing pada tiap keypoint.
-        4. Mengisi nilai kosong dengan interpolasi atau frame terdekat.
-        5. Menulis kembali hasil ke tensor output.
-
-        Output:
-        1. Tensor dengan koordinat keypoint yang sudah direkonstruksi.
-        """
-
-        result = origin_input_data.clone()
-
-        # Ambil koordinat xy
-        kp_xy = result[:, :, 0:2].cpu().numpy().astype(float)
-
-        T, K, _ = kp_xy.shape
-
-        for k in range(K):
-
-            coords = kp_xy[:, k, :]  # (T, 2)
-
-            # Keypoint dianggap missing jika x == 0 dan y == 0
-            valid_mask = ~(
-                (coords[:, 0] == 0) &
-                (coords[:, 1] == 0)
-            )
-
-            valid_idx = np.where(valid_mask)[0]
-
-            # Semua frame missing
-            if len(valid_idx) == 0:
-                continue
-
-            for t in range(T):
-
-                # Skip jika valid
-                if valid_mask[t]:
-                    continue
-
-                prev_arr = valid_idx[valid_idx < t]
-                next_arr = valid_idx[valid_idx > t]
-
-                # Interpolasi linier
-                if len(prev_arr) and len(next_arr):
-
-                    p = prev_arr[-1]
-                    n = next_arr[0]
-
-                    alpha = (t - p) / (n - p)
-
-                    coords[t] = (
-                        (1 - alpha) * coords[p] +
-                        alpha * coords[n]
-                    )
-
-                # Gunakan frame sebelumnya
-                elif len(prev_arr):
-
-                    coords[t] = coords[prev_arr[-1]]
-
-                # Gunakan frame berikutnya
-                elif len(next_arr):
-
-                    coords[t] = coords[next_arr[0]]
-
-            kp_xy[:, k, :] = coords
-
-        # Masukkan kembali hasil rekonstruksi
-        result[:, :, 0:2] = torch.from_numpy(kp_xy).to(result.device)
-
-        return result
-
-
-    # Normalisasi temporal dengan resampling interpolasi linier
-    def temporal_normalize(self, origin_input_data, target_length):
-        """Menyesuaikan panjang urutan video ke jumlah frame target.
-
-        Input:
-        1. origin_input_data: tensor (T, K, C) sebagai input awal.
-        2. target_length: panjang frame yang ingin dihasilkan.
-
-        Proses:
-        1. Jika panjang sudah sama, data dikembalikan tanpa perubahan.
-        2. Mengonversi data ke NumPy untuk interpolasi.
-        3. Membuat grid indeks lama dan baru.
-        4. Melakukan interpolasi linear untuk setiap keypoint dan channel.
-
-        Output:
-        1. Tensor dengan panjang temporal sesuai target_length.
-        """
-
-        T, K, C = origin_input_data.shape
-
-        # Jika panjang sudah sesuai
-        if T == target_length:
-            return origin_input_data.clone()
-
-        data = origin_input_data.cpu().numpy()
-
-        orig_idx = np.linspace(0, T - 1, T)
-        new_idx = np.linspace(0, T - 1, target_length)
-
-        result = np.zeros(
-            (target_length, K, C),
-            dtype=data.dtype
-        )
-
-        # Interpolasi setiap keypoint dan channel
-        for k in range(K):
-            for c in range(C):
-
-                fn = interp1d(
-                    orig_idx,
-                    data[:, k, c],
-                    kind='linear'
-                )
-
-                result[:, k, c] = fn(new_idx)
-
-        return torch.from_numpy(result).to(origin_input_data.device)
-
-    
 
     # Membuat pipeline augmentasi (training/test)
     def pose_transform(self):
