@@ -35,7 +35,7 @@ class SkeletonFeeder(data.Dataset):
         setting="sd",
         transform_mode=True,
         datatype="lmdb",
-        dataset='bisindo',
+        dataset="bisindo",
         dataset_root="./datasets/mslr2025",
         si_signer=None,
         split=None,
@@ -45,181 +45,256 @@ class SkeletonFeeder(data.Dataset):
         normalization_types=None,
         downsampling=False,
         downsampling_ratio=0.5,
-        temporal_length=194):
-        """Inisialisasi feeder dan seluruh pipeline data.
-
-        Input:
-        1. gloss_dict: kamus gloss ke index.
-        2. mode: split dataset yang dipakai.
-        3. setting: konfigurasi eksperimen.
-        4. transform_mode: penanda mode train atau test.
-        5. datatype: jenis data yang diproses.
-        6. dataset: nama dataset.
-        7. dataset_root: folder utama file dataset.
-        8. split, norm_point, used_part: parameter normalisasi skeleton.
-        9. augmentation_types: daftar augmentasi yang diaktifkan.
-        10. normalization_types: daftar normalisasi yang diaktifkan.
-        11. downsampling dan downsampling_ratio: opsi pemendekan urutan video.
-        12. temporal_length: panjang frame target untuk normalisasi temporal (default: 194).
-
-        Proses:
-        1. Menyimpan argumen dasar ke atribut class.
-        2. Membaca metadata video dari file JSON.
-        3. Memuat pose global sesuai mode.
-        4. Memfilter input yang benar-benar punya pose.
-        5. Menyiapkan indeks keypoint, augmentasi, dan normalisasi.
-
-        Output:
-        1. Instance SkeletonFeeder yang siap digunakan DataLoader.
+        temporal_length=194,
+    ):
         """
-        self.mode = mode  # Mode data (train/dev/test)
-        self.mode_list = mode.split("_")  # Untuk mode gabungan (misal: train_dev)
-        self.dict = gloss_dict  # Kamus gloss (gloss ke index)
-        self.setting = setting  # Setting eksperimen (sd/si)
-        self.data_type = datatype  # Jenis data (skeleton/lmdb)
-        self.transform_mode = "train" if transform_mode else "test"  # Mode augmentasi
-        self.dataset = dataset  # Nama dataset
-        self.dataset_root = dataset_root
-        self.used_part = used_part  # Bagian skeleton yang digunakan
+        Skeleton dataset feeder.
 
-        # Load file info sesuai mode
-        # Mode yang didukung: train, dev, test_sd, test_si_major, test_si_minor
-        info_file = os.path.join(self.dataset_root, f"{mode}_info.json")
-        with open(info_file, 'r') as f:
+        Parameters
+        ----------
+        gloss_dict : dict
+            Mapping gloss -> index.
+
+        mode : str
+            Dataset split:
+            train, dev, test_sd, test_si_major, test_si_minor.
+
+        setting : str
+            Experimental setting.
+
+        transform_mode : bool
+            True for training mode, False for evaluation mode.
+
+        datatype : str
+            Input data type.
+
+        dataset : str
+            Dataset name.
+
+        dataset_root : str
+            Dataset root directory.
+
+        split : list[int], optional
+            Cumulative keypoint split positions used by normalization.
+
+        norm_point : list[int], optional
+            Reference keypoints used by normalization.
+
+        used_part : list[str], optional
+            Selected skeleton parts.
+
+        augmentation_types : list[str], optional
+            Online augmentation pipeline.
+
+        normalization_types : list[str], optional
+            Offline normalization pipeline.
+
+        downsampling : bool
+            Enable temporal downsampling.
+
+        downsampling_ratio : float
+            Downsampling ratio.
+
+        temporal_length : int
+            Target sequence length for temporal normalization.
+        """
+
+        # --------------------------------------------------
+        # Basic configuration
+        # --------------------------------------------------
+        self.mode = mode
+        self.dict = gloss_dict
+        self.setting = setting
+        self.data_type = datatype
+        self.transform_mode = "train" if transform_mode else "test"
+
+        self.dataset = dataset
+        self.dataset_root = dataset_root
+
+        self.used_part = used_part or []
+
+        # --------------------------------------------------
+        # Load metadata
+        # --------------------------------------------------
+        info_file = os.path.join(
+            self.dataset_root,
+            f"{mode}_info.json"
+        )
+
+        with open(info_file, "r") as f:
             inputs_list = json.load(f)
 
-        # Load file pose (pickle) sesuai mode                
+        # --------------------------------------------------
+        # Load skeleton dictionary
+        # --------------------------------------------------
         self.kps_global = self.load_kps_global(mode)
 
-        # Filter hanya video yang ada di pose
-        self.inputs_list = list()
-        for item in inputs_list:
-            if item['video_id'] in self.kps_global.keys():
-                self.inputs_list.append(item)
-            else:
-                pass  # Abaikan video yang tidak ditemukan
+        # --------------------------------------------------
+        # Keep only samples with available pose data
+        # --------------------------------------------------
+        self.inputs_list = [
+            item
+            for item in inputs_list
+            if item["video_id"] in self.kps_global
+        ]
 
-        self.norm_div = (10240 - 1) / 2  # Nilai normalisasi skeleton
+        print(
+            f"[SkeletonFeeder] "
+            f"Loaded {len(self.inputs_list)} valid samples "
+            f"for mode='{mode}'"
+        )
 
-        # Menentukan index bagian pose yang digunakan
-        if self.data_type == 'skeleton':
-            self.pose_idx = []
+        # --------------------------------------------------
+        # Coordinate normalization divisor
+        # --------------------------------------------------
+        # Used to map coordinates approximately to [-1, 1]
+        # following the original implementation.
+        self.norm_div = (10240 - 1) / 2
+
+        # --------------------------------------------------
+        # Selected keypoint indices
+        # --------------------------------------------------
+        self.pose_idx = []
+
+        if self.data_type == "skeleton":
+
             for part in self.used_part:
-                if part == 'body':
-                    self.pose_idx += [i for i in range(61, 86)]  # Index body
-                elif part == 'left_hand':
-                    self.pose_idx += [i for i in range(0, 21)]  # Index tangan kiri
-                elif part == 'right_hand':
-                    self.pose_idx += [i for i in range(21, 42)]  # Index tangan kanan
-                elif part == 'hand21':
-                    self.pose_idx += [i for i in range(0, 21)]  # Index tangan kiri
-                    self.pose_idx += [i for i in range(21, 42)]  # Index tangan kanan
-                elif part == 'mouth_8':
-                    self.pose_idx += [i for i in range(42, 61)]  # Index mulut
 
-        self.split = split  # Untuk normalisasi per bagian
-        self.norm_point = norm_point  # Titik pusat normalisasi
-        if norm_point is None:
-            print('no centeralization')
+                if part == "left_hand":
+                    self.pose_idx.extend(range(0, 21))
 
-        self.augmentation_types = augmentation_types if augmentation_types else []
-        self.data_aug = self.pose_transform()  # Pipeline augmentasi diaktifkan lewat config
+                elif part == "right_hand":
+                    self.pose_idx.extend(range(21, 42))
 
-        # Panjang target untuk normalisasi temporal (resampling)
-        self.temporal_length = temporal_length
+                elif part == "mouth_8":
+                    self.pose_idx.extend(range(42, 61))
 
-        # Jenis normalisasi yang dapat diaktifkan via config:
-        # 'spatial'    : Normalisasi rentang dan sentralisasi skeleton
-        # 'missing_kp' : Rekonstruksi keypoint hilang (interpolasi)
-        # 'temporal'   : Normalisasi panjang urutan (resampling)
-        self.normalization_types = normalization_types if normalization_types else []
-        print(f"[SkeletonFeeder] Normalization pipeline: {self.normalization_types}")
+                elif part == "body":
+                    self.pose_idx.extend(range(61, 86))
 
-        # Downsampling config
-        self.downsampling = downsampling
-        self.downsampling_ratio = downsampling_ratio
-        if self.downsampling:
-            print(f"[SkeletonFeeder] Downsampling enabled, ratio: {self.downsampling_ratio}")
+                else:
+                    raise ValueError(
+                        f"Unknown skeleton part: {part}"
+                    )
 
-        # Preprocess deterministik sekali saat dataset dibangun.
-        self.samples = self.build_samples()
+        # --------------------------------------------------
+        # Normalization configuration
+        # --------------------------------------------------
+        self.split = split
+        self.norm_point = norm_point
 
-    # Mengambil satu sample data (dipanggil oleh DataLoader)
-    def __getitem__(self, idx):
-        """Mengambil satu sample data berdasarkan indeks.
-
-        Input:
-        1. idx: indeks sample di dalam self.inputs_list.
-
-        Proses:
-        1. Mengambil sample yang sudah dipreprocess saat inisialisasi.
-        2. Menjalankan augmentasi online jika mode train.
-        3. Mengembalikan tensor input, label, dan metadata asal.
-
-        Output:
-        1. Tensor input yang sudah diproses.
-        2. Label dalam bentuk LongTensor.
-        3. Informasi asli sample untuk logging/evaluasi.
-        """
-        if self.data_type == 'skeleton':
-            input_data, label, fi = self.samples[idx]
-            input_data = self.apply_online_transform(input_data)
-            return (
-                input_data,
-                label,
-                fi,
+        if self.split is not None:
+            assert len(self.split) == len(self.used_part), (
+                "split length must match number of used_part."
             )
 
+        if self.norm_point is None:
+            print("[SkeletonFeeder] No centralization point specified.")
 
-    # Fungsi opsional untuk menghapus data tidak valid (tidak dipakai utama)
-    def deleteInvalidInputs(self):
-        """Membentuk ulang daftar input dengan membuang signer tertentu.
+        # --------------------------------------------------
+        # Augmentation configuration
+        # --------------------------------------------------
+        self.augmentation_types = (
+            augmentation_types
+            if augmentation_types is not None
+            else []
+        )
 
-        Proses:
-        1. Menelusuri seluruh item pada inputs_list.
-        2. Mengabaikan data dengan signer 'Signer05'.
-        3. Menambahkan elemen terakhir yang dipilih manual.
+        self.data_aug = self.pose_transform()
 
-        Output:
-        1. List baru yang sudah disaring.
+        # --------------------------------------------------
+        # Normalization configuration
+        # --------------------------------------------------
+        self.temporal_length = temporal_length
+
+        self.normalization_types = (
+            normalization_types
+            if normalization_types is not None
+            else []
+        )
+
+        print(
+            f"[SkeletonFeeder] "
+            f"Normalization pipeline: {self.normalization_types}"
+        )
+
+        # --------------------------------------------------
+        # Downsampling configuration
+        # --------------------------------------------------
+        self.downsampling = downsampling
+        self.downsampling_ratio = downsampling_ratio
+
+        if self.downsampling:
+            print(
+                f"[SkeletonFeeder] "
+                f"Downsampling enabled "
+                f"(ratio={self.downsampling_ratio})"
+            )
+
+        # --------------------------------------------------
+        # Build preprocessed samples
+        # --------------------------------------------------
+        self.samples = self.build_samples()
+
+    def __getitem__(self, idx):
         """
-        new_list = []
-        for index in range(len(self.inputs_list)-1):
-            fi = self.inputs_list[index]
-            signer = fi['signer']
-            if not signer == 'Signer05':
-                new_list.append(fi)
-        new_list.append(self.inputs_list['prefix'])
-        return new_list
+        Retrieve one sample.
 
+        Parameters
+        ----------
+        idx : int
+            Sample index.
 
-    # Membaca pose dan label untuk satu video
-    def read_pose(self, index, num_glosses=-1):
-        """Membaca pose mentah dan label gloss untuk satu sample.
-
-        Input:
-        1. index: indeks sample yang akan dibaca.
-        2. num_glosses: parameter opsional untuk membatasi jumlah gloss.
-
-        Proses:
-        1. Mengambil metadata video dari self.inputs_list.
-        2. Mengambil keypoints pose dari self.kps_global berdasarkan video_id.
-        3. Mengubah string gloss_sequence menjadi daftar index gloss.
-
-        Output:
-        1. pose_data: array keypoints mentah.
-        2. label_list: daftar index label gloss.
-        3. fi: metadata lengkap sample.
+        Returns
+        -------
+        tuple
+            (
+                input_data,
+                label,
+                original_info
+            )
         """
-        fi = self.inputs_list[index]  # Info video
-        pose_data = self.kps_global[fi['video_id']]['keypoints']  # Pose
-        label = fi['gloss_sequence']  # Label gloss
+        if self.data_type != "skeleton":
+            raise NotImplementedError(
+                f"Unsupported data type: {self.data_type}"
+            )
+
+        input_data, label, fi = self.samples[idx]
+
+        input_data = self.apply_online_transform(input_data)
+
+        return (
+            input_data,
+            label,
+            fi,
+        )
+
+    def read_pose(self, index):
+        """
+        Read pose sequence and gloss labels.
+        """
+
+        fi = self.inputs_list[index]
+
+        pose_data = self.kps_global[
+            fi["video_id"]
+        ]["keypoints"]
+
+        gloss_sequence = fi["gloss_sequence"]
+
         label_list = []
-        for phase in label.split(" "):
-            if phase == '':
-                continue
-            if phase in self.dict.keys():
-                label_list.append(self.dict[phase])  # Konversi gloss ke index
+
+        for gloss in gloss_sequence.split():
+
+            if gloss not in self.dict:
+                raise KeyError(
+                    f"Unknown gloss: {gloss}"
+                )
+
+            label_list.append(
+                self.dict[gloss]
+            )
+
         return (
             pose_data,
             label_list,
@@ -227,36 +302,43 @@ class SkeletonFeeder(data.Dataset):
         )
 
 
-    # Memuat file pickle pose berdasarkan mode
     def load_kps_global(self, mode):
-        """Memuat dictionary pose global dari file pickle sesuai mode.
-
-        Input:
-        1. mode: split dataset yang sedang dipakai.
-
-        Proses:
-        1. Menentukan nama file pickle berdasarkan mode.
-        2. Mengecek apakah file tersebut tersedia.
-        3. Membaca isi pickle dan mengembalikannya sebagai dictionary.
-
-        Output:
-        1. Dictionary pose global yang dipetakan berdasarkan video_id.
         """
-        if mode == 'train' or mode == 'dev':
-            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_train_dev_sd.pkl")
-        elif mode == 'test_sd':
-            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_sd.pkl")
-        elif mode == 'test_si_major':
-            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_si-maj.pkl")
-        elif mode == 'test_si_minor':
-            pkl_file = os.path.join(self.dataset_root, "pose_bisindo_test_si-min.pkl")
-        else:
-            raise ValueError(f"Unknown mode: {mode}")
+        Load skeleton dictionary for the selected dataset split.
+
+        Parameters
+        ----------
+        mode : str
+            Dataset split.
+
+        Returns
+        -------
+        dict
+            Skeleton dictionary indexed by video_id.
+        """
+
+        mode_to_file = {
+            "train": "pose_bisindo_train_dev_sd.pkl",
+            "dev": "pose_bisindo_train_dev_sd.pkl",
+            "test_sd": "pose_bisindo_test_sd.pkl",
+            "test_si_major": "pose_bisindo_test_si-maj.pkl",
+            "test_si_minor": "pose_bisindo_test_si-min.pkl",
+        }
+
+        if mode not in mode_to_file:
+            raise ValueError(
+                f"Unknown mode: {mode}"
+            )
+
+        pkl_file = os.path.join(
+            self.dataset_root,
+            mode_to_file[mode]
+        )
 
         if not os.path.exists(pkl_file):
             raise FileNotFoundError(
-                f"Pose file tidak ditemukan: {pkl_file}. "
-                f"Pastikan file .pkl berada di dataset_root: {self.dataset_root}"
+                f"Pose file not found: {pkl_file}. "
+                f"Expected file under dataset_root: {self.dataset_root}"
             )
 
         with open(pkl_file, "rb") as f:
@@ -264,196 +346,366 @@ class SkeletonFeeder(data.Dataset):
 
 
     def build_samples(self):
-        """Membangun cache sample yang sudah dipreprocess.
-
-        Proses:
-        1. Membaca pose mentah dan label setiap sample.
-        2. Menyusun fitur pose, motion, dan confidence.
-        3. Menjalankan preprocessing deterministik sekali saja.
-        4. Menyimpan tensor hasil bersama label dan metadata.
-
-        Output:
-        1. List tuple (video, label, original_info) yang siap dipakai __getitem__.
         """
-        if self.data_type != 'skeleton':
+        Build preprocessed sample cache.
+
+        Returns
+        -------
+        list
+            List of tuples:
+            (
+                video,
+                label,
+                original_info
+            )
+        """
+        if self.data_type != "skeleton":
             return []
 
         samples = []
-        total_frames_before = 0
-        total_frames_after = 0
+
         for index in range(len(self.inputs_list)):
-            input_data, label, fi = self.read_pose(index)
-            input_data = input_data[:, self.pose_idx, :2]
-            conf = np.zeros_like(input_data)[:, :, 0]
 
-            total_motion = np.zeros(input_data.shape[0:2] + (4,))
-            total_motion[1:, :, 0:2] = input_data[1:, :, 0:2] - input_data[0:-1, :, 0:2]
-            total_motion[0:-1, :, 2:4] = input_data[:-1, :, 0:2] - input_data[1:, :, 0:2]
+            pose_data, label, fi = self.read_pose(index)
 
-            final = np.concatenate([input_data, total_motion, conf[:, :, None]], axis=-1)
-            final = torch.from_numpy(final).float()
-            total_frames_before += len(final)
-            final = self.normalize(final)
-            total_frames_after += len(final)
+            # --------------------------------------------------
+            # Select keypoints and xy coordinates
+            # --------------------------------------------------
+            pose_data = pose_data[:, self.pose_idx, :2]
 
-            samples.append((final, torch.LongTensor(label), fi['original_info']))
+            pose_data = torch.from_numpy(
+                pose_data
+            ).float()
+
+            # --------------------------------------------------
+            # Deterministic preprocessing
+            # --------------------------------------------------
+            pose_data = self.normalize(
+                pose_data
+            )
+
+            # --------------------------------------------------
+            # Confidence channel
+            # Placeholder channel (not used)
+            # --------------------------------------------------
+            conf = torch.zeros(
+                pose_data.shape[:2],
+                dtype=pose_data.dtype,
+            )
+
+            # --------------------------------------------------
+            # Forward / backward motion
+            # --------------------------------------------------
+            total_motion = torch.zeros(
+                pose_data.shape[:2] + (4,),
+                dtype=pose_data.dtype,
+            )
+
+            total_motion[1:, :, 0:2] = (
+                pose_data[1:, :, 0:2]
+                - pose_data[:-1, :, 0:2]
+            )
+
+            total_motion[:-1, :, 2:4] = (
+                pose_data[:-1, :, 0:2]
+                - pose_data[1:, :, 0:2]
+            )
+
+            # --------------------------------------------------
+            # Final feature tensor
+            # [x, y, dx+, dy+, dx-, dy-, conf]
+            # --------------------------------------------------
+            final = torch.cat(
+                [
+                    pose_data,
+                    total_motion,
+                    conf.unsqueeze(-1),
+                ],
+                dim=-1,
+            )
+
+            samples.append(
+                (
+                    final,
+                    torch.LongTensor(label),
+                    fi["original_info"],
+                )
+            )
 
         return samples
 
 
-    def normalize(self, video, label=None, file_id=None):
-        """Menjalankan pipeline normalisasi deterministik.
-
-        Input:
-        1. video: tensor hasil gabungan pose dan motion.
-        2. label: label opsional.
-        3. file_id: identitas sample opsional.
-
-        Proses:
-        1. Menjalankan spatial normalization bila dipilih.
-        2. Menjalankan rekonstruksi keypoint hilang bila dipilih.
-        3. Menjalankan temporal normalization bila dipilih.
-        4. Menjalankan downsampling bila diaktifkan.
-
-        Output:
-        1. Tensor video yang sudah diproses.
+    def normalize(self, video):
         """
-        if self.data_type != 'skeleton':
+        Apply deterministic preprocessing pipeline.
+
+        Pipeline order:
+            1. Missing Keypoint Reconstruction (MKR)
+            2. Spatial Normalization (SN)
+            3. Temporal Normalization (TN)
+            4. Temporal Downsampling (optional)
+
+        Parameters
+        ----------
+        video : Tensor
+            Skeleton sequence with shape (T, K, C).
+
+        Returns
+        -------
+        Tensor
+            Preprocessed skeleton sequence.
+        """
+        if self.data_type != "skeleton":
             return video
 
-        input_data = video
+        output = video
 
-        # 1. Spatial normalization
-        if 'spatial' in self.normalization_types:
-            input_data = skeleton_transform.spatial_normalize(
-                input_data,
+        # --------------------------------------------------
+        # 1. Missing Keypoint Reconstruction
+        # --------------------------------------------------
+        if "missing_kp" in self.normalization_types:
+            output = skeleton_transform.missing_keypoint_reconstruction(
+                output
+            )
+
+        # --------------------------------------------------
+        # 2. Spatial Normalization
+        # --------------------------------------------------
+        if "spatial" in self.normalization_types:
+            output = skeleton_transform.spatial_normalize(
+                output,
                 norm_div=self.norm_div,
                 norm_point=self.norm_point,
                 split=self.split,
-                used_part=self.used_part
+                used_part=self.used_part,
             )
 
-        # 2. Missing keypoint reconstruction
-        if 'missing_kp' in self.normalization_types:
-            input_data = skeleton_transform.missing_keypoint_reconstruction(input_data)
+        # --------------------------------------------------
+        # 3. Temporal Normalization
+        # --------------------------------------------------
+        if "temporal" in self.normalization_types:
+            output = skeleton_transform.temporal_normalize(
+                output,
+                target_length=self.temporal_length,
+            )
 
-        # 3. Temporal normalization (resample ke panjang target yang dapat disetel)
-        if 'temporal' in self.normalization_types:
-            input_data = skeleton_transform.temporal_normalize(input_data, target_length=self.temporal_length)
-
-        # 4. Downsampling paling akhir supaya target temporal tetap mengacu ke data original
+        # --------------------------------------------------
+        # 4. Optional Temporal Downsampling
+        # --------------------------------------------------
         if self.downsampling:
-            input_data = skeleton_transform.downsample(input_data, self.downsampling_ratio)
+            output = skeleton_transform.downsample(
+                output,
+                ratio=self.downsampling_ratio,
+            )
 
-        return input_data
+        return output
 
 
     def apply_online_transform(self, input_data):
-        """Menjalankan augmentasi online pada sample yang sudah dipreprocess."""
+        """
+        Apply online augmentation during training.
+        """
+
         if self.transform_mode != "train":
             return input_data
+
         if isinstance(input_data, torch.Tensor):
             input_data = input_data.cpu().numpy()
-        return self.data_aug(input_data)
+
+        output = self.data_aug(input_data)
+
+        if not isinstance(output, torch.Tensor):
+            output = torch.as_tensor(
+                output,
+                dtype=torch.float32,
+            )
+
+        return output
 
 
 
 
-    # Membuat pipeline augmentasi (training/test)
     def pose_transform(self):
-        """Membangun pipeline augmentasi sesuai mode training atau testing.
-
-        Proses:
-        1. Jika mode train, menyusun daftar augmentasi sesuai augmentation_types.
-        2. Menambahkan ToTensor sebagai transform terakhir.
-        3. Jika mode test, hanya memakai ToTensor.
-
-        Output:
-        1. Objek Compose yang siap dipanggil pada data skeleton.
         """
+        Build online augmentation pipeline.
+        """
+
+        transforms = []
+
         if self.transform_mode == "train":
-            print(f"Apply training transform: {self.augmentation_types}")
-            transforms = []
+
+            print(
+                f"[SkeletonFeeder] "
+                f"Training augmentations: "
+                f"{self.augmentation_types}"
+            )
+
             if "TemporalDrop" in self.augmentation_types:
-                transforms.append(skeleton_augmentation.TemporalDropout(0.25))
+                transforms.append(
+                    skeleton_augmentation.TemporalDropout(
+                        max_dp=0.25
+                    )
+                )
+
             if "TemporalRescale" in self.augmentation_types:
-                transforms.append(skeleton_augmentation.TemporalRescale(0.2))
+                transforms.append(
+                    skeleton_augmentation.TemporalRescale(
+                        temp_scaling=0.2
+                    )
+                )
+
             if "SpatialScale" in self.augmentation_types:
-                transforms.append(skeleton_augmentation.Scale((0.8, 1.2)))
+                transforms.append(
+                    skeleton_augmentation.Scale(
+                        scale_range=(0.8, 1.2)
+                    )
+                )
+
             if "SpatialJitter" in self.augmentation_types:
-                transforms.append(skeleton_augmentation.Jitter(0.003))
-                
-            transforms.append(skeleton_augmentation.ToTensor())
-            return skeleton_augmentation.Compose(transforms)
+                transforms.append(
+                    skeleton_augmentation.Jitter(
+                        sigma=0.003
+                    )
+                )
+
         else:
-            print("Apply test transform.")
-            return skeleton_augmentation.Compose([skeleton_augmentation.ToTensor()])
+
+            print(
+                "[SkeletonFeeder] "
+                "Test transform: ToTensor only."
+            )
+
+        transforms.append(
+            skeleton_augmentation.ToTensor()
+        )
+
+        return skeleton_augmentation.Compose(
+            transforms
+        )
 
 
-    # Mengembalikan jumlah data
     def __len__(self):
-        """Mengembalikan jumlah sample yang tersedia setelah filtering."""
-        if hasattr(self, "samples"):
-            return len(self.samples)
-        return len(self.inputs_list)
+        """Return the number of available samples."""
+        return len(self.samples)
 
 
-    # Fungsi untuk menggabungkan batch (custom collate)
     @staticmethod
     def collate_fn(batch):
-        """Menggabungkan daftar sample menjadi satu batch untuk DataLoader.
-
-        Input:
-        1. batch: list sample hasil __getitem__.
-
-        Proses:
-        1. Mengurutkan sample berdasarkan panjang video.
-        2. Menghitung panjang asli dan panjang padding.
-        3. Melakukan padding frame depan dan belakang.
-        4. Menyusun label dan metadata ke format batch.
-
-        Output:
-        1. Dict batch yang berisi video, panjang video, label, dan info asal.
         """
-        # Urutkan batch berdasarkan panjang video (descending)
-        batch = [item for item in sorted(batch, key=lambda x: len(x[0]), reverse=True)]
-        video, label, info = list(zip(*batch))  # Unzip
+        Merge a list of samples into a mini-batch.
+
+        This function performs:
+            1. Sorting by sequence length (descending).
+            2. Temporal padding at the beginning and end.
+            3. Alignment of sequence length to a multiple of 4.
+            4. Construction of batched video tensors.
+            5. Flattening of label sequences for CTC-based training.
+
+        Parameters
+        ----------
+        batch : list
+            List of samples returned by __getitem__():
+
+            (
+                video,
+                label,
+                original_info
+            )
+
+        Returns
+        -------
+        dict
+            {
+                'x'           : padded video tensor,
+                'len_x'       : padded sequence lengths,
+                'label'       : flattened label tensor,
+                'label_lgt'   : label lengths,
+                'origin_info' : original sample metadata
+            }
+        """
+
+        # --------------------------------------------------
+        # Sort sequences by descending length
+        # --------------------------------------------------
+        batch = sorted(
+            batch,
+            key=lambda x: len(x[0]),
+            reverse=True
+        )
+
+        video, label, info = zip(*batch)
+
         length = [len(vid) for vid in video]
         max_len = max(length)
-        # Hitung panjang video setelah padding
-        video_length = torch.LongTensor(
-            [np.ceil(len(vid) / 4.0) * 4 + 12 for vid in video]
-        )
+
+        # --------------------------------------------------
+        # Temporal length used by the original implementation.
+        # Lengths are aligned to a multiple of 4 and include
+        # left/right temporal context padding (+12 frames).
+        # --------------------------------------------------
+        video_length = torch.LongTensor([
+            np.ceil(len(vid) / 4.0) * 4 + 12
+            for vid in video
+        ])
+
+        # --------------------------------------------------
+        # Temporal padding
+        # --------------------------------------------------
         left_pad = 6
-        right_pad = int(np.ceil(max_len / 4.0)) * 4 - max_len + 6
+        right_pad = (
+            int(np.ceil(max_len / 4.0)) * 4
+            - max_len
+            + 6
+        )
+
         max_len = max_len + left_pad + right_pad
-        # Padding awal dan akhir
+
+        # --------------------------------------------------
+        # Replicate padding using first and last frames
+        # --------------------------------------------------
         padded_video = [
             torch.cat(
                 (
-                    vid[0][None].expand(left_pad, -1, -1),  # Padding awal
+                    vid[0][None].expand(
+                        left_pad,
+                        -1,
+                        -1,
+                    ),
                     vid,
-                    vid[-1][None].expand(max_len - len(vid) - left_pad, -1, -1),  # Padding akhir
+                    vid[-1][None].expand(
+                        max_len - len(vid) - left_pad,
+                        -1,
+                        -1,
+                    ),
                 ),
                 dim=0,
             )
             for vid in video
         ]
+
         padded_video = torch.stack(padded_video)
-        label_length = torch.LongTensor([len(lab) for lab in label])
-        if max(label_length) == 0:
-            # Jika tidak ada label, return tuple kosong
-            return padded_video, video_length, [], [], info
-        else:
-            # Padding label
-            padded_label = []
-            for lab in label:
-                padded_label.extend(lab)
-            padded_label = torch.LongTensor(padded_label)
-            return {
-                'x': padded_video,
-                'len_x': video_length,
-                'label': padded_label,
-                'label_lgt': label_length,
-                'origin_info': info
-            }
+
+        # --------------------------------------------------
+        # Label lengths
+        # --------------------------------------------------
+        label_length = torch.LongTensor(
+            [len(lab) for lab in label]
+        )
+
+        # --------------------------------------------------
+        # Flatten labels for CTC training
+        # --------------------------------------------------
+        padded_label = []
+
+        for lab in label:
+            padded_label.extend(lab)
+
+        padded_label = torch.LongTensor(padded_label)
+
+        return {
+            "x": padded_video,
+            "len_x": video_length,
+            "label": padded_label,
+            "label_lgt": label_length,
+            "origin_info": info,
+        }

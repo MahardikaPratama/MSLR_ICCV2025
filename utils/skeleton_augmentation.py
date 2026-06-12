@@ -36,18 +36,28 @@ class ToTensor(object):
 
 class Jitter(object):
     """
-    Apply Gaussian jitter (noise) to skeleton sequences.
-    
+    Apply Gaussian noise to geometric skeleton features.
+
     Args:
-        std_dev (float): Standard deviation of the Gaussian noise.
+        std_dev (float): Standard deviation of Gaussian noise.
     """
-    
-    def __init__(self, std_dev=0.01) -> None:
+
+    def __init__(self, std_dev=0.01):
         self.std_dev = std_dev
 
     def __call__(self, skeleton):
-        noise = np.random.normal(loc=0, scale=self.std_dev, size=skeleton.shape)
-        return skeleton + noise
+
+        output = skeleton.copy()
+
+        noise = np.random.normal(
+            loc=0.0,
+            scale=self.std_dev,
+            size=output[..., :-1].shape
+        )
+
+        output[..., :-1] += noise
+
+        return output
 
 
 class TemporalDropout(object):
@@ -72,17 +82,24 @@ class TemporalDropout(object):
 
 class Scale(object):
     """
-    Scale skeleton sequences by applying random scaling factors.
-    
+    Apply spatial scaling to skeleton features.
+
     Args:
-        scale_range (tuple): Range of scaling factors (min, max).
+        scale_range (tuple): Range of scaling factors.
     """
-    def __init__(self, scale_range=(0.8, 1.2)) -> None:
+
+    def __init__(self, scale_range=(0.8, 1.2)):
         self.scale_range = scale_range
 
     def __call__(self, skeleton):
+
         scale = np.random.uniform(*self.scale_range)
-        return skeleton * scale
+
+        output = skeleton.copy()
+
+        output[..., :-1] *= scale
+
+        return output
 
 
 class TemporalRescale(object):
