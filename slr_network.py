@@ -269,11 +269,16 @@ class TwoStream_Cosign(nn.Module):
 
         def decode_if_not_training(logits):
             # Saat training, hasil decoding dikosongkan agar tidak dihitung.
-            return None if self.training else self.decoder.decode(
+            if self.training or inputs_dict.get('skip_decoding', False):
+                return None
+            return self.decoder.decode(
                 logits * self.norm_scale, feat_len, batch_first=False, probs=False
             )
 
         return {
+            'conv_logits_fusion': conv1d_logits_fusion,
+            'seq_logits_fusion': seq_logits_fusion,
+            'feat_len': feat_len,
             'conv_sents_fusion': decode_if_not_training(conv1d_logits_fusion),
             'recognized_sents_fusion': decode_if_not_training(seq_logits_fusion),
         }

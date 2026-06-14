@@ -119,8 +119,8 @@ def seq_eval(
     total_sent_fusion = []  # Hasil decoding dari jalur BiLSTM/kontekstual
     total_sent_conv_fusion = []  # Hasil decoding dari jalur Conv1D temporal
     
-    total_inference_time = 0.0
-    total_frames = 0
+    total_inference_time_wo_decoding = 0.0
+    total_inference_time_w_decoding = 0.0
     total_sequences = 0
     
     # Iterasi setiap batch data
@@ -128,36 +128,47 @@ def seq_eval(
         recoder.record_timer("device")  # Catat waktu pemindahan ke device
         data = device.dict_data_to_device(data)  # Pindahkan data ke device
         
-        # Hitung ukuran batch untuk kecepatan
-        if torch.is_tensor(data['len_x']):
-            batch_frames = data['len_x'].sum().item()
-        else:
-            batch_frames = sum(data['len_x'])
         # Hitung jumlah sequence dalam batch untuk kecepatan
         batch_sequences = len(data['origin_info'])
         
+        data['skip_decoding'] = True # Do not decode during forward pass
+        
         with torch.no_grad():
-            start_time = time.time()
-            ret_dict = model(data)  # Forward pass tanpa gradien
-            end_time = time.time()
+            # W/O Decoding Forward Pass
+            start_time_wo = time.time()
+            ret_dict = model(data)  # Forward pass tanpa gradien dan tanpa decoding
+            end_time_wo = time.time()
+            
+            # W/ Decoding = W/O Decoding time + Decoding Time
+            real_model = model.module if isinstance(model, torch.nn.DataParallel) else model
+            
+            # Explicit Decoding
+            start_time_decoding = time.time()
+            conv_sents_fusion = real_model.decoder.decode(
+                ret_dict['conv_logits_fusion'] * real_model.norm_scale, ret_dict['feat_len'], batch_first=False, probs=False
+            )
+            recognized_sents_fusion = real_model.decoder.decode(
+                ret_dict['seq_logits_fusion'] * real_model.norm_scale, ret_dict['feat_len'], batch_first=False, probs=False
+            )
+            end_time_decoding = time.time()
 
-        # Update total waktu inferensi dan jumlah frame/sequence 
-        total_inference_time += (end_time - start_time)
-        total_frames += batch_frames
+        # Update total waktu inferensi dan jumlah sequence 
+        total_inference_time_wo_decoding += (end_time_wo - start_time_wo)
+        total_inference_time_w_decoding += (end_time_wo - start_time_wo) + (end_time_decoding - start_time_decoding)
         total_sequences += batch_sequences
 
         # Simpan info file dan hasil prediksi dari kedua jalur evaluasi
         total_info += [file_name.split("|")[0] for file_name in data['origin_info']]
-        total_sent_fusion += ret_dict['recognized_sents_fusion']
-        total_sent_conv_fusion += ret_dict['conv_sents_fusion']
+        total_sent_fusion += recognized_sents_fusion
+        total_sent_conv_fusion += conv_sents_fusion
 
     # Hitung kecepatan inferensi
-    fps = total_frames / total_inference_time if total_inference_time > 0 else 0
-    sps = total_sequences / total_inference_time if total_inference_time > 0 else 0
+    sps_wo = total_sequences / total_inference_time_wo_decoding if total_inference_time_wo_decoding > 0 else 0
+    sps_w = total_sequences / total_inference_time_w_decoding if total_inference_time_w_decoding > 0 else 0
     
     # Log waktu inferensi dan kecepatan
-    recoder.print_log(f"[{mode.upper()} EVAL] Total Inference Time: {total_inference_time:.2f}s")
-    recoder.print_log(f"[{mode.upper()} EVAL] Inference Speed: {fps:.2f} Frames/s, {sps:.2f} Sequences/s")
+    recoder.print_log(f"Inference Speed w/o Decoding : {sps_wo:.2f} seq/s")
+    recoder.print_log(f"Inference Speed w/ Decoding  : {sps_w:.2f} seq/s")
 
     # Pilih mode evaluasi (python atau eksternal)
     python_eval = True if evaluate_tool == "python" else False
