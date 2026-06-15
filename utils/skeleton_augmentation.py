@@ -100,30 +100,25 @@ class TemporalRescale(object):
         temp_scaling (float): Temporal scaling factor. Video length is scaled 
             between [1 - temp_scaling, 1 + temp_scaling].
     """
-    def __init__(self, temp_scaling=0.2):
+    
+    def __init__(self, temp_scaling=0.2) -> None:
+        self.min_len = 32 # jadi parameter
+        self.max_len = 230 # jadi parameter
         self.L = 1.0 - temp_scaling
         self.U = 1.0 + temp_scaling
 
     def __call__(self, clip):
-        T = len(clip)
-
-        scale = self.L + (self.U - self.L) * np.random.random()
-        new_T = max(2, int(round(T * scale)))
-
-        # original time indices
-        old_idx = np.arange(T)
-        new_idx = np.linspace(0, T - 1, new_T)
-
-        # interpolate
-        resampled = []
-        for i in range(clip.shape[1]):  # keypoints
-            kp_traj = clip[:, i, :]  # (T, C)
-
-            interp_kp = np.zeros((new_T, kp_traj.shape[1]), dtype=clip.dtype)
-            for c in range(kp_traj.shape[1]):
-                interp_kp[:, c] = np.interp(new_idx, old_idx, kp_traj[:, c])
-
-            resampled.append(interp_kp)
-
-        resampled = np.stack(resampled, axis=1)  # (new_T, K, C)
-        return resampled
+        # clip shape: T X N X 2
+        vid_len = len(clip)
+        new_len = int(vid_len * np.random.uniform(self.L, self.U))
+        if new_len < self.min_len:
+            new_len = self.min_len
+        if new_len > self.max_len:
+            new_len = self.max_len
+        if (new_len - 4) % 4 != 0:
+            new_len += 4 - (new_len - 4) % 4
+        if new_len <= vid_len:
+            index = sorted(random.sample(range(vid_len), new_len))
+        else:
+            index = sorted(random.choices(range(vid_len), k=new_len))
+        return clip[index]

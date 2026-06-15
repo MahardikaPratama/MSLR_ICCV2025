@@ -1,32 +1,40 @@
+import random
 import numpy as np
 import torch
 from scipy.interpolate import interp1d
 
 def downsample(video, ratio=0.5):
     """
-    Uniform temporal downsampling.
+    Temporal downsampling by frame skipping.
 
     Parameters
     ----------
     video : ndarray or Tensor
         Skeleton sequence with shape (T, K, C).
     ratio : float
-        Downsampling ratio (0 < ratio < 1).
+        Currently designed for ratio=0.5.
 
     Returns
     -------
     ndarray or Tensor
         Downsampled sequence.
     """
-    if not (0 < ratio < 1):
-        return video
+    if ratio != 0.5:
+        raise ValueError(
+            "This implementation only supports ratio=0.5"
+        )
 
     T = video.shape[0]
-    new_len = max(1, round(T * ratio))
 
-    idx = np.round(
-        np.linspace(0, T - 1, new_len)
-    ).astype(np.int64)
+    if T <= 1:
+        return video
+
+    start_idx = (
+        0 if random.uniform(0, 1) > 0.5
+        else 1
+    )
+
+    idx = np.arange(start_idx, T, 2)
 
     return video[idx]
 
