@@ -38,10 +38,7 @@ def downsample(video, ratio=0.5):
 
     return video[idx]
 
-import torch
-
-
-def spatial_normalize_anchor_paper(
+def spatial_normalize(
     origin_input_data,
     norm_div,
     split=None,
