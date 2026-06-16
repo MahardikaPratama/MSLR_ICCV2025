@@ -52,6 +52,9 @@ def spatial_normalize(
         1. Coordinate normalization.
         2. Translation normalization using wrist.
         3. Scale normalization using wrist-to-middle-MCP distance.
+        4. Wrist offset injection:
+             left hand  wrist → (-0.5, 0.0)
+             right hand wrist → (+0.5, 0.0)
 
     Input:
         (T, K, C)
@@ -75,10 +78,14 @@ def spatial_normalize(
     eps = 1e-8
     split_points = [0] + list(split)
 
+    # Offset wrist: kiri di (-0.5, 0), kanan di (+0.5, 0)
+    LEFT_WRIST_ORIGIN  = torch.tensor([-0.5, 0.0], device=out.device)
+    RIGHT_WRIST_ORIGIN = torch.tensor([+0.5, 0.0], device=out.device)
+
     for idx, part in enumerate(used_part):
 
         start = split_points[idx]
-        end = split_points[idx + 1]
+        end   = split_points[idx + 1]
 
         part_data = out[:, start:end, 0:2]
 
@@ -87,7 +94,7 @@ def spatial_normalize(
         # ==================================================
         if part == "left_hand":
 
-            wrist = part_data[:, 0, :]
+            wrist      = part_data[:, 0, :]
             middle_mcp = part_data[:, 9, :]
 
             scale = torch.linalg.norm(
@@ -96,16 +103,17 @@ def spatial_normalize(
                 keepdim=True,
             ).clamp_min(eps)
 
-            out[:, start:end, 0:2] = (
-                part_data - wrist[:, None, :]
-            ) / scale[:, None, :]
+            normalized = (part_data - wrist[:, None, :]) / scale[:, None, :]
+
+            # Geser wrist ke (-0.5, 0)
+            out[:, start:end, 0:2] = normalized + LEFT_WRIST_ORIGIN
 
         # ==================================================
         # RIGHT HAND
         # ==================================================
         elif part == "right_hand":
 
-            wrist = part_data[:, 0, :]
+            wrist      = part_data[:, 0, :]
             middle_mcp = part_data[:, 9, :]
 
             scale = torch.linalg.norm(
@@ -114,18 +122,15 @@ def spatial_normalize(
                 keepdim=True,
             ).clamp_min(eps)
 
-            out[:, start:end, 0:2] = (
-                part_data - wrist[:, None, :]
-            ) / scale[:, None, :]
+            normalized = (part_data - wrist[:, None, :]) / scale[:, None, :]
+
+            # Geser wrist ke (+0.5, 0)
+            out[:, start:end, 0:2] = normalized + RIGHT_WRIST_ORIGIN
 
         # ==================================================
         # MOUTH
         # ==================================================
         elif part == "mouth_8":
-
-            # TODO:
-            # Implement mouth normalization when mouth
-            # becomes part of the experimental setup.
             pass
 
         # ==================================================
@@ -133,9 +138,30 @@ def spatial_normalize(
         # ==================================================
         elif part == "body":
 
-            # TODO:
-            # Implement body normalization when body
-            # becomes part of the experimental setup.
+            # body[0] = left_shoulder
+            # body[1] = right_shoulder
+
+            left_shoulder  = part_data[:, 0, :]
+            right_shoulder = part_data[:, 1, :]
+
+            neck = (
+                left_shoulder + right_shoulder
+            ) / 2.0
+
+            scale = torch.linalg.norm(
+                right_shoulder - left_shoulder,
+                dim=1,
+                keepdim=True,
+            ).clamp_min(eps)
+
+            out[:, start:end, 0:2] = (
+                part_data - neck[:, None, :]
+            ) / scale[:, None, :]
+
+        # ==================================================
+        # UPPER LIMB
+        # ==================================================
+        elif part == "upper_limb":
             pass
 
     return out
