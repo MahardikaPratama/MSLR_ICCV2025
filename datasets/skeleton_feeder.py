@@ -172,6 +172,9 @@ class SkeletonFeeder(data.Dataset):
                 elif part == "body":
                     self.pose_idx.extend(range(61, 86))
 
+                elif part == "upper_limb":
+                    self.pose_idx.extend(range(72, 84))
+
                 else:
                     raise ValueError(
                         f"Unknown skeleton part: {part}"
