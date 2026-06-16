@@ -140,6 +140,83 @@ def spatial_normalize(
 
     return out
 
+# def spatial_normalize(
+#     origin_input_data,
+#     norm_div,
+#     norm_point=None,
+#     split=None,
+#     used_part=None,
+# ):
+#     """
+#     Center + Scale untuk seluruh node
+
+#     p' = (p - shoulder_center) / shoulder_width
+
+#     Berlaku untuk:
+#     - left hand
+#     - right hand
+#     - upper limb
+#     """
+
+#     if not isinstance(origin_input_data, torch.Tensor):
+#         origin_input_data = torch.as_tensor(origin_input_data)
+
+#     out = origin_input_data.clone().float()
+
+#     # ------------------------------------------
+#     # coordinate normalization
+#     # ------------------------------------------
+#     out[:, :, 0:2] = out[:, :, 0:2] / norm_div - 1.0
+
+#     if split is None or used_part is None:
+#         return out
+
+#     eps = 1e-8
+#     split_points = [0] + list(split)
+
+#     # ==========================================
+#     # ambil shoulder dari upper limb
+#     # ==========================================
+#     upper_idx = used_part.index("upper_limb")
+
+#     upper_start = split_points[upper_idx]
+#     upper_end = split_points[upper_idx + 1]
+
+#     upper_data = out[:, upper_start:upper_end, 0:2]
+
+#     LEFT_SHOULDER = 0
+#     RIGHT_SHOULDER = 1
+
+#     left_shoulder = upper_data[:, LEFT_SHOULDER, :]
+#     right_shoulder = upper_data[:, RIGHT_SHOULDER, :]
+
+#     center = (
+#         left_shoulder + right_shoulder
+#     ) / 2.0
+
+#     scale = torch.linalg.norm(
+#         right_shoulder - left_shoulder,
+#         dim=1,
+#         keepdim=True,
+#     ).clamp_min(eps)
+
+#     # ==========================================
+#     # normalize semua part
+#     # ==========================================
+#     for idx, part in enumerate(used_part):
+
+#         start = split_points[idx]
+#         end = split_points[idx + 1]
+
+#         part_data = out[:, start:end, 0:2]
+
+#         out[:, start:end, 0:2] = (
+#             part_data
+#             - center[:, None, :]
+#         ) / scale[:, None, :]
+
+#     return out
+
 def missing_keypoint_reconstruction(origin_input_data):
     """
     Missing keypoint reconstruction using temporal interpolation.
