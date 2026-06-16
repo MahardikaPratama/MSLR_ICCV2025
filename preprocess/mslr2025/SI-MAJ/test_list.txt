@@ -18,14 +18,14 @@ P6_S16_MJ|KAMU PUNYA ANGGOTA KELUARGA BERAPA|Berapa jumlah anggota keluarga kamu
 P6_S17_MJ|KENAPA KAMU GAK MASUK KULIAH KEMARIN|Mengapa kemarin kamu tidak kuliah?
 P6_S18_MJ|KITA ISTIRAHAT JAM BERAPA|Jam berapa kita istirahat?
 P6_S19_MJ|MANA IBU KAMU BAIK-BAIK ATAU TIDAK|Bagaimana keadaan ibumu?
-P6_S20_MJ|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
-P6_S21_MJ|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
-P6_S22_MJ|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
-P6_S23_MJ|RUMAH DIMANA KAMU|Rumah kamu di mana?
-P6_S24_MJ|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
-P6_S25_MJ|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
-P6_S26_MJ|SANA TOILET KOTOR|Toilet di sana kotor
-P6_S27_MJ|SEPATU DIA KOTOR|Sepatu dia kotor
-P6_S28_MJ|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
-P6_S29_MJ|ULANGTAHUN SELAMAT|Selamat ulang tahun
+P6_S20_MJ|NAMA ISYARAT KAMU APA|Nama isyarat kamu apa?
+P6_S21_MJ|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
+P6_S22_MJ|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P6_S23_MJ|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P6_S24_MJ|RUMAH DIMANA KAMU|Rumah kamu di mana?
+P6_S25_MJ|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P6_S26_MJ|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P6_S27_MJ|SANA TOILET KOTOR|Toilet di sana kotor
+P6_S28_MJ|SEPATU DIA KOTOR|Sepatu dia kotor
+P6_S29_MJ|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
 P6_S30_MJ|ULAR SANA MAKAN KAMBING|Kambing di sana dimakan ular

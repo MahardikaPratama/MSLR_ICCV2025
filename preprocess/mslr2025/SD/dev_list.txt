@@ -94,56 +94,56 @@ P2_S19_R4|MANA IBU KAMU BAIK-BAIK ATAU TIDAK|Bagaimana keadaan ibumu?
 P3_S19_R4|MANA IBU KAMU BAIK-BAIK ATAU TIDAK|Bagaimana keadaan ibumu?
 P4_S19_R4|MANA IBU KAMU BAIK-BAIK ATAU TIDAK|Bagaimana keadaan ibumu?
 P5_S19_R4|MANA IBU KAMU BAIK-BAIK ATAU TIDAK|Bagaimana keadaan ibumu?
-P1_S20_R4|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
-P2_S20_R4|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
-P3_S20_R4|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
-P4_S20_R4|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
-P5_S20_R4|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
-P1_S21_R4|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
-P2_S21_R4|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
-P3_S21_R4|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
-P4_S21_R4|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
-P5_S21_R4|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
-P1_S22_R4|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
-P2_S22_R4|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
-P3_S22_R4|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
-P4_S22_R4|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
-P5_S22_R4|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
-P1_S23_R4|RUMAH DIMANA KAMU|Rumah kamu di mana?
-P2_S23_R4|RUMAH DIMANA KAMU|Rumah kamu di mana?
-P3_S23_R4|RUMAH DIMANA KAMU|Rumah kamu di mana?
-P4_S23_R4|RUMAH DIMANA KAMU|Rumah kamu di mana?
-P5_S23_R4|RUMAH DIMANA KAMU|Rumah kamu di mana?
-P1_S24_R4|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
-P2_S24_R4|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
-P3_S24_R4|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
-P4_S24_R4|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
-P5_S24_R4|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
-P1_S25_R4|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
-P2_S25_R4|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
-P3_S25_R4|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
-P4_S25_R4|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
-P5_S25_R4|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
-P1_S26_R4|SANA TOILET KOTOR|Toilet di sana kotor
-P2_S26_R4|SANA TOILET KOTOR|Toilet di sana kotor
-P3_S26_R4|SANA TOILET KOTOR|Toilet di sana kotor
-P4_S26_R4|SANA TOILET KOTOR|Toilet di sana kotor
-P5_S26_R4|SANA TOILET KOTOR|Toilet di sana kotor
-P1_S27_R4|SEPATU DIA KOTOR|Sepatu dia kotor
-P2_S27_R4|SEPATU DIA KOTOR|Sepatu dia kotor
-P3_S27_R4|SEPATU DIA KOTOR|Sepatu dia kotor
-P4_S27_R4|SEPATU DIA KOTOR|Sepatu dia kotor
-P5_S27_R4|SEPATU DIA KOTOR|Sepatu dia kotor
-P1_S28_R4|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
-P2_S28_R4|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
-P3_S28_R4|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
-P4_S28_R4|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
-P5_S28_R4|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
-P1_S29_R4|ULANGTAHUN SELAMAT|Selamat ulang tahun
-P2_S29_R4|ULANGTAHUN SELAMAT|Selamat ulang tahun
-P3_S29_R4|ULANGTAHUN SELAMAT|Selamat ulang tahun
-P4_S29_R4|ULANGTAHUN SELAMAT|Selamat ulang tahun
-P5_S29_R4|ULANGTAHUN SELAMAT|Selamat ulang tahun
+P1_S20_R4|NAMA ISYARAT KAMU APA|Nama isyarat kamu apa?
+P2_S20_R4|NAMA ISYARAT KAMU APA|Nama isyarat kamu apa?
+P3_S20_R4|NAMA ISYARAT KAMU APA|Nama isyarat kamu apa?
+P4_S20_R4|NAMA ISYARAT KAMU APA|Nama isyarat kamu apa?
+P5_S20_R4|NAMA ISYARAT KAMU APA|Nama isyarat kamu apa?
+P1_S21_R4|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
+P2_S21_R4|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
+P3_S21_R4|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
+P4_S21_R4|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
+P5_S21_R4|OBAT BISA BELI TOKO MANA|Di apotek mana obat ini bisa dibeli?
+P1_S22_R4|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P2_S22_R4|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P3_S22_R4|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P4_S22_R4|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P5_S22_R4|ORANG JAHAT SANA PUKUL AKU BERULANG|Orang jahat di sana memukul saya berulang.
+P1_S23_R4|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P2_S23_R4|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P3_S23_R4|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P4_S23_R4|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P5_S23_R4|POLISI SANA PUKUL PENCURI|Pencuri di sana dipukul polisi.
+P1_S24_R4|RUMAH DIMANA KAMU|Rumah kamu di mana?
+P2_S24_R4|RUMAH DIMANA KAMU|Rumah kamu di mana?
+P3_S24_R4|RUMAH DIMANA KAMU|Rumah kamu di mana?
+P4_S24_R4|RUMAH DIMANA KAMU|Rumah kamu di mana?
+P5_S24_R4|RUMAH DIMANA KAMU|Rumah kamu di mana?
+P1_S25_R4|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P2_S25_R4|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P3_S25_R4|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P4_S25_R4|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P5_S25_R4|SANA BERITA SUDAH BANYAK RIBUAN ORANG LIHAT|Berita di sana sudah dilihat oleh ribuan orang.
+P1_S26_R4|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P2_S26_R4|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P3_S26_R4|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P4_S26_R4|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P5_S26_R4|SANA ENAK NASI PADANG TAPI MAHAL|Nasi padang di sana enak, tetapi mahal
+P1_S27_R4|SANA TOILET KOTOR|Toilet di sana kotor
+P2_S27_R4|SANA TOILET KOTOR|Toilet di sana kotor
+P3_S27_R4|SANA TOILET KOTOR|Toilet di sana kotor
+P4_S27_R4|SANA TOILET KOTOR|Toilet di sana kotor
+P5_S27_R4|SANA TOILET KOTOR|Toilet di sana kotor
+P1_S28_R4|SEPATU DIA KOTOR|Sepatu dia kotor
+P2_S28_R4|SEPATU DIA KOTOR|Sepatu dia kotor
+P3_S28_R4|SEPATU DIA KOTOR|Sepatu dia kotor
+P4_S28_R4|SEPATU DIA KOTOR|Sepatu dia kotor
+P5_S28_R4|SEPATU DIA KOTOR|Sepatu dia kotor
+P1_S29_R4|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
+P2_S29_R4|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
+P3_S29_R4|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
+P4_S29_R4|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
+P5_S29_R4|TONG-SAMPAH ADA SEMUT BANYAK|Tempat sampah banyak semut
 P1_S30_R4|ULAR SANA MAKAN KAMBING|Kambing di sana dimakan ular
 P2_S30_R4|ULAR SANA MAKAN KAMBING|Kambing di sana dimakan ular
 P3_S30_R4|ULAR SANA MAKAN KAMBING|Kambing di sana dimakan ular
