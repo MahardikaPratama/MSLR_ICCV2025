@@ -41,6 +41,7 @@ def downsample(video, ratio=0.5):
 def spatial_normalize(
     origin_input_data,
     norm_div,
+    norm_point=None,
     split=None,
     used_part=None,
 ):
