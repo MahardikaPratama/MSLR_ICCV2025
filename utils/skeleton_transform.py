@@ -38,38 +38,41 @@ def downsample(video, ratio=0.5):
 
     return video[idx]
 
-def spatial_normalize(
+import torch
+
+
+def spatial_normalize_anchor_paper(
     origin_input_data,
     norm_div,
-    norm_point=None,
     split=None,
     used_part=None,
 ):
     """
-    Spatial normalization.
+    Adaptasi Anchor-Based Normalization (Roh et al., 2024)
 
-    For hand skeletons:
-        1. Coordinate normalization.
-        2. Translation normalization using wrist.
-        3. Scale normalization using wrist-to-middle-MCP distance.
-        4. Wrist offset injection:
-             left hand  wrist → (-0.5, 0.0)
-             right hand wrist → (+0.5, 0.0)
+    Hand:
+        Hand_i = Hand_i - Palm
+
+    Upper limb:
+        Upper_i =
+        (Upper_i - ShoulderCenter)
+        / ShoulderWidth
 
     Input:
         (T, K, C)
 
     Output:
-        Tensor with shape (T, K, C)
+        (T, K, C)
     """
+
     if not isinstance(origin_input_data, torch.Tensor):
         origin_input_data = torch.as_tensor(origin_input_data)
 
     out = origin_input_data.clone().float()
 
-    # --------------------------------------------------
+    # ----------------------------------------
     # Coordinate normalization
-    # --------------------------------------------------
+    # ----------------------------------------
     out[:, :, 0:2] = out[:, :, 0:2] / norm_div - 1.0
 
     if split is None or used_part is None:
@@ -78,91 +81,64 @@ def spatial_normalize(
     eps = 1e-8
     split_points = [0] + list(split)
 
-    # Offset wrist: kiri di (-0.5, 0), kanan di (+0.5, 0)
-    LEFT_WRIST_ORIGIN  = torch.tensor([-0.5, 0.0], device=out.device)
-    RIGHT_WRIST_ORIGIN = torch.tensor([+0.5, 0.0], device=out.device)
-
     for idx, part in enumerate(used_part):
 
         start = split_points[idx]
-        end   = split_points[idx + 1]
+        end = split_points[idx + 1]
 
         part_data = out[:, start:end, 0:2]
 
-        # ==================================================
+        # =====================================
         # LEFT HAND
-        # ==================================================
+        # =====================================
         if part == "left_hand":
 
-            wrist      = part_data[:, 0, :]
-            middle_mcp = part_data[:, 9, :]
+            palm = part_data[:, 0, :]
 
-            scale = torch.linalg.norm(
-                middle_mcp - wrist,
-                dim=1,
-                keepdim=True,
-            ).clamp_min(eps)
+            out[:, start:end, 0:2] = (
+                part_data
+                - palm[:, None, :]
+            )
 
-            normalized = (part_data - wrist[:, None, :]) / scale[:, None, :]
-
-            # Geser wrist ke (-0.5, 0)
-            out[:, start:end, 0:2] = normalized + LEFT_WRIST_ORIGIN
-
-        # ==================================================
+        # =====================================
         # RIGHT HAND
-        # ==================================================
+        # =====================================
         elif part == "right_hand":
 
-            wrist      = part_data[:, 0, :]
-            middle_mcp = part_data[:, 9, :]
+            palm = part_data[:, 0, :]
 
-            scale = torch.linalg.norm(
-                middle_mcp - wrist,
-                dim=1,
-                keepdim=True,
-            ).clamp_min(eps)
+            out[:, start:end, 0:2] = (
+                part_data
+                - palm[:, None, :]
+            )
 
-            normalized = (part_data - wrist[:, None, :]) / scale[:, None, :]
+        # =====================================
+        # UPPER LIMB
+        # =====================================
+        elif part == "upper_limb":
 
-            # Geser wrist ke (+0.5, 0)
-            out[:, start:end, 0:2] = normalized + RIGHT_WRIST_ORIGIN
+            # sesuaikan indeks ini
+            LEFT_SHOULDER = 0
+            RIGHT_SHOULDER = 1
 
-        # ==================================================
-        # MOUTH
-        # ==================================================
-        elif part == "mouth_8":
-            pass
+            left_shoulder = part_data[:, LEFT_SHOULDER, :]
+            right_shoulder = part_data[:, RIGHT_SHOULDER, :]
 
-        # ==================================================
-        # BODY
-        # ==================================================
-        elif part == "body":
-
-            # body[0] = left_shoulder
-            # body[1] = right_shoulder
-
-            left_shoulder  = part_data[:, 0, :]
-            right_shoulder = part_data[:, 1, :]
-
-            neck = (
-                left_shoulder + right_shoulder
+            center = (
+                left_shoulder
+                + right_shoulder
             ) / 2.0
 
-            scale = torch.linalg.norm(
+            shoulder_width = torch.linalg.norm(
                 right_shoulder - left_shoulder,
                 dim=1,
                 keepdim=True,
             ).clamp_min(eps)
 
             out[:, start:end, 0:2] = (
-                part_data - neck[:, None, :]
-            ) / scale[:, None, :]
-
-        # ==================================================
-        # UPPER LIMB
-        # ==================================================
-        elif part == "upper_limb":
-            pass
+                part_data
+                - center[:, None, :]
+            ) / shoulder_width[:, None, :]
 
     return out
 
@@ -180,58 +156,68 @@ def missing_keypoint_reconstruction(origin_input_data):
     Tensor
         Reconstructed skeleton sequence.
     """
+    # Buat salinan untuk hasil rekonstruksi
     result = origin_input_data.clone()
 
-    # Ambil koordinat xy
+    # Ekstrak koordinat x dan y
     kp_xy = result[:, :, 0:2].cpu().numpy().astype(np.float32)
+    # T = jumlah frame, K = jumlah keypoint
     T, K, _ = kp_xy.shape
 
     for k in range(K):
 
-        coords = kp_xy[:, k, :]  # (T, 2)
+        coords = kp_xy[:, k, :]  # example: (T, 2)
 
-        # Keypoint dianggap missing jika x == 0 dan y == 0
+        # Buat array boolean untuk menandai frame yang valid (bukan missing)
         valid_mask = ~(
             (coords[:, 0] == 0) &
             (coords[:, 1] == 0)
         )
+        # example: [True, True, False, True, False, ...]
 
-        valid_idx = np.where(valid_mask)[0]
+        # Dapatkan indeks frame yang valid
+        valid_idx = np.where(valid_mask)[0] # example: [0, 1, 3, ...]
 
-        # Semua frame missing
+        # Cek apakah ada frame yang valid untuk keypoint ini
         if len(valid_idx) == 0:
             continue
 
+        # Iterasi melalui semua frame untuk keypoint ini
         for t in range(T):
 
-            # Skip jika valid
+            # Cek apakah frame ini valid
             if valid_mask[t]:
                 continue
+            
+            # prev_arr = indeks frame valid yang lebih kecil dari t
+            prev_arr = valid_idx[valid_idx < t] # example: [0, 1] untuk t=2
+            # next_arr = indeks frame valid yang lebih besar dari t
+            next_arr = valid_idx[valid_idx > t] # example: [3] untuk t=2
 
-            prev_arr = valid_idx[valid_idx < t]
-            next_arr = valid_idx[valid_idx > t]
-
-            # Interpolasi linier
+            # Cek apakah ada frame valid sebelum dan sesudah t
             if len(prev_arr) and len(next_arr):
 
+                # Lakukan interpolasi linier antara frame terakhir sebelum t dan frame pertama setelah t
                 p = prev_arr[-1]
                 n = next_arr[0]
 
-                alpha = (t - p) / (n - p)
+                alpha = t - p      # jarak ke frame valid sebelumnya
+                beta = n - t       # jarak ke frame valid sesudahnya
 
                 coords[t] = (
-                    (1 - alpha) * coords[p] +
+                    beta * coords[p] +
                     alpha * coords[n]
-                )
+                ) / (alpha + beta)
 
-            # Gunakan frame sebelumnya
+            # Jika hanya ada frame valid sebelum t, gunakan koordinat dari frame tersebut
             elif len(prev_arr):
                 coords[t] = coords[prev_arr[-1]]
 
-            # Gunakan frame berikutnya
+            # Jika hanya ada frame valid sesudah t, gunakan koordinat dari frame tersebut
             elif len(next_arr):
                 coords[t] = coords[next_arr[0]]
 
+        # Masukkan kembali koordinat yang sudah direkonstruksi ke array hasil
         kp_xy[:, k, :] = coords
 
     # Masukkan kembali hasil rekonstruksi
