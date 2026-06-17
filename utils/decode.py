@@ -11,61 +11,61 @@ class Decode(object):
     """
     Decode
 
-    Deskripsi:
-        Kelas decoder untuk mengubah output probabilitas jaringan CTC menjadi
-        urutan gloss yang dapat dibaca. Mendukung dua mode decoding:
-            - 'max'  : greedy decoding via argmax per frame (cepat, akurasi lebih rendah).
-            - 'beam' : beam search via CTCBeamDecoder (lebih akurat, lebih lambat).
+    Description:
+        Decode class for converting CTC network probability outputs into readable gloss sequences.
+        Supports two decoding modes:
+            - 'max'  : greedy decoding via argmax per frame (fast, lower accuracy).
+            - 'beam' : beam search via CTCBeamDecoder (more accurate, slower).
 
-        Digunakan setelah tahap klasifikasi CTC untuk menghasilkan prediksi
-        urutan tanda (gloss sequence) dari output BiLSTM-CTC.
+        Used after the CTC classification stage to produce gloss sequence predictions
+        from the BiLSTM-CTC output.
 
     Input (constructor):
-        - gloss_dict  (dict) : kamus dengan dua subkunci:
-              'id2gloss'  → {str_id: {'gloss': nama_gloss, ...}}
-              'gloss2id'  → {nama_gloss: {'index': int_id, ...}}
-        - num_classes (int)  : jumlah kelas gloss termasuk token blank.
-        - search_mode (str)  : mode decoding, 'max' atau selain itu (beam search).
-        - blank_id    (int)  : indeks token blank CTC (default 0).
+        - gloss_dict  (dict) : dictionary with two subkeys:
+              'id2gloss'  → {str_id: {'gloss': gloss_name, ...}}
+              'gloss2id'  → {gloss_name: {'index': int_id, ...}}
+        - num_classes (int)  : number of gloss classes including the blank token.
+        - search_mode (str)  : decoding mode, 'max' or other (beam search).
+        - blank_id    (int)  : CTC blank token index (default 0).
 
-    Proses:
-        - Bangun lookup table dua arah: id→gloss (i2g_dict) dan gloss→id (g2i_dict).
-        - Inisialisasi CTCBeamDecoder dengan vocab karakter Unicode sintetis
-          (bukan karakter nyata, hanya sebagai placeholder indeks untuk decoder).
+    Process:
+        - Build two-way lookup tables: id→gloss (i2g_dict) and gloss→id (g2i_dict).
+        - Initialize CTCBeamDecoder with a synthetic Unicode character vocabulary
+          (not actual characters, just index placeholders for the decoder).
 
-    Output (atribut publik):
-        - self.i2g_dict    (dict int→str) : mapping indeks integer ke nama gloss.
-        - self.g2i_dict    (dict str→int) : mapping nama gloss ke indeks integer.
-        - self.ctc_decoder               : instance CTCBeamDecoder siap pakai.
+    Output (public attributes):
+        - self.i2g_dict    (dict int→str) : mapping integer indices to gloss names.
+        - self.g2i_dict    (dict str→int) : mapping gloss names to integer indices.
+        - self.ctc_decoder               : ready-to-use CTCBeamDecoder instance.
     """
 
     def __init__(self, gloss_dict, num_classes, search_mode, blank_id=0):
-        # bangun mapping id (int) → nama gloss dari subkunci 'id2gloss'
-        # kunci di gloss_dict berupa string, dikonversi ke int sebagai key dict
+        # build mapping id (int) → gloss name from subkey 'id2gloss'
+        # keys in gloss_dict are strings, converted to int to be dictionary keys
         self.i2g_dict = {int(k): v['gloss'] for k, v in gloss_dict['id2gloss'].items()}
 
-        # bangun mapping nama gloss → id (int) dari subkunci 'gloss2id'
-        # dipakai saat perlu mengkonversi prediksi gloss kembali ke indeks
+        # build mapping gloss name → id (int) from subkey 'gloss2id'
+        # used when needing to convert gloss predictions back to indices
         self.g2i_dict = {k: int(v['index']) for k, v in gloss_dict['gloss2id'].items()}
 
-        # simpan jumlah kelas (termasuk blank) untuk inisialisasi decoder
+        # store number of classes (including blank) for decoder initialization
         self.num_classes = num_classes
 
-        # simpan mode pencarian: 'max' untuk greedy, selainnya untuk beam search
+        # store search mode: 'max' for greedy, others for beam search
         self.search_mode = search_mode
 
-        # simpan indeks token blank CTC; default 0 mengikuti konvensi PyTorch CTC
+        # store CTC blank token index; default 0 follows PyTorch CTC convention
         self.blank_id = blank_id
 
-        # buat vocab sintetis: num_classes karakter Unicode mulai dari U+4E20
-        # CTCBeamDecoder butuh list karakter sebagai vocab, tapi nilainya tidak
-        # penting karena kita decode ulang via i2g_dict — ini hanya placeholder
+        # create synthetic vocab: num_classes Unicode characters starting from U+4E20
+        # CTCBeamDecoder needs a list of characters as vocab, but values don't matter
+        # because we re-decode via i2g_dict — this is just a placeholder
         vocab = [chr(x) for x in range(20000, 20000 + num_classes)]
 
-        # inisialisasi CTCBeamDecoder dengan vocab sintetis di atas
-        # beam_width=10: pertahankan 10 hipotesis terbaik di setiap langkah
-        # blank_id: posisi token blank di vocab
-        # num_processes=10: jumlah thread paralel untuk mempercepat decoding
+        # initialize CTCBeamDecoder with the synthetic vocab above
+        # beam_width=10: keep 10 best hypotheses at each step
+        # blank_id: position of blank token in vocab
+        # num_processes=10: number of parallel threads to speed up decoding
         self.ctc_decoder = ctcdecode.CTCBeamDecoder(
             vocab,
             beam_width=10,
@@ -75,100 +75,97 @@ class Decode(object):
 
     def decode(self, nn_output, vid_lgt, batch_first=True, probs=False):
         """
-        Deskripsi:
-            Entry point decoding. Menerima output jaringan dan mendelegasikan
-            ke MaxDecode atau BeamSearch sesuai search_mode yang dikonfigurasi.
-            Menangani permutasi tensor jika format bukan batch-first.
+        Entry point decoding. Receives network output and delegates
+        to MaxDecode or BeamSearch according to the configured search_mode.
+        Handles tensor permutation if format is not batch-first.
 
-        Input:
-            - nn_output  (Tensor, B×T×N atau T×B×N): output logit/prob jaringan.
-            - vid_lgt    (Tensor, B)                : panjang valid (frame count)
-                                                      tiap sample dalam batch.
-            - batch_first(bool, default True)        : True jika dim 0 adalah batch.
-              Jika False (format T×B×N), tensor dipermutasi ke B×T×N terlebih dulu.
-            - probs      (bool, default False)       : True jika nn_output sudah
-              berupa probabilitas (sudah melalui softmax); False jika masih logit.
+        Args:
+            - nn_output  (Tensor, B×T×N atau T×B×N):
+                network output logits/probabilities.
+            - vid_lgt    (Tensor, B):
+                valid length (frame count) for each sample in the batch.
+            - batch_first(bool, default True):
+                True if dim 0 is batch.
+                If False (format T×B×N), tensor is permuted to B×T×N first.
+            - probs      (bool, default False):
+                True if nn_output already contains probabilities (post-softmax);
+                False if still logits (softmax will be applied internally).
 
-        Proses:
-            - Jika tidak batch_first: permutasi (T,B,N) → (B,T,N).
-            - Pilih decoder berdasarkan self.search_mode.
-
-        Output:
-            - ret_list (list of list of tuple): hasil decode per sample dalam batch.
-              Tiap elemen adalah list pasangan (nama_gloss, indeks_posisi).
+        Returns:
+            - ret_list (list of list of tuple): decode result per sample in the batch.
+              Each element is a list of (gloss_name, position) pairs.
         """
         if not batch_first:
-            # permutasi dari format (T, B, N) ke (B, T, N) yang dibutuhkan decoder
+            # permute from (T, B, N) to (B, T, N) format required by decoder
             nn_output = nn_output.permute(1, 0, 2)
 
         if self.search_mode == "max":
-            # gunakan greedy decoding: cepat tapi tidak optimal
+            # use greedy decoding: fast but not optimal
             return self.MaxDecode(nn_output, vid_lgt)
         else:
-            # gunakan beam search: lebih akurat, cocok untuk evaluasi final
+            # use beam search: more accurate, suitable for final evaluation
             return self.BeamSearch(nn_output, vid_lgt, probs)
 
     def BeamSearch(self, nn_output, vid_lgt, probs=False):
         """
-        Deskripsi:
-            Melakukan CTC beam search decoding menggunakan CTCBeamDecoder.
-            Mempertahankan beam_width hipotesis terbaik di setiap langkah
-            waktu dan memilih hipotesis dengan skor tertinggi sebagai output.
+        Performs CTC beam search decoding using CTCBeamDecoder.
+        Maintains beam_width best hypotheses at each time step
+        and selects the hypothesis with the highest score as output.
 
         Input:
-            - nn_output (Tensor, B×T×N): output jaringan dalam format batch-first.
-              Harus sudah dipermutasi sebelum dipanggil.
-            - vid_lgt   (Tensor, B)    : panjang valid tiap sequence dalam batch.
-            - probs     (bool)         : True jika sudah probabilitas (post-softmax);
-              False jika masih logit (akan di-softmax di dalam fungsi ini).
+            - nn_output (Tensor, B×T×N): network output in batch-first format.
+              Must be permuted before calling.
+            - vid_lgt   (Tensor, B)    : valid length for each sequence in the batch.
+            - probs     (bool)         : True if already probabilities (post-softmax);
+              False if still logits (will be softmaxed inside this function).
 
-        Proses:
-            1. Jika belum prob: terapkan softmax pada dim -1 (per-frame per-class)
-               lalu pindahkan ke CPU (CTCBeamDecoder hanya berjalan di CPU).
-            2. Pindahkan vid_lgt ke CPU.
-            3. Jalankan CTCBeamDecoder.decode → beam_result, beam_scores,
+        Process:
+            1. If not yet probabilities: apply softmax on dim -1 (per-frame per-class)
+               then move to CPU (CTCBeamDecoder only runs on CPU).
+            2. Move vid_lgt to CPU.
+            3. Run CTCBeamDecoder.decode → beam_result, beam_scores,
                timesteps, out_seq_len.
-            4. Untuk tiap sample di batch:
-               a. Ambil hipotesis terbaik (beam index 0).
-               b. Potong sesuai panjang valid out_seq_len[batch_idx][0].
-               c. Hilangkan duplikat berurutan via groupby (CTC collapse).
-               d. Konversi indeks gloss ke nama gloss via i2g_dict.
+            4. For each sample in the batch:
+               a. Take the best hypothesis (beam index 0).
+               b. Truncate according to valid length out_seq_len[batch_idx][0].
+               c. Remove consecutive duplicates via groupby (CTC collapse).
+               d. Convert gloss indices to gloss names via i2g_dict.
 
         Output:
-            - ret_list (list of list of tuple): satu list per sample.
-              Tiap tuple: (nama_gloss: str, posisi: int).
-              Posisi adalah indeks urutan dalam hasil decode (bukan frame index).
+            - ret_list (list of list of tuple): one list per sample in the batch.
+              Each tuple: (gloss_name: str, position: int).
+              Position is the sequential index in the decode result (not frame index).
         """
         if not probs:
-            # terapkan softmax agar output menjadi distribusi probabilitas valid
-            # pindahkan ke CPU karena CTCBeamDecoder tidak mendukung GPU tensor
+            # apply softmax to make output a valid probability distribution
+            # move to CPU because CTCBeamDecoder does not support GPU tensors
             nn_output = nn_output.softmax(-1).cpu()
 
-        # pindahkan panjang sequence ke CPU untuk konsistensi dengan nn_output
+        # move sequence lengths to CPU for consistency with nn_output
         vid_lgt = vid_lgt.cpu()
 
-        # jalankan beam search decoding
-        # beam_result : (B, N_beams, T)  — indeks gloss per hipotesis per frame
-        # beam_scores : (B, N_beams)     — log-prob tiap hipotesis (makin kecil makin baik)
-        # timesteps   : (B, N_beams)     — posisi frame tiap token
-        # out_seq_len : (B, N_beams)     — panjang valid tiap hipotesis
+        # run beam search decoding
+        # beam_result : (B, N_beams, T)  — gloss indices per hypothesis per frame
+        # beam_scores : (B, N_beams)     — log-prob of each hypothesis (smaller is better)
+        # timesteps   : (B, N_beams)     — frame position of each token
+        # out_seq_len : (B, N_beams)     — valid length of each hypothesis
         beam_result, beam_scores, timesteps, out_seq_len = self.ctc_decoder.decode(
             nn_output, vid_lgt
         )
 
-        # list untuk mengumpulkan hasil decode tiap sample
+        # list to collect decode results for each sample
         ret_list = []
         for batch_idx in range(len(nn_output)):
-            # ambil hipotesis terbaik (beam index 0) dan potong sampai panjang valid
+            # take best hypothesis (beam index 0) and truncate to valid length
             first_result = beam_result[batch_idx][0][:out_seq_len[batch_idx][0]]
 
             if len(first_result) != 0:
-                # hilangkan token duplikat berurutan menggunakan groupby
+                # remove consecutive duplicate tokens using groupby
                 # (CTC collapse: "A A B B A" → "A B A")
-                # x[0] mengambil nilai unik pertama dari tiap grup
+                # x[0] takes the first unique value from each group
                 first_result = torch.stack([x[0] for x in groupby(first_result)])
 
-            # konversi indeks integer ke nama gloss dan buat list tuple (gloss, posisi)
+            # convert integer indices to gloss names and create list of (gloss, position) tuples
             ret_list.append([
                 (self.i2g_dict[int(gloss_id)], idx)
                 for idx, gloss_id in enumerate(first_result)
@@ -177,64 +174,64 @@ class Decode(object):
 
     def MaxDecode(self, nn_output, vid_lgt):
         """
-        Deskripsi:
-            Melakukan greedy CTC decoding dengan mengambil argmax per frame,
-            lalu menerapkan CTC collapsing rules: hapus duplikat berurutan
-            dan hapus token blank.
+        Performs greedy CTC decoding by taking argmax per frame,
+        then applies CTC collapsing rules: remove consecutive duplicates
+        and remove blank tokens.
 
         Input:
-            - nn_output (Tensor, B×T×N): output logit jaringan (belum softmax).
-              Softmax tidak diperlukan karena argmax tidak terpengaruh oleh monotonic
-              transformation — posisi maksimum sama sebelum dan sesudah softmax.
-            - vid_lgt   (Tensor, B)    : panjang valid tiap sequence dalam batch.
+            - nn_output (Tensor, B×T×N): network output logits (pre-softmax).
+              Softmax is not required because argmax is not affected by monotonic
+              transformation — maximum position is the same before and after softmax.
+            - vid_lgt   (Tensor, B)    : valid length for each sequence in the batch.
 
-        Proses:
-            1. Ambil argmax pada dim 2 (per frame) → index_list (B, T).
-            2. Untuk tiap sample dalam batch:
-               a. Potong sequence sesuai panjang valid vid_lgt[batch_idx].
-               b. Hapus duplikat berurutan via groupby (CTC collapse step 1).
-               c. Filter token blank (CTC collapse step 2).
+        Process:
+            1. Take argmax on dim 2 (per frame) → index_list (B, T).
+            2. For each sample in the batch:
+               a. Truncate sequence to valid length vid_lgt[batch_idx].
+               b. Remove consecutive duplicates via groupby (CTC collapse step 1).
+               c. Filter out blank tokens (CTC collapse step 2).
                d. Jika masih ada token tersisa, hapus duplikat sekali lagi
-                  setelah filtering (groupby kedua).
-               e. Konversi indeks ke nama gloss via i2g_dict.
+                  after filtering (second groupby).
+               e. Convert indices to gloss names via i2g_dict.
 
         Output:
-            - ret_list (list of list of tuple): satu list per sample.
-              Tiap tuple: (nama_gloss: str, posisi: int).
+            - ret_list (list of list of tuple): one list per sample.
+              Each tuple: (gloss_name: str, position: int).
         """
-        # ambil indeks kelas dengan probabilitas tertinggi untuk setiap frame
-        # axis=2 karena format (B, T, N): N adalah dimensi kelas
+        # take the index of the class with the highest probability for each frame
+        # axis=2 because the format is (B, T, N): N is the class dimension
         index_list = torch.argmax(nn_output, axis=2)
 
-        # ambil ukuran batch dan panjang sequence maksimum
+        # get batch size and maximum sequence length
         batchsize, lgt = index_list.shape
 
-        # list untuk mengumpulkan hasil decode tiap sample
+        # list to collect decode results for each sample
         ret_list = []
         for batch_idx in range(batchsize):
-            # potong sequence sesuai panjang valid sample ini (buang padding)
-            # lalu hapus duplikat berurutan: "A A B B A" → "A B A" (CTC step 1)
+            # truncate sequence to valid length for this sample (remove padding)
+            # then remove consecutive duplicates: "A A B B A" → "A B A" (CTC step 1)
             group_result = [
                 x[0] for x in groupby(index_list[batch_idx][:vid_lgt[batch_idx]])
             ]
 
-            # hapus semua token blank dari hasil collapse (CTC step 2)
+            # remove all blank tokens from the collapsed result (CTC collapse step 2)
             filtered = [*filter(lambda x: x != self.blank_id, group_result)]
 
             if len(filtered) > 0:
-                # stack list tensor menjadi satu tensor untuk operasi berikutnya
+                # stack list of tensors into a single tensor for the next operation
                 max_result = torch.stack(filtered)
-                # groupby kedua: setelah blank dihapus, mungkin muncul duplikat
-                # baru yang tadinya dipisahkan blank, mis. "A blank A" → setelah
-                # hapus blank jadi "A A" → collapse lagi → "A"
+                # second groupby: after removing blanks, new duplicates may appear
+                # that were previously separated by blanks, e.g., "A blank A" →
+                # after removing blanks becomes "A A" → collapse again → "A"
                 max_result = [x[0] for x in groupby(max_result)]
             else:
-                # tidak ada token selain blank → hasil kosong
+                # no tokens other than blank → empty result
                 max_result = filtered
 
-            # konversi indeks integer ke nama gloss dan buat list tuple (gloss, posisi)
+            # convert integer indices to gloss names and create list of (gloss, position) tuples
             ret_list.append([
                 (self.i2g_dict[int(gloss_id)], idx)
                 for idx, gloss_id in enumerate(max_result)
             ])
+        # Return list of list of tuple
         return ret_list

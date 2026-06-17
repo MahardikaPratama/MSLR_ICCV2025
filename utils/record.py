@@ -5,18 +5,12 @@ from tqdm import tqdm
 
 class Recorder(object):
     def __init__(self, work_dir, print_log, log_interval):
-        """Menyiapkan utilitas untuk logging dan pencatatan waktu proses.
-
-        Input:
-        1. work_dir: folder tujuan untuk file log.
-        2. print_log: penanda apakah log juga disimpan ke file.
-        3. log_interval: interval pencatatan log waktu, dipakai oleh pemanggil eksternal.
-
-        Proses:
-        1. Menyimpan waktu awal sebagai referensi pengukuran durasi.
-        2. Menyimpan flag logging dan interval logging.
-        3. Menentukan path file log.
-        4. Menyiapkan dictionary timer untuk beberapa tahap proses.
+        """Initialize the recorder object.
+        
+        Args:
+            work_dir (str): The directory where the log file will be saved.
+            print_log (bool): Whether to print the log to the console.
+            log_interval (int): The interval at which to print the log.
         """
         self.cur_time = time.time()
         self.print_log_flag = print_log
@@ -25,28 +19,24 @@ class Recorder(object):
         self.timer = dict(dataloader=0.001, device=0.001, forward=0.001, backward=0.001)
 
     def print_time(self):
-        """Mencetak waktu lokal saat ini ke log.
-
-        Proses:
-        1. Mengambil waktu lokal sistem.
-        2. Menulisnya melalui print_log().
+        """Print the current local time to the log.
+        
+        Args:
+            str (str): The message to be printed.
+            path (str): The path to the log file.
+            print_time (bool): Whether to print the time.
         """
         localtime = time.asctime(time.localtime(time.time()))
         self.print_log("Local current time :  " + localtime)
 
     def print_log(self, str, path=None, print_time=True):
-        """Menulis pesan log ke terminal dan, bila aktif, ke file log.
+        """
+        Print the log message to the console and, if enabled, to a log file.
 
-        Input:
-        1. str: pesan yang akan ditulis.
-        2. path: path file tujuan. Jika None, memakai log_path bawaan.
-        3. print_time: jika True, menambahkan timestamp di awal pesan.
-
-        Proses:
-        1. Menentukan path log tujuan.
-        2. Menambahkan timestamp jika diminta.
-        3. Mencetak pesan menggunakan tqdm.write() agar aman di progress bar.
-        4. Menyimpan pesan ke file jika print_log_flag aktif.
+        Args:
+            str (str): The message to be printed.
+            path (str): The path to the log file.
+            print_time (bool): Whether to print the time.
         """
         if path is None:
             path = self.log_path
@@ -60,56 +50,68 @@ class Recorder(object):
                 f.writelines("\n")
 
     def record_time(self):
-        """Menyimpan timestamp saat ini sebagai acuan pengukuran durasi.
+        """
+        Save the current timestamp as a reference for duration measurement.
 
-        Output:
-        1. Nilai waktu saat ini dalam detik.
+        Returns:
+            float: The current time in seconds.
         """
         self.cur_time = time.time()
         return self.cur_time
 
     def split_time(self):
-        """Menghitung selisih waktu sejak record_time() terakhir dipanggil.
+        """Calculate the elapsed time since the last call to record_time().
 
-        Proses:
-        1. Menghitung waktu yang telah berlalu dari cur_time.
-        2. Memperbarui cur_time ke waktu sekarang.
-
-        Output:
-        1. Durasi sejak pengukuran terakhir.
+        Process:
+        1. Calculate the time that has passed since cur_time.
+        2. Update cur_time to the current time.
         """
         split_time = time.time() - self.cur_time
         self.record_time()
         return split_time
 
     def timer_reset(self):
-        """Mereset seluruh pencacah waktu ke nilai awal.
+        """
+        Reset all time counters to their initial values.
+        """
+        self.cur_time = time.time()
+        self.timer = dict(dataloader=0.001, device=0.001, forward=0.001, backward=0.001)
 
-        Proses:
-        1. Mengatur ulang cur_time ke waktu sekarang.
-        2. Mengembalikan semua komponen timer ke nilai awal kecil.
+    def split_time(self):
+        """
+        Calculate the elapsed time since the last call to record_time().
+        """
+        split_time = time.time() - self.cur_time
+        self.record_time()
+        return split_time
+
+    def timer_reset(self):
+        """
+        Reset all time counters to their initial values.
         """
         self.cur_time = time.time()
         self.timer = dict(dataloader=0.001, device=0.001, forward=0.001, backward=0.001)
 
     def record_timer(self, key):
-        """Menambahkan durasi interval terakhir ke kategori timer tertentu.
+        """
+        Add the duration of the last interval to a specific timer category.
 
-        Input:
-        1. key: nama kategori timer, misalnya dataloader, device, forward, atau backward.
+        Args:
+            key (str): Name of the timer category, e.g., dataloader, device, forward, or backward.
 
-        Proses:
-        1. Menghitung durasi sejak record terakhir.
-        2. Menambahkan durasi itu ke timer[key].
+        Process:
+        1. Calculate the duration since the last record.
+        2. Add the duration to timer[key].
         """
         self.timer[key] += self.split_time()
 
     def print_time_statistics(self):
-        """Mencetak persentase penggunaan waktu untuk setiap tahap proses.
+        """
+        Print the percentage of time used for each process stage.
 
-        Proses:
-        1. Menghitung proporsi waktu tiap kategori terhadap total waktu.
-        2. Menulis ringkasan distribusi waktu ke log.
+        Process:
+        1. Calculate the proportion of time for each category relative to the total time.
+        2. Write a summary of the time distribution to the log.
         """
         proportion = {
             k: '{:02d}%'.format(int(round(v * 100 / sum(self.timer.values()))))

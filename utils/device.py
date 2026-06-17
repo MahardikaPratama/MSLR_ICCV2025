@@ -6,27 +6,18 @@ import torch.nn as nn
 
 class GpuDataParallel(object):
     def __init__(self):
-        """Menyiapkan konteiner informasi device yang akan dipakai program.
-
-        Proses:
-        1. Menginisialisasi daftar GPU yang dipakai.
-        2. Menginisialisasi output_device yang akan menjadi target utama pemindahan data dan model.
+        """
+        Prepare containers for device information to be used by the program.
         """
         self.gpu_list = []
         self.output_device = None
 
     def set_device(self, device):
-        """Menentukan GPU yang dipakai program dari string konfigurasi device.
-
-        Input:
-        1. device: string berisi id GPU, misalnya '0' atau '0,1'.
-
-        Proses:
-        1. Mengubah input menjadi string.
-        2. Jika device tidak bernilai 'None', menyusun daftar GPU aktif.
-        3. Mengatur CUDA_VISIBLE_DEVICES sesuai konfigurasi.
-        4. Memanggil occupy_gpu() agar GPU terlihat terpakai oleh proses ini.
-        5. Menetapkan output_device sebagai GPU pertama atau cpu jika tidak ada GPU.
+        """
+        Set the GPU used by the program from the device configuration string.
+        
+        Args:
+            device (str): String containing the GPU ID, e.g., '0' or '0,1'.
         """
         device = str(device)
         if device != 'None':
@@ -37,14 +28,14 @@ class GpuDataParallel(object):
         self.output_device = output_device if len(self.gpu_list) > 0 else "cpu"
 
     def model_to_device(self, model):
-        """Memindahkan model ke device utama dan membungkusnya dengan DataParallel bila perlu.
+        """
+        Move the model to the main device and wrap it with DataParallel if necessary.
 
-        Proses:
-        1. Memindahkan model ke output_device.
-        2. Jika lebih dari satu GPU tersedia, membungkus model dengan nn.DataParallel.
+        Args:
+            model (torch.nn.Module): The model to be moved to the device.
 
-        Output:
-        1. Model yang sudah siap dipakai di device target.
+        Returns:
+            torch.nn.Module: The model that has been moved to the device.
         """
         model = model.to(self.output_device)
         if len(self.gpu_list) > 1:
@@ -55,15 +46,14 @@ class GpuDataParallel(object):
         return model
 
     def data_to_device(self, data):
-        """Memindahkan tensor data ke device target dengan menyesuaikan tipe datanya.
+        """
+        Move tensor data to the target device by adjusting its data type.
 
-        Proses:
-        1. Memeriksa tipe tensor input.
-        2. Memindahkan FloatTensor, DoubleTensor, ByteTensor, dan LongTensor ke output_device.
-        3. Jika input berupa list atau tuple, memproses setiap elemen secara rekursif.
+        Args:
+            data (torch.Tensor): The tensor data to be moved to the device.
 
-        Output:
-        1. Data yang sudah berada di device yang benar.
+        Returns:
+            torch.Tensor: The tensor data that has been moved to the device.
         """
         if isinstance(data, torch.FloatTensor):
             return data.to(self.output_device)
@@ -79,15 +69,14 @@ class GpuDataParallel(object):
             raise ValueError(data.shape, "Unknown Dtype: {}".format(data.dtype))
     
     def dict_data_to_device(self, data_dict):
-        """Memindahkan isi dictionary data ke device target secara selektif.
+        """
+        Move the contents of the data dictionary to the target device selectively.
 
-        Proses:
-        1. Membuat dictionary baru untuk data yang sudah dipindahkan.
-        2. Membiarkan key yang mengandung 'origin' atau 'datasets' tetap apa adanya.
-        3. Memindahkan nilai lain ke device target menggunakan data_to_device().
+        Args:
+            data_dict (dict): The data dictionary to be moved to the device.
 
-        Output:
-        1. Dictionary baru dengan tensor yang sudah dipindahkan ke device.
+        Returns:
+            dict: The data dictionary with its contents moved to the device.
         """
         cuda_dict = {}
         for k, v in data_dict.items():
@@ -98,25 +87,27 @@ class GpuDataParallel(object):
         return cuda_dict
 
     def criterion_to_device(self, loss):
-        """Memindahkan objek loss atau criterion ke device target.
+        """
+        Move the loss or criterion object to the target device.
 
-        Input:
-        1. loss: objek loss/criterion yang mendukung method to().
+        Args:
+            loss (torch.nn.Module): The loss or criterion object to be moved to the device.
 
-        Output:
-        1. Loss yang sudah dipindahkan ke output_device.
+        Returns:
+            torch.nn.Module: The loss or criterion object that has been moved to the device.
         """
         return loss.to(self.output_device)
 
     def occupy_gpu(self, gpus=None):
-        """Membuat GPU terlihat aktif di nvidia-smi dengan alokasi tensor kecil.
+        """
+        Make the GPU appear active in nvidia-smi by allocating a small tensor.
 
-        Input:
-        1. gpus: daftar GPU atau satu indeks GPU yang ingin ditempati.
+        Args:
+            gpus (list or int): List of GPUs or a single GPU index to occupy.
 
-        Proses:
-        1. Jika gpus kosong, mengalokasikan tensor kecil di CUDA default.
-        2. Jika gpus berisi indeks GPU, membuat tensor kecil pada setiap GPU tersebut.
+        Process:
+        1. If gpus is empty, allocate a small tensor on the default CUDA.
+        2. If gpus contains GPU indices, create a small tensor on each of these GPUs.
         """
         if len(gpus) == 0:
             torch.zeros(1).cuda()
