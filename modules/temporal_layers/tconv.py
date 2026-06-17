@@ -7,37 +7,16 @@ import torch.nn.functional as F
 
 class TemporalConv(nn.Module):
     """
-    TemporalConv
+    1D temporal convolution module to process per-frame features.
 
-    Deskripsi:
-        Modul konvolusi temporal 1D yang memproses fitur per-frame menjadi
-        representasi temporal yang lebih ringkas. Digunakan sebagai jembatan
-        antara ekstraktor fitur visual (CoSign2s) dan modul sequence modeling
-        (BiLSTM-CTC) dengan cara mengurangi panjang sequence dan mengekstrak
-        pola temporal lokal.
-
-        Arsitektur dibangun secara dinamis dari string `conv_type` yang
-        mendefinisikan urutan layer dalam format 'K{kernel}-P{pool}-K{kernel}-...',
-        di mana:
-            'K{n}' → Conv1d dengan kernel size n, diikuti BatchNorm1d dan ReLU.
-            'P{n}' → MaxPool1d dengan kernel size n (mengurangi panjang sequence).
-
-    Input (constructor):
-        - input_size  (int) : dimensi fitur input per frame (channel masuk Conv1d).
-        - hidden_size (int) : dimensi fitur output per frame (channel keluar Conv1d).
-        - conv_type   (str) : string konfigurasi layer, mis. 'K5-P2-K5' artinya
-          Conv1d kernel-5, MaxPool1d stride-2, Conv1d kernel-5.
-
-    Proses:
-        - Parse conv_type menjadi list token kernel/pool.
-        - Bangun nn.Sequential dari token tersebut secara dinamis.
-        - update_lgt menghitung ulang panjang sequence setelah pooling.
-
-    Output (forward):
-        - dict dengan dua kunci:
-            'visual_feat' (Tensor, T×B×C): fitur temporal dalam format time-first
-                                            siap masuk BiLSTM.
-            'feat_len'    (Tensor, B)     : panjang valid tiap sample setelah pooling.
+    Parameters
+    ----------
+    input_size : int
+        Input feature dimension per frame.
+    hidden_size : int
+        Output feature dimension per frame.
+    conv_type : str or int, optional
+        Layer configuration string (e.g., 'K5-P2-K5'). Default is 2.
     """
 
     def __init__(self, input_size, hidden_size, conv_type=2):
@@ -92,26 +71,17 @@ class TemporalConv(nn.Module):
 
     def update_lgt(self, lgt):
         """
-        Deskripsi:
-            Menghitung ulang panjang sequence yang valid setelah operasi pooling.
-            Hanya token 'P' yang mengubah panjang sequence; token 'K' dengan
-            same padding tidak mengubah panjang.
+        Recalculate valid sequence lengths after pooling operations.
 
-        Input:
-            - lgt (Tensor, B): panjang valid tiap sample sebelum pooling,
-              dalam satuan jumlah frame.
+        Parameters
+        ----------
+        lgt : Tensor
+            Valid sequence lengths before pooling, shape (B,).
 
-        Proses:
-            - Deep copy lgt agar tidak memodifikasi tensor asli.
-            - Iterasi tiap token di kernel_size; jika token 'P{n}',
-              bagi feat_len dengan n menggunakan integer division.
-            - Operasi ini mencerminkan perilaku MaxPool1d dengan ceil_mode=False:
-              frame sisa yang tidak cukup satu window dibuang (floor division).
-
-        Output:
-            - feat_len (Tensor, B, dtype long): panjang valid yang sudah
-              disesuaikan dengan downsampling pooling, siap dipakai CTC loss
-              dan decoder.
+        Returns
+        -------
+        Tensor
+            Adjusted sequence lengths after pooling, shape (B,).
         """
         # deep copy untuk menghindari modifikasi in-place pada tensor lgt asli
         feat_len = copy.deepcopy(lgt)
@@ -127,30 +97,19 @@ class TemporalConv(nn.Module):
 
     def forward(self, frame_feat, lgt):
         """
-        Deskripsi:
-            Forward pass TemporalConv. Memproses fitur frame melalui semua layer
-            konvolusi dan pooling, lalu menghitung ulang panjang sequence yang valid.
+        Forward pass for processing frame features through convolutions and pooling.
 
-        Input:
-            - frame_feat (Tensor, B×C×T): fitur per-frame dalam format batch-first
-              dengan channel di dim 1, sesuai konvensi Conv1d PyTorch.
-            - lgt        (Tensor, B)    : panjang valid tiap sample sebelum conv,
-              dalam satuan jumlah frame.
+        Parameters
+        ----------
+        frame_feat : Tensor
+            Per-frame features in batch-first format, shape (B, C, T).
+        lgt : Tensor
+            Valid sequence lengths before convolution, shape (B,).
 
-        Proses:
-            1. Jalankan frame_feat melalui self.temporal_conv (semua layer K dan P).
-               Output shape: (B, hidden_size, T') di mana T' ≤ T akibat pooling.
-            2. Hitung feat_len baru via update_lgt untuk mencerminkan downsampling.
-            3. Permutasi visual_feat dari (B, C, T') ke (T', B, C) karena BiLSTM
-               mengharapkan format time-first (sequence length di dim 0).
-
-        Output:
-            - dict dengan dua kunci:
-                'visual_feat' (Tensor, T'×B×hidden_size): fitur temporal format
-                    time-first siap dimasukkan ke nn.LSTM atau nn.GRU.
-                'feat_len'    (Tensor, B, di CPU)        : panjang valid setelah
-                    pooling, dipindahkan ke CPU karena CTC loss membutuhkannya
-                    di CPU.
+        Returns
+        -------
+        dict
+            Contains 'visual_feat' tensor of shape (T', B, hidden_size) and 'feat_len' tensor on CPU.
         """
         # jalankan seluruh pipeline conv/pool pada fitur frame
         visual_feat = self.temporal_conv(frame_feat)

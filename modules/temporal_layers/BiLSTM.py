@@ -5,37 +5,26 @@ import torch.nn.functional as F
 
 class BiLSTMLayer(nn.Module):
     """
-    BiLSTMLayer
+    Bidirectional RNN (LSTM/GRU) layer handling variable-length sequences via packed padding.
 
-    Deskripsi:
-        Wrapper modul RNN (LSTM atau GRU) bidirectional yang menangani
-        variable-length sequence via packed padding. Digunakan sebagai
-        sequence modeling layer setelah TemporalConv untuk memodelkan
-        dependensi temporal jangka panjang antar frame sebelum klasifikasi CTC.
-
-        Mendukung konfigurasi fleksibel: jumlah layer, dropout, bidirectional
-        atau unidirectional, dan pilihan tipe RNN (LSTM/GRU).
-
-    Input (constructor):
-        - input_size   (int)  : dimensi fitur input per timestep (dari TemporalConv).
-        - debug        (bool) : flag debug, tidak dipakai langsung di forward.
-        - hidden_size  (int)  : total dimensi hidden state output. Jika bidirectional,
-          dibagi dua secara internal agar output tetap hidden_size setelah concat.
-        - num_layers   (int)  : jumlah layer RNN yang ditumpuk.
-        - dropout      (float): probabilitas dropout antar layer RNN (dinonaktifkan
-          otomatis jika num_layers==1 karena dropout tidak berlaku pada layer tunggal).
-        - bidirectional(bool) : True untuk BiLSTM/BiGRU, False untuk unidirectional.
-        - rnn_type     (str)  : tipe RNN, 'LSTM' atau 'GRU'.
-        - num_classes  (int)  : tidak dipakai di kelas ini (placeholder untuk
-          kompatibilitas interface pipeline).
-
-    Output (forward):
-        - dict dengan dua kunci:
-            'predictions' (Tensor, T×B×hidden_size): output per-timestep siap
-                                                      masuk classifier CTC.
-            'hidden'      (Tensor, num_layers×B×hidden_size): hidden state akhir
-                          setelah forward pass, dengan forward dan backward
-                          direction sudah dikoncatenasi per layer.
+    Parameters
+    ----------
+    input_size : int
+        Input feature dimension per timestep.
+    debug : bool, optional
+        Debug flag, unused in forward. Default is False.
+    hidden_size : int, optional
+        Total hidden state output dimension. Default is 512.
+    num_layers : int, optional
+        Number of stacked RNN layers. Default is 1.
+    dropout : float, optional
+        Dropout probability between RNN layers. Default is 0.3.
+    bidirectional : bool, optional
+        Whether to use BiLSTM/BiGRU. Default is True.
+    rnn_type : str, optional
+        Type of RNN, 'LSTM' or 'GRU'. Default is 'LSTM'.
+    num_classes : int, optional
+        Unused placeholder for pipeline compatibility. Default is -1.
     """
 
     def __init__(self, input_size, debug=False, hidden_size=512, num_layers=1, dropout=0.3,
@@ -86,42 +75,21 @@ class BiLSTMLayer(nn.Module):
 
     def forward(self, src_feats, src_lens, hidden=None):
         """
-        Deskripsi:
-            Forward pass BiLSTMLayer. Memproses sequence berpadding melalui RNN
-            menggunakan packed sequence untuk efisiensi komputasi, lalu
-            mengembalikan output per-timestep dan hidden state akhir.
+        Forward pass for processing padded sequences through RNN.
 
-        Input:
-            - src_feats (Tensor, T×B×D)  : fitur input dalam format time-first,
-              di mana T=panjang sequence maksimum, B=batch size, D=input_size.
-            - src_lens  (Tensor, B)       : panjang valid tiap sequence dalam batch
-              (tanpa padding), diperlukan oleh pack_padded_sequence.
-            - hidden    (Tensor|None)     : hidden state awal opsional.
-              Jika None, RNN menggunakan zero initialization.
-              Jika LSTM dan hidden diberikan, diasumsikan format
-              (num_layers*num_directions*2, B, hidden_size) yang perlu dipisah.
+        Parameters
+        ----------
+        src_feats : Tensor
+            Input features in time-first format, shape (T, B, D).
+        src_lens : Tensor
+            Valid sequence lengths for each sample in the batch, shape (B,).
+        hidden : Tensor or tuple, optional
+            Initial hidden state. Default is None.
 
-        Proses:
-            1. flatten_parameters(): defragmentasi parameter RNN di memori GPU
-               untuk efisiensi CUDNN.
-            2. pack_padded_sequence: kompres sequence berpadding agar RNN tidak
-               memproses frame padding — lebih efisien dan akurat secara gradien.
-            3. Jika hidden diberikan untuk LSTM: pisah menjadi tuple (h, c)
-               karena LSTM butuh dua state terpisah.
-            4. Jalankan RNN → packed_outputs dan hidden state akhir.
-            5. pad_packed_sequence: kembalikan ke format tensor berpadding.
-            6. Jika bidirectional: gabungkan hidden forward dan backward per layer
-               via _cat_directions.
-            7. Jika LSTM: concat hidden state (h) dan cell state (c) menjadi
-               satu tensor untuk kemudahan passing ke modul berikutnya.
-
-        Output:
-            - dict dengan dua kunci:
-                'predictions' (Tensor, T×B×hidden_size*num_directions):
-                    output RNN per timestep, siap masuk linear classifier CTC.
-                'hidden'      (Tensor, num_layers*(1 atau 2)×B×hidden_size):
-                    hidden state akhir; untuk LSTM berisi concat h dan c
-                    sehingga dim 0 = num_layers * 2.
+        Returns
+        -------
+        dict
+            Contains 'predictions' tensor of shape (T, B, hidden_size) and 'hidden' state tensor.
         """
         # defragmentasi parameter RNN di memori untuk performa CUDNN optimal
         # wajib dipanggil sebelum forward jika menggunakan DataParallel
@@ -168,39 +136,17 @@ class BiLSTMLayer(nn.Module):
 
     def _cat_directions(self, hidden):
         """
-        Deskripsi:
-            Mengubah hidden state bidirectional RNN dari format per-direction
-            menjadi format per-layer dengan forward dan backward direction
-            terkoncatenasi pada dimensi hidden.
+        Concatenate forward and backward hidden states for bidirectional RNN.
 
-            Transformasi ini diperlukan agar hidden state dapat dipakai sebagai
-            inisialisasi decoder atau diteruskan ke layer berikutnya dengan
-            dimensi yang konsisten.
+        Parameters
+        ----------
+        hidden : Tensor or tuple of Tensor
+            Input hidden state of shape (num_layers * num_directions, B, hidden_size).
 
-        Input:
-            - hidden (Tensor atau tuple of Tensor):
-              Format masuk: (num_layers * num_directions, B, hidden_size)
-              Untuk LSTM: tuple (h_n, c_n) masing-masing dengan shape di atas.
-              Untuk GRU : tensor tunggal dengan shape di atas.
-
-              Contoh untuk num_layers=2, num_directions=2 (dim 0 berisi):
-                index 0: forward  layer 1
-                index 1: backward layer 1
-                index 2: forward  layer 2
-                index 3: backward layer 2
-
-        Proses:
-            - Fungsi _cat(h) mengambil semua even index (forward: 0,2,4,...)
-              dan odd index (backward: 1,3,5,...) lalu mengkonkatenasi pada dim 2.
-            - Untuk LSTM: terapkan _cat pada h_n dan c_n secara terpisah.
-            - Untuk GRU : terapkan _cat langsung pada hidden tensor.
-
-        Output:
-            - hidden (Tensor atau tuple of Tensor):
-              Format keluar: (num_layers, B, hidden_size * num_directions)
-              Contoh untuk num_layers=2:
-                index 0: concat(forward layer 1, backward layer 1)
-                index 1: concat(forward layer 2, backward layer 2)
+        Returns
+        -------
+        Tensor or tuple of Tensor
+            Concatenated hidden state of shape (num_layers, B, hidden_size * num_directions).
         """
         def _cat(h):
             # ambil semua even index (forward directions: 0, 2, 4, ...)

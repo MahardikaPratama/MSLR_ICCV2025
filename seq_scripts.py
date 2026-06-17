@@ -1,9 +1,10 @@
 
-"""Fungsi training dan evaluasi sequence untuk pipeline CSLR.
+"""
+Training and evaluation sequence functions for CSLR pipeline.
 
-File ini berisi helper utama untuk menjalankan satu epoch training,
-melakukan evaluasi pada split validasi/test, serta menulis hasil prediksi
-ke file CTM yang dipakai oleh evaluator eksternal.
+This file contains the main helpers to run a single training epoch,
+perform evaluation on the validation/test split, and write prediction
+results to a CTM file used by an external evaluator.
 """
 
 # Import berbagai library yang dibutuhkan untuk training, evaluasi, dan utilitas
@@ -23,27 +24,28 @@ from evaluation.slr_eval.wer_calculation import evaluate
 
 
 def seq_train(loader, model, optimizer, device, epoch_idx, recoder):
-    """Menjalankan training untuk satu epoch penuh.
+    """
+    Run training for one full epoch.
 
-    Input:
-    1. loader: DataLoader untuk data training.
-    2. model: model yang akan dilatih.
-    3. optimizer: wrapper optimizer beserta scheduler.
-    4. device: utilitas untuk memindahkan data ke device aktif.
-    5. epoch_idx: indeks epoch saat ini.
-    6. recoder: objek logger untuk mencatat progres training.
+    Parameters
+    ----------
+    loader : torch.utils.data.DataLoader
+        DataLoader for training data.
+    model : torch.nn.Module
+        Model to be trained.
+    optimizer : utils.Optimizer
+        Optimizer wrapper including the scheduler.
+    device : utils.GpuDataParallel
+        Utility to move data to the active device.
+    epoch_idx : int
+        Current epoch index.
+    recoder : utils.Recorder
+        Logger object to record training progress.
 
-    Proses:
-    1. Mengubah model ke mode training.
-    2. Mengambil batch satu per satu dari loader.
-    3. Memindahkan batch ke device.
-    4. Melakukan forward pass dan menghitung loss.
-    5. Mengabaikan batch yang menghasilkan NaN atau inf.
-    6. Melakukan backward pass, clipping gradien, dan update optimizer.
-    7. Mencatat loss per batch dan rata-rata loss epoch.
-
-    Output:
-    1. List nilai loss untuk semua batch yang valid.
+    Returns
+    -------
+    list
+        List of loss values for all valid batches.
     """
     model.train()  # Set model ke mode training
     loss_value = []  # List untuk menyimpan nilai loss tiap batch
@@ -89,30 +91,36 @@ def seq_train(loader, model, optimizer, device, epoch_idx, recoder):
 def seq_eval(
     cfg, loader, model, device, mode, epoch, work_dir, recoder, task, evaluate_tool="python"
 ):
-    """Menjalankan evaluasi model pada split tertentu.
+    """
+    Run model evaluation on a specific split.
 
-    Input:
-    1. cfg: objek konfigurasi utama yang memuat info dataset.
-    2. loader: DataLoader untuk split yang dievaluasi.
-    3. model: model yang akan dievaluasi.
-    4. device: utilitas pemindahan data ke device aktif.
-    5. mode: nama split, misalnya train, dev, atau test.
-    6. epoch: penanda epoch untuk logging hasil.
-    7. work_dir: folder kerja untuk menyimpan output evaluasi.
-    8. recoder: objek logger.
-    9. task: nama task atau suffix dataset.
-    10. evaluate_tool: nama evaluator, python atau eksternal.
+    Parameters
+    ----------
+    cfg : argparse.Namespace
+        Main configuration object containing dataset info.
+    loader : torch.utils.data.DataLoader
+        DataLoader for the evaluated split.
+    model : torch.nn.Module
+        Model to be evaluated.
+    device : utils.GpuDataParallel
+        Utility to move data to the active device.
+    mode : str
+        Split name, e.g., train, dev, or test.
+    epoch : int
+        Epoch indicator for result logging.
+    work_dir : str
+        Working directory to save evaluation output.
+    recoder : utils.Recorder
+        Logger object.
+    task : str
+        Task name or dataset suffix.
+    evaluate_tool : str
+        Evaluator name, either python or external.
 
-    Proses:
-    1. Mengubah model ke mode evaluasi.
-    2. Mengiterasi seluruh batch tanpa gradien.
-    3. Mencatat waktu inferensi dan jumlah frame/sequence.
-    4. Mengumpulkan prediksi hasil decoding.
-    5. Menulis file CTM dan CSV hasil prediksi.
-    6. Menjalankan evaluator untuk menghitung WER.
-
-    Output:
-    1. Nilai WER terbaik dari dua jalur prediksi yang dievaluasi.
+    Returns
+    -------
+    float
+        The best WER value from the two evaluated prediction paths.
     """
     model.eval()  # Set model ke mode evaluasi
     total_info = []  # List untuk menyimpan info file
@@ -262,20 +270,17 @@ def seq_eval(
 
 
 def write2file(path, info, output):
-    """Menulis hasil prediksi ke file CTM.
+    """
+    Write prediction results to a CTM file.
 
-    Input:
-    1. path: path file output CTM.
-    2. info: daftar id sample atau nama file.
-    3. output: daftar hasil prediksi per sample.
-
-    Proses:
-    1. Membuka file output untuk ditulis.
-    2. Menulis setiap kata prediksi sebagai satu baris CTM.
-    3. Menggunakan waktu dummy karena format CTM membutuhkan start/end time.
-
-    Output:
-    1. File CTM berisi hasil prediksi yang siap dipakai evaluator.
+    Parameters
+    ----------
+    path : str
+        Output path for the CTM file.
+    info : list
+        List of sample IDs or file names.
+    output : list
+        List of prediction results per sample.
     """
     filereader = open(path, "w")  # Buka file untuk ditulis
     # Iterasi setiap sample (per video/sequence)

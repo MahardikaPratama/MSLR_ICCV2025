@@ -7,39 +7,19 @@ import copy
 
 class Graph:
     """
-    Graph
+    Representation of the skeleton graph yielding adjacency matrix `A`
+    based on topology `layout` and neighbor partition `strategy`.
 
-    Deskripsi:
-        Representasi graf skeleton yang menghasilkan adjacency matrix `A`
-        berdasarkan `layout` topologi dan `strategy` partisi tetangga.
-        Digunakan oleh ST-GCN untuk menentukan konektivitas antar joint
-        dan pembobotan lokal pada operasi graph convolution.
-
-        Tiga layout didukung:
-            - 'custom_hand21' : 21 keypoint tangan (MediaPipe Hands)
-            - 'custom_body'   : 25 keypoint tubuh (MediaPipe Pose)
-            - 'custom_mouth_8': 19 keypoint mulut (kontur ring tertutup)
-
-        Tiga strategi partisi adjacency didukung (mengikuti paper ST-GCN):
-            - 'uniform'  : semua tetangga satu subset, bobot sama
-            - 'distance' : dibagi per jarak hop (K subset = max_hop+1)
-            - 'spatial'  : dibagi root / centripetal / centrifugal
-
-    Input (constructor):
-        - layout   (str) : nama topologi skeleton yang digunakan.
-        - strategy (str) : strategi partisi adjacency matrix.
-        - max_hop  (int) : jarak hop maksimum tetangga yang dipertimbangkan.
-        - dilation (int) : spasi antar hop (untuk kompatibilitas kernel temporal).
-
-    Proses:
-        1. get_edge(layout)       → bangun self.edge dan self.num_node
-        2. get_hop_distance(...)  → hitung matriks jarak hop self.hop_dis
-        3. get_adjacency(strategy)→ bentuk dan normalisasi self.A
-
-    Output (atribut publik):
-        - self.A        : numpy array (K, V, V) adjacency matrix ternormalisasi.
-        - self.edge     : list pasangan (i, j) yang merepresentasikan edges.
-        - self.num_node : jumlah node/joint (V) pada layout.
+    Parameters
+    ----------
+    layout : str
+        Name of the skeleton topology ('custom_hand21', 'custom_body', 'custom_mouth_8').
+    strategy : str
+        Adjacency partition strategy ('uniform', 'distance', 'spatial').
+    max_hop : int
+        Maximum hop distance for neighbors.
+    dilation : int
+        Spacing between hops.
     """
 
     def __init__(self, layout='custom', strategy='uniform', max_hop=1, dilation=1):
@@ -62,27 +42,12 @@ class Graph:
 
     def get_edge(self, layout):
         """
-        Deskripsi:
-            Membangun topologi graf skeleton sesuai nama layout yang diberikan.
-            Mendefinisikan node (joint), edge (koneksi antar joint), dan
-            node pusat (center) yang dipakai oleh strategi partisi 'spatial'.
+        Build skeleton topology based on the given layout.
 
-        Input:
-            - layout (str): nama layout, salah satu dari
-                            ['custom_hand21', 'custom_left_hand', 'custom_right_hand',
-                             'custom_body', 'custom_mouth_8'].
-
-        Proses:
-            - Tentukan self.num_node sesuai jumlah keypoint layout.
-            - Buat self_link: list self-loop (i, i) untuk semua node.
-            - Buat neighbor_1base: list koneksi anatomis antar joint.
-            - Gabungkan keduanya menjadi self.edge.
-            - Tetapkan self.center sebagai indeks node pusat skeleton.
-
-        Output:
-            - self.num_node (int)       : jumlah node/joint.
-            - self.edge (list of tuple) : semua edge termasuk self-loop.
-            - self.center (int)         : indeks node pusat skeleton.
+        Parameters
+        ----------
+        layout : str
+            Layout name ('custom_hand21', 'custom_left_hand', 'custom_right_hand', 'custom_body', 'custom_mouth_8').
         """
 
         if layout in ('custom_hand21', 'custom_left_hand', 'custom_right_hand'):
@@ -190,32 +155,12 @@ class Graph:
 
     def get_adjacency(self, strategy):
         """
-        Deskripsi:
-            Membangun dan menyimpan adjacency matrix `self.A` dalam format
-            (K, V, V) sesuai strategi partisi yang dipilih. Mengikuti tiga
-            strategi partisi dari paper ST-GCN (Yan et al., 2018):
-                - 'uniform'  : K=1, semua tetangga satu subset
-                - 'distance' : K=max_hop+1, dipisah per jarak hop
-                - 'spatial'  : K=3 (untuk max_hop=1), dipisah berdasarkan
-                               posisi relatif terhadap pusat skeleton
+        Build and store adjacency matrix `self.A` according to the partition strategy.
 
-        Input:
-            - strategy (str): strategi partisi, salah satu dari
-              ['uniform', 'distance', 'spatial'].
-
-        Proses:
-            1. Tentukan valid_hop dari range(0, max_hop+1, dilation).
-            2. Bangun adjacency biner dari hop_dis lalu normalisasi.
-            3. Bergantung strategy:
-               - uniform  : satu matrix, semua hop digabung.
-               - distance : K matrix, tiap matrix untuk satu nilai hop.
-               - spatial  : tiap hop dipecah ke a_root/a_close/a_further
-                            berdasarkan jarak node ke self.center.
-            4. Stack semua matrix → self.A shape (K, V, V).
-
-        Output:
-            - self.A (numpy array, shape K×V×V): adjacency matrix
-              ternormalisasi siap dipakai oleh ST-GCN layer.
+        Parameters
+        ----------
+        strategy : str
+            Partition strategy ('uniform', 'distance', 'spatial').
         """
 
         # tentukan hop yang valid: [0, 1] untuk max_hop=1, dilation=1
@@ -299,29 +244,21 @@ class Graph:
 
 def get_hop_distance(num_node, edge, max_hop=1):
     """
-    Deskripsi:
-        Menghitung jarak hop minimum antar semua pasangan node pada graf
-        tak berarah. Digunakan oleh Graph.get_adjacency() untuk menentukan
-        subset tetangga sesuai strategi partisi.
+    Compute the minimum hop distance between all pairs of nodes.
 
-    Input:
-        - num_node (int)         : jumlah node (V) pada graf.
-        - edge (list of tuple)   : daftar pasangan (i, j) yang merepresentasikan
-                                   edges (termasuk self-loop).
-        - max_hop (int)          : jarak hop maksimum yang dihitung; node di
-                                   luar radius ini diberi nilai inf.
+    Parameters
+    ----------
+    num_node : int
+        Number of nodes in the graph.
+    edge : list
+        List of edge tuples (i, j).
+    max_hop : int
+        Maximum calculated hop distance.
 
-    Proses:
-        1. Bangun adjacency biner A dari daftar edge (dua arah).
-        2. Hitung matrix power A^d untuk d = 0..max_hop.
-        3. Konversi ke boolean arrive_mat: True jika ada path d-hop.
-        4. Loop dari max_hop turun ke 0, assign nilai d ke hop_dis
-           sehingga nilai terkecil (jarak terpendek) yang tersimpan.
-
-    Output:
-        - hop_dis (numpy array, shape V×V): matriks jarak hop minimum.
-          Nilai 0 = self-loop, 1 = tetangga langsung, inf = tidak terhubung
-          dalam radius max_hop.
+    Returns
+    -------
+    ndarray
+        Hop distance matrix with shape (num_node, num_node).
     """
 
     # inisialisasi adjacency biner V×V dengan semua nol
@@ -349,25 +286,17 @@ def get_hop_distance(num_node, edge, max_hop=1):
 
 def normalize_digraph(A):
     """
-    Deskripsi:
-        Menormalisasi adjacency matrix dengan pembagian per-kolom (degree
-        normalization) sehingga tiap kolom berjumlah 1 apabila memungkinkan.
-        Mengikuti konvensi normalisasi lokal yang digunakan paper ST-GCN
-        (Yan et al., 2018), sebagai penyederhanaan dari Λ^{-1/2}(A+I)Λ^{-1/2}.
+    Normalize the adjacency matrix using degree normalization (column-wise).
 
-    Input:
-        - A (numpy array, shape V×V): adjacency matrix biner atau berbobot.
+    Parameters
+    ----------
+    A : ndarray
+        Binary or weighted adjacency matrix with shape (V, V).
 
-    Proses:
-        1. Hitung degree tiap kolom: Dl = sum(A, axis=0), shape (V,).
-        2. Bangun matriks diagonal Dn dengan Dl[i]^{-1} pada diagonal;
-           lewati jika Dl[i] = 0 untuk mencegah pembagian dengan nol.
-        3. Kalikan A dengan Dn: AD = A @ Dn.
-           Efeknya: tiap kolom j dibagi dengan degree[j].
-
-    Output:
-        - AD (numpy array, shape V×V): adjacency matrix ternormalisasi
-          di mana kontribusi tiap node diskalakan oleh jumlah koneksinya.
+    Returns
+    -------
+    ndarray
+        Normalized adjacency matrix.
     """
 
     # hitung degree tiap kolom: berapa banyak edge masuk ke tiap node

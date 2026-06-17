@@ -9,8 +9,10 @@ class RandomState(object):
         """
         Initialize the random state.
 
-        Args:
-            seed (int): Seed value used for Torch, CUDA, NumPy, and random.
+        Parameters
+        ----------
+        seed : int
+            Seed value used for Torch, CUDA, NumPy, and random.
         """
         torch.set_num_threads(1)
         torch.backends.cudnn.deterministic = True
@@ -24,8 +26,10 @@ class RandomState(object):
         """
         Save the random state of Torch, CUDA, NumPy, and random.
 
-        Returns:
-            dict: Dictionary containing the random state of Torch, CUDA, NumPy, and random.
+        Returns
+        -------
+        dict
+            Dictionary containing the random states.
         """
         rng_dict = {}
         rng_dict["torch"] = torch.get_rng_state()
@@ -38,8 +42,10 @@ class RandomState(object):
         """
         Restore the random state that was previously saved.
 
-        Args:
-            rng_dict (dict): Dictionary containing the random state of Torch, CUDA, NumPy, and random.
+        Parameters
+        ----------
+        rng_dict : dict
+            Dictionary containing the random states.
         """
         rng_dict = {}
         rng_dict["torch"] = torch.get_rng_state()
@@ -52,8 +58,10 @@ class RandomState(object):
         """
         Restore the random state that was previously saved.
 
-        Args:
-            rng_dict (dict): Dictionary containing the random state of Torch, CUDA, NumPy, and random.
+        Parameters
+        ----------
+        rng_dict : dict
+            Dictionary containing the random states.
         """
         torch.set_rng_state(rng_dict["torch"])
         torch.cuda.set_rng_state_all(rng_dict["cuda"])

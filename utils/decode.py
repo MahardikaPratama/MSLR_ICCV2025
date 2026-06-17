@@ -9,34 +9,18 @@ import torch.nn.functional as F
 
 class Decode(object):
     """
-    Decode
+    Decode CTC network probability outputs into gloss sequences.
 
-    Description:
-        Decode class for converting CTC network probability outputs into readable gloss sequences.
-        Supports two decoding modes:
-            - 'max'  : greedy decoding via argmax per frame (fast, lower accuracy).
-            - 'beam' : beam search via CTCBeamDecoder (more accurate, slower).
-
-        Used after the CTC classification stage to produce gloss sequence predictions
-        from the BiLSTM-CTC output.
-
-    Input (constructor):
-        - gloss_dict  (dict) : dictionary with two subkeys:
-              'id2gloss'  → {str_id: {'gloss': gloss_name, ...}}
-              'gloss2id'  → {gloss_name: {'index': int_id, ...}}
-        - num_classes (int)  : number of gloss classes including the blank token.
-        - search_mode (str)  : decoding mode, 'max' or other (beam search).
-        - blank_id    (int)  : CTC blank token index (default 0).
-
-    Process:
-        - Build two-way lookup tables: id→gloss (i2g_dict) and gloss→id (g2i_dict).
-        - Initialize CTCBeamDecoder with a synthetic Unicode character vocabulary
-          (not actual characters, just index placeholders for the decoder).
-
-    Output (public attributes):
-        - self.i2g_dict    (dict int→str) : mapping integer indices to gloss names.
-        - self.g2i_dict    (dict str→int) : mapping gloss names to integer indices.
-        - self.ctc_decoder               : ready-to-use CTCBeamDecoder instance.
+    Parameters
+    ----------
+    gloss_dict : dict
+        Dictionary with 'id2gloss' and 'gloss2id' mappings.
+    num_classes : int
+        Number of gloss classes including blank token.
+    search_mode : str
+        Decoding mode ('max' or 'beam').
+    blank_id : int, optional
+        CTC blank token index. Default is 0.
     """
 
     def __init__(self, gloss_dict, num_classes, search_mode, blank_id=0):
@@ -75,25 +59,23 @@ class Decode(object):
 
     def decode(self, nn_output, vid_lgt, batch_first=True, probs=False):
         """
-        Entry point decoding. Receives network output and delegates
-        to MaxDecode or BeamSearch according to the configured search_mode.
-        Handles tensor permutation if format is not batch-first.
+        Entry point for decoding network output using MaxDecode or BeamSearch.
 
-        Args:
-            - nn_output  (Tensor, B×T×N atau T×B×N):
-                network output logits/probabilities.
-            - vid_lgt    (Tensor, B):
-                valid length (frame count) for each sample in the batch.
-            - batch_first(bool, default True):
-                True if dim 0 is batch.
-                If False (format T×B×N), tensor is permuted to B×T×N first.
-            - probs      (bool, default False):
-                True if nn_output already contains probabilities (post-softmax);
-                False if still logits (softmax will be applied internally).
+        Parameters
+        ----------
+        nn_output : Tensor
+            Network output logits or probabilities, shape (B, T, N) or (T, B, N).
+        vid_lgt : Tensor
+            Valid frame counts for each sample, shape (B,).
+        batch_first : bool, optional
+            Whether batch is the first dimension. Default is True.
+        probs : bool, optional
+            True if nn_output contains probabilities. Default is False.
 
-        Returns:
-            - ret_list (list of list of tuple): decode result per sample in the batch.
-              Each element is a list of (gloss_name, position) pairs.
+        Returns
+        -------
+        list of list of tuple
+            Decode results per sample, containing (gloss_name, position) pairs.
         """
         if not batch_first:
             # permute from (T, B, N) to (B, T, N) format required by decoder
@@ -108,33 +90,21 @@ class Decode(object):
 
     def BeamSearch(self, nn_output, vid_lgt, probs=False):
         """
-        Performs CTC beam search decoding using CTCBeamDecoder.
-        Maintains beam_width best hypotheses at each time step
-        and selects the hypothesis with the highest score as output.
+        Perform CTC beam search decoding using CTCBeamDecoder.
 
-        Input:
-            - nn_output (Tensor, B×T×N): network output in batch-first format.
-              Must be permuted before calling.
-            - vid_lgt   (Tensor, B)    : valid length for each sequence in the batch.
-            - probs     (bool)         : True if already probabilities (post-softmax);
-              False if still logits (will be softmaxed inside this function).
+        Parameters
+        ----------
+        nn_output : Tensor
+            Network output, shape (B, T, N).
+        vid_lgt : Tensor
+            Valid sequence lengths, shape (B,).
+        probs : bool, optional
+            True if nn_output is probabilities. Default is False.
 
-        Process:
-            1. If not yet probabilities: apply softmax on dim -1 (per-frame per-class)
-               then move to CPU (CTCBeamDecoder only runs on CPU).
-            2. Move vid_lgt to CPU.
-            3. Run CTCBeamDecoder.decode → beam_result, beam_scores,
-               timesteps, out_seq_len.
-            4. For each sample in the batch:
-               a. Take the best hypothesis (beam index 0).
-               b. Truncate according to valid length out_seq_len[batch_idx][0].
-               c. Remove consecutive duplicates via groupby (CTC collapse).
-               d. Convert gloss indices to gloss names via i2g_dict.
-
-        Output:
-            - ret_list (list of list of tuple): one list per sample in the batch.
-              Each tuple: (gloss_name: str, position: int).
-              Position is the sequential index in the decode result (not frame index).
+        Returns
+        -------
+        list of list of tuple
+            Decode results per sample, containing (gloss_name, position) pairs.
         """
         if not probs:
             # apply softmax to make output a valid probability distribution
@@ -174,29 +144,19 @@ class Decode(object):
 
     def MaxDecode(self, nn_output, vid_lgt):
         """
-        Performs greedy CTC decoding by taking argmax per frame,
-        then applies CTC collapsing rules: remove consecutive duplicates
-        and remove blank tokens.
+        Perform greedy CTC decoding by taking argmax per frame.
 
-        Input:
-            - nn_output (Tensor, B×T×N): network output logits (pre-softmax).
-              Softmax is not required because argmax is not affected by monotonic
-              transformation — maximum position is the same before and after softmax.
-            - vid_lgt   (Tensor, B)    : valid length for each sequence in the batch.
+        Parameters
+        ----------
+        nn_output : Tensor
+            Network output logits, shape (B, T, N).
+        vid_lgt : Tensor
+            Valid sequence lengths, shape (B,).
 
-        Process:
-            1. Take argmax on dim 2 (per frame) → index_list (B, T).
-            2. For each sample in the batch:
-               a. Truncate sequence to valid length vid_lgt[batch_idx].
-               b. Remove consecutive duplicates via groupby (CTC collapse step 1).
-               c. Filter out blank tokens (CTC collapse step 2).
-               d. Jika masih ada token tersisa, hapus duplikat sekali lagi
-                  after filtering (second groupby).
-               e. Convert indices to gloss names via i2g_dict.
-
-        Output:
-            - ret_list (list of list of tuple): one list per sample.
-              Each tuple: (gloss_name: str, position: int).
+        Returns
+        -------
+        list of list of tuple
+            Decode results per sample, containing (gloss_name, position) pairs.
         """
         # take the index of the class with the highest probability for each frame
         # axis=2 because the format is (B, T, N): N is the class dimension

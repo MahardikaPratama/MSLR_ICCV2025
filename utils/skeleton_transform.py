@@ -53,21 +53,28 @@ def spatial_normalize(
     used_part=None,
 ):
     """
-    Adopted from Anchor-Based Normalization (Roh et al., 2024)
+    Adopted from Anchor-Based Normalization (Roh et al., 2024).
 
-    Hand:
-        Hand_i = Hand_i - Palm
+    Hand is normalized relative to the palm.
+    Upper limb is normalized relative to the shoulder center and width.
 
-    Upper limb:
-        Upper_i =
-        (Upper_i - ShoulderCenter)
-        / ShoulderWidth
+    Parameters
+    ----------
+    origin_input_data : Tensor
+        Skeleton sequence with shape (T, K, C).
+    norm_div : float
+        Normalization divisor.
+    norm_point : list, optional
+        Reference keypoints for normalization.
+    split : list, optional
+        Cumulative keypoint split positions.
+    used_part : list, optional
+        Selected skeleton parts to normalize.
 
-    Input:
-        (T, K, C)
-
-    Output:
-        (T, K, C)
+    Returns
+    -------
+    Tensor
+        Spatially normalized sequence with shape (T, K, C).
     """
 
     # Convert input data to tensor if not already a tensor

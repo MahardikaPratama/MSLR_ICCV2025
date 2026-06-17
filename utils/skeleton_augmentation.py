@@ -9,8 +9,10 @@ class Compose(object):
     """
     Compose multiple skeleton transformations.
     
-    Args:
-        transforms (list): List of skeleton transformations to apply.
+    Parameters
+    ----------
+    transforms : list
+        List of skeleton transformations to apply.
     """
     # Initialize the transform
     def __init__(self, transforms):
@@ -28,8 +30,10 @@ class ToTensor(object):
     """
     Convert skeleton to PyTorch tensor.
     
-    Args:
-        skeleton (np.ndarray): Skeleton sequence.
+    Parameters
+    ----------
+    skeleton : np.ndarray
+        Skeleton sequence.
     """
     # Convert the skeleton data to tensor
     def __call__(self, skeleton):
@@ -47,8 +51,10 @@ class Jitter(object):
     """
     Apply Gaussian jitter (noise) to skeleton sequences.
     
-    Args:
-        std_dev (float): Standard deviation of the Gaussian noise.
+    Parameters
+    ----------
+    std_dev : float
+        Standard deviation of the Gaussian noise.
     """
     # Initialize the transform
     def __init__(self, std_dev=0.01) -> None:
@@ -65,9 +71,11 @@ class TemporalDropout(object):
     """
     Apply temporal dropout by randomly removing a contiguous segment of frames.
     
-    Args:
-        max_dp (float): Maximum dropout proportion. Actual dropout length
-            is between [0, vid_len * max_dp].
+    Parameters
+    ----------
+    max_dp : float
+        Maximum dropout proportion. Actual dropout length
+        is between [0, vid_len * max_dp].
     """
     # Initialize the transform
     def __init__(self, max_dp=0.2):
@@ -90,8 +98,10 @@ class Scale(object):
     """
     Scale skeleton sequences by applying random scaling factors.
     
-    Args:
-        scale_range (tuple): Range of scaling factors (min, max).
+    Parameters
+    ----------
+    scale_range : tuple
+        Range of scaling factors (min, max).
     """
     # Initialize the transform
     def __init__(self, scale_range=(0.8, 1.2)) -> None:
@@ -112,9 +122,11 @@ class TemporalRescale(object):
     """
     Temporally rescale video by resampling frames.
     
-    Args:
-        temp_scaling (float): Temporal scaling factor. Video length is scaled 
-            between [1 - temp_scaling, 1 + temp_scaling].
+    Parameters
+    ----------
+    temp_scaling : float
+        Temporal scaling factor. Video length is scaled 
+        between [1 - temp_scaling, 1 + temp_scaling].
     """
     # Initialize the transform
     def __init__(self, temp_scaling=0.2) -> None:

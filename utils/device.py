@@ -7,7 +7,7 @@ import torch.nn as nn
 class GpuDataParallel(object):
     def __init__(self):
         """
-        Prepare containers for device information to be used by the program.
+        Prepare containers for device information.
         """
         self.gpu_list = []
         self.output_device = None
@@ -16,8 +16,10 @@ class GpuDataParallel(object):
         """
         Set the GPU used by the program from the device configuration string.
         
-        Args:
-            device (str): String containing the GPU ID, e.g., '0' or '0,1'.
+        Parameters
+        ----------
+        device : str
+            String containing the GPU ID, e.g., '0' or '0,1'.
         """
         device = str(device)
         if device != 'None':
@@ -31,11 +33,15 @@ class GpuDataParallel(object):
         """
         Move the model to the main device and wrap it with DataParallel if necessary.
 
-        Args:
-            model (torch.nn.Module): The model to be moved to the device.
+        Parameters
+        ----------
+        model : torch.nn.Module
+            The model to be moved.
 
-        Returns:
-            torch.nn.Module: The model that has been moved to the device.
+        Returns
+        -------
+        torch.nn.Module
+            The model moved to the device.
         """
         model = model.to(self.output_device)
         if len(self.gpu_list) > 1:
@@ -49,11 +55,15 @@ class GpuDataParallel(object):
         """
         Move tensor data to the target device by adjusting its data type.
 
-        Args:
-            data (torch.Tensor): The tensor data to be moved to the device.
+        Parameters
+        ----------
+        data : torch.Tensor
+            The tensor data to be moved.
 
-        Returns:
-            torch.Tensor: The tensor data that has been moved to the device.
+        Returns
+        -------
+        torch.Tensor
+            The tensor data moved to the device.
         """
         if isinstance(data, torch.FloatTensor):
             return data.to(self.output_device)
@@ -72,11 +82,15 @@ class GpuDataParallel(object):
         """
         Move the contents of the data dictionary to the target device selectively.
 
-        Args:
-            data_dict (dict): The data dictionary to be moved to the device.
+        Parameters
+        ----------
+        data_dict : dict
+            The data dictionary to be moved.
 
-        Returns:
-            dict: The data dictionary with its contents moved to the device.
+        Returns
+        -------
+        dict
+            The data dictionary with contents moved to the device.
         """
         cuda_dict = {}
         for k, v in data_dict.items():
@@ -90,11 +104,15 @@ class GpuDataParallel(object):
         """
         Move the loss or criterion object to the target device.
 
-        Args:
-            loss (torch.nn.Module): The loss or criterion object to be moved to the device.
+        Parameters
+        ----------
+        loss : torch.nn.Module
+            The loss or criterion object to be moved.
 
-        Returns:
-            torch.nn.Module: The loss or criterion object that has been moved to the device.
+        Returns
+        -------
+        torch.nn.Module
+            The loss or criterion object moved to the device.
         """
         return loss.to(self.output_device)
 
@@ -102,12 +120,10 @@ class GpuDataParallel(object):
         """
         Make the GPU appear active in nvidia-smi by allocating a small tensor.
 
-        Args:
-            gpus (list or int): List of GPUs or a single GPU index to occupy.
-
-        Process:
-        1. If gpus is empty, allocate a small tensor on the default CUDA.
-        2. If gpus contains GPU indices, create a small tensor on each of these GPUs.
+        Parameters
+        ----------
+        gpus : list or int, optional
+            List of GPUs or a single GPU index to occupy.
         """
         if len(gpus) == 0:
             torch.zeros(1).cuda()

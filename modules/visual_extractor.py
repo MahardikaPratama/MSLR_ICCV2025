@@ -9,33 +9,25 @@ from .stgcn_layers import Graph, STGCN_block
 
 def generate_mask(shape, part_num, clip_length, ratio, dim):
     """
-    Deskripsi:
-        Menghasilkan dua mask komplementer untuk Consistency Regularization (CR).
-        Mask dibuat secara acak per-klip temporal dan per-part, lalu dibagi menjadi
-        dua set yang saling melengkapi (view_q dan view_k) sehingga informasi yang
-        disembunyikan di view_q ada di view_k dan sebaliknya.
+    Generate two complementary masks for Consistency Regularization (CR).
 
-    Input:
-        - shape      (tuple)      : (B, T, C) bentuk tensor fitur yang akan dimask.
-        - part_num   (int)        : jumlah spatial part sesuai `split`.
-        - clip_length(int)        : panjang segmen temporal untuk granularitas mask.
-        - ratio      (float, 0..0.5): proporsi elemen yang dimask per view.
-        - dim        (int)        : lebar channel per-part pada axis C.
+    Parameters
+    ----------
+    shape : tuple
+        Shape of the feature tensor (B, T, C).
+    part_num : int
+        Number of spatial parts.
+    clip_length : int
+        Temporal segment length for mask granularity.
+    ratio : float
+        Proportion of elements masked per view (0 to 0.5).
+    dim : int
+        Channel width per part.
 
-    Proses:
-        1. Hitung jumlah klip: clips = T // clip_length.
-        2. Buat random_mask boolean (B, clips, part_num) dengan probabilitas aktif
-           sebesar 2*ratio (total elemen yang akan dibagi ke dua view).
-        3. Kumpulkan posisi aktif, acak, lalu bagi setengah ke mask_q dan setengah
-           ke mask_k sehingga keduanya komplementer.
-        4. Ekspansi mask ke (B, T, C): setiap bit part_j dipetakan ke rentang
-           channel dim*j : dim*(j+1) selama durasi klip tersebut.
-        5. Kembalikan dua tensor float berisi 0 (dimask) atau 1 (tidak dimask).
-
-    Output:
-        - mask_cat_q (Tensor float, B×T×C): mask untuk view pertama (query).
-        - mask_cat_k (Tensor float, B×T×C): mask untuk view kedua (key),
-          komplementer terhadap mask_cat_q.
+    Returns
+    -------
+    tuple
+        mask_cat_q and mask_cat_k, complementary mask tensors of shape (B, T, C).
     """
     # unpack dimensi tensor fitur: batch, time, channel
     B, T, C = shape
@@ -94,25 +86,24 @@ def generate_mask(shape, part_num, clip_length, ratio, dim):
 
 class CoSign1s_block(nn.Module):
     """
-    CoSign1s_block
+    Single-stream ST-GCN block processing skeleton features per spatial-part.
 
-    Deskripsi:
-        Blok ST-GCN satu stream yang memproses fitur skeleton per spatial-part
-        secara terpisah menggunakan graph masing-masing, lalu menggabungkan
-        seluruh output part menjadi satu tensor terkoncatenasi. Blok ini adalah
-        unit dasar yang disusun berlapis di CoSign2s.
-
-    Input (constructor):
-        - modes          (list of str) : nama mode/part, mis. ['hand21', 'body'].
-        - indims         (int)         : jumlah channel input per-node.
-        - outdims        (int)         : jumlah channel output per-node setelah GCN.
-        - A              (list Tensor) : adjacency matrices per-mode.
-        - split          (list of int) : indeks pemisah channel per-part.
-        - temporal_kernel(int)         : ukuran kernel temporal ST-GCN.
-        - adaptive       (bool)        : apakah adjacency matrix bersifat adaptif.
-
-    Output (forward):
-        - Tensor (N, C_out_concat, T, V) hasil gabungan semua part pada dim channel.
+    Parameters
+    ----------
+    modes : list of str
+        Names of modes/parts (e.g., ['hand21', 'body']).
+    indims : int
+        Input channels per node.
+    outdims : int
+        Output channels per node after GCN.
+    A : list of Tensor
+        Adjacency matrices per mode.
+    split : list of int
+        Indices separating channels per part.
+    temporal_kernel : int
+        Temporal kernel size for ST-GCN.
+    adaptive : bool
+        Whether the adjacency matrix is adaptive.
     """
 
     def __init__(self, modes, indims, outdims, A, split, temporal_kernel, adaptive):
@@ -150,25 +141,17 @@ class CoSign1s_block(nn.Module):
 
     def forward(self, feature):
         """
-        Deskripsi:
-            Jalankan satu forward pass blok CoSign (single-stream GCN per part).
-            Setiap part diproses oleh GCN-nya sendiri, lalu semua output
-            digabungkan kembali pada dimensi channel.
+        Forward pass for single-stream GCN per part.
 
-        Input:
-            - feature (Tensor, N×C_in×T×V_total): fitur semua part yang sudah
-              terkoncatenasi pada dimensi channel terakhir.
+        Parameters
+        ----------
+        feature : Tensor
+            Features of all parts concatenated along the channel dimension, shape (N, C_in, T, V_total).
 
-        Proses:
-            1. Iterasi tiap mode; tentukan rentang channel [start, end] dari split.
-            2. Jika mode == 'hand21': gabungkan left+right hand secara batch (cat
-               pada dim 0), proses lewat satu GCN bersama, lalu pisah kembali.
-               Ini menghemat parameter karena kedua tangan berbagi bobot GCN.
-            3. Untuk mode lain: jalankan GCN sesuai mode dan kumpulkan hasil.
-            4. Gabungkan semua feat_list pada dim channel menjadi satu tensor.
-
-        Output:
-            - Tensor (N, C_out_concat, T, V) gabungan semua part.
+        Returns
+        -------
+        Tensor
+            Concatenated output of all parts, shape (N, C_out_concat, T, V).
         """
         # indeks pointer ke split, maju sesuai jumlah part yang sudah diproses
         index = 0
@@ -211,26 +194,26 @@ class CoSign1s_block(nn.Module):
 
 class CoSign2s(nn.Module):
     """
-    CoSign2s
+    Two-stream extractor module producing static, motion, and fusion features.
 
-    Deskripsi:
-        Modul ekstraktor dua-stream yang menghasilkan fitur `static`, `motion`,
-        dan `fusion` menggunakan beberapa lapis CoSign1s_block dan pooling
-        per-part. Mendukung Consistency Regularization (CR) dengan complementary
-        masking untuk menghasilkan dua view.
-
-    Input (constructor):
-        - in_channels   (int)       : jumlah channel input per-joint untuk static.
-        - split         (list int)  : indeks pemisah channel per-spatial-part.
-        - temporal_kernel(int)      : ukuran kernel temporal ST-GCN.
-        - hidden_size   (int)       : dimensi output fitur akhir (fusion hidden dim).
-        - modes         (list str)  : nama mode/spatial groups.
-        - level         (str)       : kedalaman arsitektur, '0' (dangkal) atau '1' (dalam).
-        - adaptive      (bool)      : apakah adjacency matrix bersifat adaptif.
-        - CR_args       (dict|None) : argumen Consistency Regularization (opsional).
-
-    Output (forward):
-        - dict fitur per kondisi training/CR seperti dijelaskan di modul-level.
+    Parameters
+    ----------
+    in_channels : int
+        Input channels per joint for the static stream.
+    split : list of int
+        Indices separating channels per spatial-part.
+    temporal_kernel : int
+        Temporal kernel size for ST-GCN.
+    hidden_size : int
+        Final feature output dimension (fusion hidden dim).
+    modes : list of str
+        Names of spatial groups/modes.
+    level : str
+        Architecture depth level ('0' for shallow, '1' for deep).
+    adaptive : bool, optional
+        Whether the adjacency matrix is adaptive. Default is True.
+    CR_args : dict, optional
+        Arguments for Consistency Regularization. Default is None.
     """
 
     def __init__(self, in_channels, split, temporal_kernel, hidden_size, modes, level, adaptive=True, CR_args=None) -> None:
@@ -309,29 +292,16 @@ class CoSign2s(nn.Module):
 
     def create_layers(self, A, temporal_kernel, adaptive):
         """
-        Deskripsi:
-            Membangun semua layer CoSign1s_block untuk ketiga stream (static,
-            motion, fusion) berdasarkan konfigurasi layer_configs[level].
-            Setiap layer juga didaftarkan sebagai atribut bernama agar mudah
-            diakses dan terlacak oleh PyTorch.
+        Build CoSign1s_block layers for static, motion, and fusion streams.
 
-        Input:
-            - A               (list Tensor): adjacency matrices per-mode.
-            - temporal_kernel (int)        : ukuran kernel temporal ST-GCN.
-            - adaptive        (bool)       : apakah adjacency adaptif (learnable).
-
-        Proses:
-            1. Ambil konfigurasi layer sesuai self.level dari layer_configs.
-            2. Untuk tiap stream ('static','motion','fusion'), iterasi pasangan
-               (in_dim, out_dim) dan buat CoSign1s_block.
-            3. Simpan ke nn.ModuleList sebagai `{stream}_layers`.
-            4. Daftarkan juga tiap layer sebagai atribut bernama via setattr
-               (nama dari get_layer_name) untuk akses langsung jika diperlukan.
-
-        Output:
-            - (tidak return) Mendaftarkan atribut:
-              self.static_layers, self.motion_layers, self.fusion_layers
-              sebagai nn.ModuleList, serta atribut per-layer bernama.
+        Parameters
+        ----------
+        A : list of Tensor
+            Adjacency matrices per mode.
+        temporal_kernel : int
+            Temporal kernel size for ST-GCN.
+        adaptive : bool
+            Whether the adjacency is adaptive.
         """
         # ambil konfigurasi layer sesuai level arsitektur yang dipilih
         config = self.layer_configs[self.level]
@@ -358,26 +328,19 @@ class CoSign2s(nn.Module):
 
     def get_layer_name(self, layer_type, index):
         """
-        Deskripsi:
-            Menghasilkan nama atribut layer mengikuti konvensi penamaan
-            berdasarkan level arsitektur. Dipanggil oleh create_layers untuk
-            mendaftarkan setiap layer sebagai atribut bernama di modul.
+        Generate layer attribute name based on architecture level.
 
-        Input:
-            - layer_type (str): tipe stream, salah satu dari
-              ['static', 'motion', 'fusion'].
-            - index      (int): indeks layer dalam konfigurasi (0-based).
+        Parameters
+        ----------
+        layer_type : str
+            Stream type ('static', 'motion', 'fusion').
+        index : int
+            Zero-based index of the layer.
 
-        Proses:
-            - Level '0': nama sederhana '{layer_type}_layer{index+1}'.
-              Contoh: index=0 → 'static_layer1', index=2 → 'static_layer3'.
-            - Level '1': nama dua-digit untuk 4 layer pertama, satu digit
-              untuk layer terakhir.
-              Contoh: index=0 → 'static_layer1_1', index=3 → 'static_layer2_2',
-              index=4 → 'static_layer3'.
-
-        Output:
-            - layer_name (str): nama atribut yang akan digunakan oleh setattr.
+        Returns
+        -------
+        str
+            Attribute name for the layer.
         """
         if self.level == '0':
             # penamaan sederhana: nomor layer 1-based
@@ -392,26 +355,17 @@ class CoSign2s(nn.Module):
 
     def pooling_stage(self, feature):
         """
-        Deskripsi:
-            Melakukan average pooling spasial per-part pada output ST-GCN,
-            menghasilkan satu vektor fitur per-part per-frame dengan
-            mengagregasi seluruh joint dalam setiap part.
+        Perform per-part spatial average pooling on ST-GCN output.
 
-        Input:
-            - feature (Tensor, N×C×T×V_total): output ST-GCN dengan semua
-              joint terkoncatenasi pada dimensi V terakhir.
+        Parameters
+        ----------
+        feature : Tensor
+            Output of ST-GCN, shape (N, C, T, V_total).
 
-        Proses:
-            1. Iterasi tiap part berdasarkan self.split.
-            2. Iris feature pada dim V untuk mendapatkan joint part tersebut.
-            3. Terapkan avg_pool2d dengan kernel (1, end-start) sehingga
-               semua joint dalam satu part diagregasi menjadi satu vektor.
-            4. squeeze(-1) untuk menghilangkan dim V yang kini bernilai 1.
-            5. Gabungkan semua part pada dim channel (dim 1).
-
-        Output:
-            - Tensor (N, C_total, T): fitur terpooling semua part,
-              di mana C_total = C_per_part × part_num.
+        Returns
+        -------
+        Tensor
+            Pooled features of all parts, shape (N, C_total, T).
         """
         # list untuk mengumpulkan hasil pooling tiap part
         feature_list = []
@@ -435,31 +389,19 @@ class CoSign2s(nn.Module):
 
     def process_static_motion(self, static, motion):
         """
-        Deskripsi:
-            Menjalankan urutan pemrosesan berlapis untuk ketiga stream (static,
-            motion, fusion) sesuai konfigurasi level arsitektur. Mengatur aliran
-            data antar layer dan cara menggabungkan static+motion menjadi input
-            fusion di tiap tahap.
+        Process static, motion, and fusion streams sequentially based on architecture level.
 
-        Input:
-            - static (Tensor, N×C×T×V): fitur static setelah proyeksi linear.
-            - motion (Tensor, N×C×T×V): fitur motion setelah proyeksi linear.
+        Parameters
+        ----------
+        static : Tensor
+            Static features after linear projection, shape (N, C, T, V).
+        motion : Tensor
+            Motion features after linear projection, shape (N, C, T, V).
 
-        Proses:
-            - Tentukan processing_steps sesuai level:
-                Level '0': 3 tahap, tiap tahap 1 layer per stream.
-                Level '1': 3 tahap, tahap 1-2 masing-masing 2 layer, tahap 3 satu layer.
-            - Pada tiap tahap:
-                1. Jalankan sejumlah static_layers → update static.
-                2. Jalankan sejumlah motion_layers → update motion.
-                3. Bentuk fusion_input:
-                   'concat'     → cat(static, motion) untuk tahap pertama.
-                   'concat_sum' → cat(fusion, static+motion) untuk tahap berikutnya.
-                4. Jalankan sejumlah fusion_layers → update fusion.
-
-        Output:
-            - tuple (static, motion, fusion): tensor output akhir ketiga stream
-              setelah semua tahap selesai, shape masing-masing (N, C_out, T, V).
+        Returns
+        -------
+        tuple
+            Final static, motion, and fusion tensors, each shape (N, C_out, T, V).
         """
         if self.level == '0':
             # level dangkal: 3 tahap, masing-masing 1 layer per stream
@@ -518,28 +460,21 @@ class CoSign2s(nn.Module):
 
     def apply_masks(self, cat_feat_static, cat_feat_motion, cat_feat_fusion):
         """
-        Deskripsi:
-            Menerapkan complementary masking untuk menghasilkan dua view per-stream
-            sebagai bagian dari Consistency Regularization (CR). Setiap stream
-            menghasilkan view1 dan view2 yang saling melengkapi.
+        Apply complementary masking to produce two views per stream for Consistency Regularization.
 
-        Input:
-            - cat_feat_static (Tensor, B×T×C): fitur static setelah pooling+transpose.
-            - cat_feat_motion (Tensor, B×T×C): fitur motion setelah pooling+transpose.
-            - cat_feat_fusion (Tensor, B×T×C): fitur fusion setelah pooling+transpose.
+        Parameters
+        ----------
+        cat_feat_static : Tensor
+            Static features after pooling and transpose, shape (B, T, C).
+        cat_feat_motion : Tensor
+            Motion features after pooling and transpose, shape (B, T, C).
+        cat_feat_fusion : Tensor
+            Fusion features after pooling and transpose, shape (B, T, C).
 
-        Proses:
-            1. Iterasi tiga stream dengan dimensi final masing-masing.
-            2. Untuk tiap stream, panggil generate_mask dengan parameter dari CR_args.
-            3. Pindahkan mask ke device yang sama dengan fitur (CPU/GPU).
-            4. Terapkan mask (perkalian elementwise) ke fitur untuk menghasilkan view1 dan view2.
-            5. Khusus stream fusion: jalankan fusion_fusion (linear) agar dimensi
-               sesuai dengan hidden_size yang diharapkan downstream.
-
-        Output:
-            - dict dengan 6 kunci: 'view1_static', 'view2_static',
-              'view1_motion', 'view2_motion', 'view1_fusion', 'view2_fusion'.
-              Tiap nilai adalah Tensor (B, T, feat_dim) di device yang sama dengan input.
+        Returns
+        -------
+        dict
+            Contains view1 and view2 for static, motion, and fusion streams.
         """
         # definisikan tiga stream beserta fiturnya dan dimensi final masing-masing
         stream_configs = [
@@ -577,33 +512,19 @@ class CoSign2s(nn.Module):
 
     def forward(self, x, len_x):
         """
-        Deskripsi:
-            Forward pass utama CoSign2s. Menerima tensor skeleton, memisahkan
-            channel menjadi static dan motion, memproses lewat dua stream ST-GCN
-            berlapis, melakukan pooling spasial, lalu mengembalikan fitur sesuai
-            mode (evaluasi vs training dengan CR).
+        Forward pass separating static and motion channels to process through two-stream ST-GCN.
 
-        Input:
-            - x     (Tensor, N×T×V×C_in): input skeleton/koordinat pose.
-              Jika C_in==7: channel 0:2=koordinat x,y; 6=confidence (static);
-              channel 2:6=optical flow / motion features (motion).
-              Jika C_in!=7: seluruh channel dipakai sebagai static.
-            - len_x (Tensor|list): panjang valid tiap sample dalam batch
-              (dipakai oleh pipeline atas, tidak langsung dipakai di sini).
+        Parameters
+        ----------
+        x : Tensor
+            Input skeleton/pose coordinates, shape (N, T, V, C_in).
+        len_x : Tensor or list
+            Valid lengths for each sample.
 
-        Proses:
-            1. Pisahkan channel menjadi `static` (koordinat+confidence) dan
-               `motion` (frame difference / optical flow), slice sesuai in_channels.
-            2. Proyeksi linear ke 64 channel, permutasi ke (N, C, T, V).
-            3. Jalankan process_static_motion: semua layer CoSign1s bertingkat.
-            4. pooling_stage: average pooling per-part → (N, C_total, T).
-            5. transpose(1,2) → (B, T, C_total) untuk format downstream.
-            6a. Jika CR aktif dan mode training: apply_masks → 6 view.
-            6b. Jika evaluasi atau tanpa CR: fusion_fusion → dict {'fusion'}.
-
-        Output:
-            - Saat evaluasi/tanpa CR: {'fusion': Tensor(B, T, hidden_size)}.
-            - Saat training dengan CR: dict berisi 6 Tensor view komplementer.
+        Returns
+        -------
+        dict
+            Dict containing 'fusion' tensor during evaluation, or 6 complementary views during training with CR.
         """
         if x.shape[3] == 7:
             # format 7-channel: gabungkan x,y (0:2) dan confidence (6) untuk static

@@ -1,11 +1,12 @@
-"""Definisi model untuk arsitektur Two-Stream CoSign pada CSLR.
+"""
+Model definition for the Two-Stream CoSign architecture in CSLR.
 
-Modul ini menyusun alur utama model yang dipakai saat training dan evaluasi.
-Data yang masuk berasal dari `inputs_dict['x']` dan `inputs_dict['len_x']`
-hasil dari dataset dan `collate_fn`. Setelah itu, data diproses oleh visual
-extractor, temporal convolution, BiLSTM kontekstual, lalu classifier.
-Saat training model memakai loss CTC dan KL, sedangkan saat evaluasi model
-melakukan decoding untuk menghasilkan prediksi gloss.
+This module composes the main model pipeline used during training and evaluation.
+The input data comes from `inputs_dict['x']` and `inputs_dict['len_x']` produced
+by the dataset and `collate_fn`. The data is then processed by the visual
+extractor, temporal convolution, contextual BiLSTM, and the classifier.
+During training, the model uses CTC and KL loss, while during evaluation,
+the model performs decoding to generate gloss predictions.
 """
 
 import torch
@@ -17,20 +18,21 @@ from modules.temporal_layers import BiLSTMLayer, TemporalConv
 from modules.visual_extractor import CoSign2s
 
 class KLdis(nn.Module):
-    """Loss distilasi KL-divergence antara dua set logits.
+    """
+    KL-divergence distillation loss between two sets of logits.
 
-    Deskripsi:
-    Modul ini dipakai untuk membuat dua view dari input yang sama saling
-    mendekati distribusi prediksinya. Di `get_loss()`, loss ini dipanggil
-    dua arah agar hasilnya simetris.
+    This module is used to make the prediction distributions of two views
+    from the same input approach each other. In `get_loss()`, this loss is
+    called bidirectionally so that the result is symmetric.
 
-    Input:
-    1. `view1_logits`: logits dari view pertama.
-    2. `view2_logits`: logits dari view kedua.
-    3. `use_blank`: penanda apakah kelas blank CTC ikut dihitung.
-
-    Output:
-    1. Nilai loss KL berupa tensor skalar.
+    Parameters
+    ----------
+    view1_logits : torch.Tensor
+        Logits from the first view.
+    view2_logits : torch.Tensor
+        Logits from the second view.
+    use_blank : bool, optional
+        Whether the CTC blank class is included in the calculation.
     """
 
     def __init__(self, T=1):
@@ -57,18 +59,19 @@ class KLdis(nn.Module):
         return loss
 
 class NormBothLinear(nn.Module):
-    """Classifier yang menormalkan fitur dan bobot sebelum perkalian matriks.
+    """
+    Classifier that normalizes features and weights before matrix multiplication.
 
-    Deskripsi:
-    Layer ini bekerja seperti classifier berbasis cosine similarity. Vektor
-    fitur dinormalisasi, bobot juga dinormalisasi, lalu keduanya dikalikan
-    untuk menghasilkan skor kelas.
+    This layer works like a cosine similarity-based classifier. Feature vectors
+    are normalized, weights are also normalized, and then they are multiplied
+    to produce class scores.
 
-    Input:
-    1. `x`: tensor fitur dengan dimensi terakhir sebagai channel fitur.
-
-    Output:
-    1. Logits kelas untuk tiap frame/sequence.
+    Parameters
+    ----------
+    in_dim : int
+        Input feature dimension.
+    out_dim : int
+        Output class dimension.
     """
 
     def __init__(self, in_dim, out_dim):
@@ -84,24 +87,27 @@ class NormBothLinear(nn.Module):
         return outputs
 
 class TwoStream_Cosign(nn.Module):
-    """Model utama two-stream untuk CSLR.
+    """
+    Main two-stream model for CSLR.
 
-    Deskripsi:
-    Model ini menerima batch skeleton, mengekstrak fitur visual, lalu
-    meneruskan fitur tersebut ke temporal convolution, BiLSTM, dan classifier.
-    Saat training dengan consistency regularization, model memproses dua view
-    untuk setiap stream. Saat evaluasi, model memakai representasi fusion
-    untuk menghasilkan prediksi hasil decoding.
+    This model receives a skeleton batch, extracts visual features, and passes
+    them to temporal convolution, BiLSTM, and classifier. During training with
+    consistency regularization, the model processes two views for each stream.
+    During evaluation, the model uses the fusion representation to produce
+    predictions.
 
-    Input:
-    1. `visual_args`: konfigurasi untuk `CoSign2s`.
-    2. `gloss_dict`: kamus gloss untuk decoder.
-    3. `conv_type`: jenis temporal convolution.
-    4. `loss_weights`: bobot loss yang akan dihitung saat training.
-    5. `norm_scale`: faktor skala logits sebelum decoding atau CTC.
-
-    Output:
-    1. Model PyTorch siap dipakai untuk training dan evaluasi.
+    Parameters
+    ----------
+    visual_args : dict
+        Configuration for `CoSign2s`.
+    gloss_dict : dict
+        Gloss dictionary for the decoder.
+    conv_type : int
+        Type of temporal convolution.
+    loss_weights : dict
+        Loss weights calculated during training.
+    norm_scale : int, optional
+        Scale factor for logits before decoding or CTC. Default is 32.
     """
 
     def __init__(self, visual_args, gloss_dict, conv_type, loss_weights, norm_scale=32) -> None:
@@ -160,30 +166,30 @@ class TwoStream_Cosign(nn.Module):
             g[g != g] = 0
 
     def forward_contextual(self, framewise, len_x, conv1d_module, contextual_module, classifier):
-        """Memproses satu stream melalui conv temporal, BiLSTM, dan classifier.
+        """
+        Process a single stream through temporal conv, BiLSTM, and classifier.
 
-        Deskripsi:
-        Fungsi ini menjadi jalur umum untuk stream static, motion, dan fusion.
-        Fitur framewise diproses dulu oleh temporal convolution, lalu dilanjutkan
-        ke BiLSTM kontekstual, dan akhirnya dikonversi menjadi logits kelas.
+        This function serves as a common path for static, motion, and fusion streams.
+        Framewise features are first processed by temporal convolution, then
+        passed to the contextual BiLSTM, and finally converted into class logits.
 
-        Input:
-        1. `framewise`: tensor fitur stream dengan bentuk `(B, T, C_in)`.
-        2. `len_x`: panjang asli setiap sequence dalam batch.
-        3. `conv1d_module`: modul temporal convolution untuk stream ini.
-        4. `contextual_module`: modul BiLSTM untuk konteks sequence.
-        5. `classifier`: classifier akhir.
+        Parameters
+        ----------
+        framewise : torch.Tensor
+            Stream feature tensor with shape `(B, T, C_in)`.
+        len_x : torch.Tensor
+            Original length of each sequence in the batch.
+        conv1d_module : torch.nn.Module
+            Temporal convolution module for this stream.
+        contextual_module : torch.nn.Module
+            BiLSTM module for sequence context.
+        classifier : torch.nn.Module
+            Final classifier.
 
-        Proses:
-        1. Ubah format tensor agar cocok dengan `TemporalConv`.
-        2. Ambil fitur hasil conv dan panjang fitur (`feat_len`).
-        3. Ubah fitur ke format yang sesuai untuk BiLSTM.
-        4. Hitung logits dari jalur conv dan jalur kontekstual.
-
-        Output:
-        1. `conv1d_logits`: logits dari jalur temporal conv.
-        2. `seq_logits`: logits dari jalur BiLSTM kontekstual.
-        3. `feat_len`: panjang sequence setelah downsampling temporal.
+        Returns
+        -------
+        tuple
+            (conv1d_logits, seq_logits, feat_len)
         """
 
         # `TemporalConv` mengharapkan bentuk `(B, C_in, T)`.
@@ -204,27 +210,24 @@ class TwoStream_Cosign(nn.Module):
         return conv1d_logits, seq_logits, feat_len
 
     def forward(self, inputs_dict):
-        """Melakukan forward pass saat `model(data)` dipanggil.
+        """
+        Perform a forward pass.
 
-        Deskripsi:
-        Fungsi ini adalah pintu masuk utama model. Data batch dari DataLoader
-        dibongkar, lalu diproses oleh visual module. Jika training memakai
-        consistency regularization, model akan memproses dua view untuk setiap
-        stream. Jika tidak, model hanya memakai stream fusion untuk decoding.
+        This function is the main entry point of the model. Batch data from
+        DataLoader is unpacked and processed by the visual module. If training
+        uses consistency regularization, the model processes two views for each
+        stream. Otherwise, the model only uses the fusion stream for decoding.
 
-        Input:
-        1. `inputs_dict`: dictionary batch dari DataLoader.
-        2. Di dalamnya wajib ada key `x` dan `len_x`.
+        Parameters
+        ----------
+        inputs_dict : dict
+            Batch dictionary from DataLoader. Must contain `x` and `len_x`.
 
-        Proses:
-        1. Ambil `x` dan `len_x` dari batch.
-        2. Jalankan visual extractor untuk menghasilkan fitur stream.
-        3. Jika training dengan CR, proses `view1` dan `view2` untuk tiap stream.
-        4. Jika evaluasi, proses stream fusion lalu decode hasilnya.
-
-        Output:
-        1. Saat training CR: dictionary berisi output view1/view2 tiap stream.
-        2. Saat evaluasi: dictionary berisi hasil decoding fusion.
+        Returns
+        -------
+        dict
+            Outputs of view1/view2 for each stream during CR training,
+            or decoding results of fusion during evaluation.
         """
 
         # Ambil batch yang dikirim dari DataLoader.
@@ -284,25 +287,27 @@ class TwoStream_Cosign(nn.Module):
         }
 
     def get_ctc_loss(self, no_scale_logits, label, feat_len, label_len):
-        """Menghitung loss CTC rata-rata untuk satu batch.
+        """
+        Calculate the average CTC loss for a single batch.
 
-        Deskripsi:
-        Fungsi ini dipakai untuk menghitung CTC loss dari logits yang belum
-        diskalakan. Output loss masih per-sample, lalu dirata-ratakan.
+        This function calculates the CTC loss from unscaled logits.
+        The output loss is per-sample, then averaged.
 
-        Input:
-        1. `no_scale_logits`: logits sebelum skala akhir, bentuk `(T, B, C)`.
-        2. `label`: label target yang sudah digabung menjadi satu tensor.
-        3. `feat_len`: panjang fitur hasil downsampling, bentuk `(B,)`.
-        4. `label_len`: panjang label per sample, bentuk `(B,)`.
+        Parameters
+        ----------
+        no_scale_logits : torch.Tensor
+            Logits before final scaling, shape `(T, B, C)`.
+        label : torch.Tensor
+            Target labels concatenated into a single tensor.
+        feat_len : torch.Tensor
+            Feature lengths after downsampling, shape `(B,)`.
+        label_len : torch.Tensor
+            Label lengths per sample, shape `(B,)`.
 
-        Proses:
-        1. Kalikan logits dengan `norm_scale`.
-        2. Ubah ke `log_softmax`.
-        3. Hitung `CTCLoss` menggunakan panjang input dan label.
-
-        Output:
-        1. Nilai loss CTC rata-rata dalam bentuk tensor skalar.
+        Returns
+        -------
+        torch.Tensor
+            Average CTC loss as a scalar tensor.
         """
 
         ctc_loss = self.loss['ctc'](
@@ -316,27 +321,24 @@ class TwoStream_Cosign(nn.Module):
         return ctc_loss.mean()
 
     def get_loss(self, ret_dict, inputs_dict):
-        """Menghitung semua loss yang sedang diaktifkan pada model.
+        """
+        Calculate all active losses on the model.
 
-        Deskripsi:
-        Fungsi ini dipanggil setelah `ret_dict = model(data)` pada loop training.
-        Label diambil dari `inputs_dict`, lalu model menghitung loss sesuai isi
-        `self.loss_weights`. Loss yang dihitung bisa berupa CTC loss atau KL loss.
+        This function is called after `ret_dict = model(data)` in the training loop.
+        Labels are taken from `inputs_dict`, then the model calculates the loss
+        according to `self.loss_weights`. The calculated loss can be CTC or KL.
 
-        Input:
-        1. `ret_dict`: output dari `forward()`.
-        2. `inputs_dict`: batch asli dari DataLoader yang berisi label.
+        Parameters
+        ----------
+        ret_dict : dict
+            Output from `forward()`.
+        inputs_dict : dict
+            Original batch from DataLoader containing labels.
 
-        Proses:
-        1. Ambil `label` dan `label_lgt` dari batch.
-        2. Iterasi semua key loss pada `self.loss_weights`.
-        3. Jika loss bertipe CTC, hitung loss untuk view1 dan view2.
-        4. Jika loss bertipe KL, hitung loss simetris antara dua view.
-        5. Jumlahkan semua loss menjadi total loss.
-
-        Output:
-        1. `loss`: total loss skalar.
-        2. `loss_dict`: dictionary berisi komponen loss per item.
+        Returns
+        -------
+        tuple
+            Total scalar loss and a dictionary of individual loss components.
         """
 
         loss, loss_dict = 0, {}

@@ -21,11 +21,11 @@ sys.path.append("..")
 
 
 class SkeletonFeeder(data.Dataset):
-    """Dataset feeder untuk data skeleton BISINDO.
+    """
+    Dataset feeder for BISINDO skeleton data.
 
-    Kelas ini membaca metadata video, memuat pose dari file pickle, memfilter
-    sample yang valid, lalu menyiapkan augmentasi, normalisasi, dan collate
-    function untuk dipakai oleh DataLoader.
+    Reads video metadata, loads poses from pickle files, filters valid samples,
+    and prepares augmentation, normalization, and collation functions for DataLoader.
     """
 
     def __init__(

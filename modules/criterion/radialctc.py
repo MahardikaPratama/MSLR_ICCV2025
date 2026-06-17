@@ -46,6 +46,7 @@ class CTCHelper(object):
                 decoded_path[:, t - 1] = start - paths[np.arange(batch), t, start]
             except IndexError:
                 # pdb.set_trace()
+                pass
             finally:
                 pass
             start = decoded_path[:, t - 1]
