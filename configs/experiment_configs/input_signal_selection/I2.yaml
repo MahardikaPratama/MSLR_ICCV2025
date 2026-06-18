@@ -1,4 +1,4 @@
-# I2: Right Hand
+# Baseline (tanpa normalisasi tambahan)
 work_dir: ./work_dir/I2/
 google_drive_dir: /content/drive/MyDrive/MSLR_RESULTS
 device: 0
@@ -16,6 +16,13 @@ feeder_args:
   setting: sd
   datatype: skeleton
   split: &split [21]
+  # Contoh konfigurasi untuk menambahkan "upper_limb" (12 keypoint: 11-22):
+  # Jika hanya upper_limb:
+  # split: &split [12]
+  # used_part: &used_part ['left_arm', 'right_arm']
+  # Jika menggabungkan left_hand (21), right_hand (21), upper_limb (12):
+  # split: &split [21, 42, 45, 48]
+  # used_part: &used_part ['left_hand', 'right_hand', 'left_arm', 'right_arm']
   norm_point: [0]
   used_part: &used_part ['right_hand']
   augmentation_types: []

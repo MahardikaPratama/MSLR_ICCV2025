@@ -77,27 +77,24 @@ class Graph:
             # wrist (index 0) sebagai pusat/root skeleton tangan
             self.center = 0
 
-        elif layout == 'custom_upper_limb':
-            # Upper limb menggunakan 12 keypoint: 
-            # [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22] dari MediaPipe Pose
-            # Dipetakan ke indeks 0 hingga 11
-            self.num_node = 12
+        elif layout == 'custom_left_arm':
+            self.num_node = 3
             self_link = [(i, i) for i in range(self.num_node)]
             neighbor_1base = [
-                # koneksi bahu kiri ↔ bahu kanan
-                [0, 1],
-                # lengan kiri: shoulder(0) → elbow(2) → wrist(4)
-                [0, 2], [2, 4],
-                # tangan kiri dari wrist(4): pinky(6), index(8), thumb(10)
-                [4, 6], [6, 8], [4, 8], [4, 10],
-                # lengan kanan: shoulder(1) → elbow(3) → wrist(5)
-                [1, 3], [3, 5],
-                # tangan kanan dari wrist(5): pinky(7), index(9), thumb(11)
-                [5, 7], [7, 9], [5, 9], [5, 11]
+                [0, 1], [1, 2]
             ]
             neighbor_link = neighbor_1base
             self.edge = self_link + neighbor_link
-            # bahu kiri (index 0) sebagai root/pusat
+            self.center = 0
+
+        elif layout == 'custom_right_arm':
+            self.num_node = 3
+            self_link = [(i, i) for i in range(self.num_node)]
+            neighbor_1base = [
+                [0, 1], [1, 2]
+            ]
+            neighbor_link = neighbor_1base
+            self.edge = self_link + neighbor_link
             self.center = 0
 
         elif layout == 'custom_body':

@@ -15,16 +15,16 @@ num_worker: 2
 feeder_args:
   setting: sd
   datatype: skeleton
-  split: &split [21, 42, 54]
+  split: &split [21, 42, 45, 48]
   # Contoh konfigurasi untuk menambahkan "upper_limb" (12 keypoint: 11-22):
   # Jika hanya upper_limb:
   # split: &split [12]
-  # used_part: &used_part ['upper_limb']
+  # used_part: &used_part ['left_arm', 'right_arm']
   # Jika menggabungkan left_hand (21), right_hand (21), upper_limb (12):
-  # split: &split [21, 42, 54]
-  # used_part: &used_part ['left_hand', 'right_hand', 'upper_limb']
-  norm_point: [0, 21, 42]
-  used_part: &used_part ['left_hand', 'right_hand', 'upper_limb']
+  # split: &split [21, 42, 45, 48]
+  # used_part: &used_part ['left_hand', 'right_hand', 'left_arm', 'right_arm']
+  norm_point: [0, 21, 42, 45]
+  used_part: &used_part ['left_hand', 'right_hand', 'left_arm', 'right_arm']
   augmentation_types: []
   normalization_types: []
   downsampling: true         # aktifkan downsampling

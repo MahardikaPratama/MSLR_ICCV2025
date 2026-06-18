@@ -136,37 +136,32 @@ def spatial_normalize(
             )
 
         # =====================================
-        # UPPER LIMB
+        # LEFT ARM
         # =====================================
-        elif part == "upper_limb":
+        elif part == "left_arm":
 
-            # Define the left and right shoulder indices
-            LEFT_SHOULDER = 0
-            RIGHT_SHOULDER = 1
+            # Get the shoulder keypoint (index 0)
+            shoulder = part_data[:, 0, :]
 
-            # Get the left and right shoulder keypoints
-            left_shoulder = part_data[:, LEFT_SHOULDER, :]
-            right_shoulder = part_data[:, RIGHT_SHOULDER, :]
-
-            # Get the center of the left and right shoulder keypoints
-            center = (
-                left_shoulder
-                + right_shoulder
-            ) / 2.0
-
-            # Calculate the distance between the left and right shoulder keypoints
-            shoulder_width = torch.linalg.norm(
-                right_shoulder - left_shoulder,
-                dim=1,
-                keepdim=True,
-            ).clamp_min(eps)
-
-            # Subtract each keypoint with the center keypoint
-            # and divide by the shoulder width
+            # Subtract each keypoint with the shoulder keypoint
             out[:, start:end, 0:2] = (
                 part_data
-                - center[:, None, :]
-            ) / shoulder_width[:, None, :]
+                - shoulder[:, None, :]
+            )
+
+        # =====================================
+        # RIGHT ARM
+        # =====================================
+        elif part == "right_arm":
+
+            # Get the shoulder keypoint (index 0)
+            shoulder = part_data[:, 0, :]
+
+            # Subtract each keypoint with the shoulder keypoint
+            out[:, start:end, 0:2] = (
+                part_data
+                - shoulder[:, None, :]
+            )
 
     return out
 

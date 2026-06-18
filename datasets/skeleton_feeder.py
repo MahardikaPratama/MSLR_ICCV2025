@@ -172,8 +172,11 @@ class SkeletonFeeder(data.Dataset):
                 elif part == "body":
                     self.pose_idx.extend(range(61, 86))
 
-                elif part == "upper_limb":
-                    self.pose_idx.extend(range(72, 84))
+                elif part == "left_arm":
+                    self.pose_idx.extend([73, 75, 77])
+
+                elif part == "right_arm":
+                    self.pose_idx.extend([72, 74, 76])
 
                 else:
                     raise ValueError(
